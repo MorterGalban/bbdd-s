@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Docente y Control de Estudios | U.E. Fe y Alegría Nueva América</title>
+    <meta name="description" content="Módulo de autenticación para personal docente y control de estudios de la U.E. Fe y Alegría Nueva América.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .login-page-wrapper {
+            min-height: calc(100vh - 120px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1rem;
+            background: radial-gradient(circle at 50% 20%, rgba(217, 4, 41, 0.08) 0%, transparent 60%);
+        }
+        .login-card {
+            max-width: 460px;
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 2.25rem;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--gradient-fya);
+        }
+        .login-badge-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--fya-red-bg);
+            color: var(--fya-red);
+            border: 2px solid var(--fya-red-border);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+        }
+        .login-card-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-primary);
+            margin-bottom: 0.35rem;
+        }
+        .login-card-subtitle {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.75rem;
+            line-height: 1.45;
+        }
+        .login-hint-box {
+            background: var(--fya-red-bg);
+            border: 1px dashed var(--fya-red-border);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.82rem;
+            color: var(--fya-red-dark);
+            text-align: left;
+        }
+        .login-hint-box code {
+            font-weight: 700;
+            background: rgba(255,255,255,0.7);
+            padding: 0.1rem 0.35rem;
+            border-radius: 4px;
+        }
+        .login-footer-links {
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Aviso Superior -->
+    <div class="top-notice-bar">
+        <i class="fa-solid fa-school"></i> U.E. FE Y ALEGRÍA "NUEVA AMÉRICA" • <strong>Portal Administrativo Docente • Periodo 2026 - 2027</strong>
+    </div>
+
+    <!-- Navegación -->
+    <header class="navbar" id="loginHeader">
+        <div class="nav-container">
+            <a href="index.html" class="brand">
+                <img src="logo_feyalegria.png" alt="Logo Fe y Alegría Nueva América" class="brand-img-logo" width="50" height="50">
+                <div class="brand-info">
+                    <span class="brand-title">FE Y ALEGRÍA</span>
+                    <span class="brand-subtitle">U.E. Nueva América • Docente</span>
+                </div>
+            </a>
+
+            <div class="nav-actions">
+                <button type="button" class="btn-theme-toggle" id="btnToggleTheme" aria-label="Cambiar tema claro / oscuro" title="Cambiar tema claro / oscuro">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <a href="index.html" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Inicio
+                </a>
+                <a href="preinscripcion.html?rol=representante" class="btn btn-outline-red">
+                    <i class="fa-solid fa-user-pen"></i> Modo Representante
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal de Login -->
+    <main class="login-page-wrapper">
+        <div class="login-card">
+            <div class="login-badge-icon">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <h1 class="login-card-title">Acceso Docente y Control de Estudios</h1>
+            <p class="login-card-subtitle">
+                Ingresa con tus credenciales institucionales para gestionar las preinscripciones, auditar recaudos y acceder al panel de admisiones 2026-2027.
+            </p>
+
+            <!-- Credenciales de acceso autorizadas -->
+            <div class="login-hint-box">
+                <i class="fa-solid fa-key"></i> <strong>Credenciales autorizadas del personal:</strong><br>
+                • Usuario: <code>admin</code> &nbsp;|&nbsp; Contraseña: <code>feyalegria2026</code>
+            </div>
+
+            <form id="formDocenteLoginDirect" novalidate>
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="docenteUsername" class="form-label">Usuario Único del Docente *</label>
+                    <div style="position: relative;">
+                        <input type="text" id="docenteUsername" class="form-control" placeholder="Ej: admin o docente" required autocomplete="username" autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="docentePassword" class="form-label">Contraseña de Seguridad *</label>
+                    <input type="password" id="docentePassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+
+                <div id="loginDocenteErrorMsg" style="display: none; color: #dc2626; font-size: 0.85rem; margin-bottom: 1.25rem; padding: 0.65rem 0.85rem; background: #fef2f2; border-radius: var(--radius-sm); border: 1px solid #fecaca; text-align: left;">
+                    <i class="fa-solid fa-circle-xmark"></i> <strong>Error de autenticación:</strong> Usuario o contraseña incorrectos. Por favor verifique sus datos.
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;" id="btnIniciarSesionDocente">
+                    <i class="fa-solid fa-right-to-bracket"></i> Ingresar al Panel de Docente
+                </button>
+            </form>
+
+            <div class="login-footer-links">
+                <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">
+                    <i class="fa-solid fa-house"></i> Volver a Inicio
+                </a>
+                <a href="preinscripcion.html?rol=representante" style="color: var(--fya-red); text-decoration: none; font-weight: 600;">
+                    <i class="fa-solid fa-pencil"></i> Llenar como Representante
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Script de autenticación y tema -->
+    <script>
+        // Tema Claro / Oscuro
+        const temaGuardado = localStorage.getItem('fya_theme') || 'light';
+        const btnToggleTheme = document.getElementById('btnToggleTheme');
+
+        function aplicarTema(tema) {
+            if (tema === 'dark') {
+                document.body.classList.add('dark-mode');
+                if (btnToggleTheme) btnToggleTheme.innerHTML = '<i class="fa-solid fa-sun" style="color: #facc15;"></i>';
+            } else {
+                document.body.classList.remove('dark-mode');
+                if (btnToggleTheme) btnToggleTheme.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
+        }
+        aplicarTema(temaGuardado);
+
+        if (btnToggleTheme) {
+            btnToggleTheme.addEventListener('click', () => {
+                const esOscuro = document.body.classList.contains('dark-mode');
+                const nuevoTema = esOscuro ? 'light' : 'dark';
+                localStorage.setItem('fya_theme', nuevoTema);
+                aplicarTema(nuevoTema);
+            });
+        }
+
+        // Validación de credenciales
+        const form = document.getElementById('formDocenteLoginDirect');
+        const userInp = document.getElementById('docenteUsername');
+        const passInp = document.getElementById('docentePassword');
+        const errorDiv = document.getElementById('loginDocenteErrorMsg');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = userInp.value.trim().toLowerCase();
+            const p = passInp.value.trim();
+
+            if ((u === 'admin' && p === 'feyalegria2026') ||
+                (u === 'docente' && p === 'feyalegria2026') ||
+                (u === 'admin' && p === 'admin123')) {
+                
+                // Guardar sesión autenticada en localStorage
+                localStorage.setItem('fya_rol', 'docente');
+                localStorage.setItem('fya_docente_auth', 'true');
+                
+                // Redirigir al panel docente en preinscripcion.html
+                window.location.href = 'preinscripcion.html?rol=docente';
+            } else {
+                errorDiv.style.display = 'block';
+                userInp.classList.add('input-invalid');
+                passInp.classList.add('input-invalid');
+            }
+        });
+
+        [userInp, passInp].forEach(inp => {
+            inp.addEventListener('input', () => {
+                errorDiv.style.display = 'none';
+                inp.classList.remove('input-invalid');
+            });
+        });
+    </script>
+</body>
+</html>

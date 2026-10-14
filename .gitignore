@@ -1,0 +1,9 @@
+# Dependencias (Railway las instala automáticamente con npm install)
+node_modules/
+
+# Archivos temporales y scripts de desarrollo
+scratch/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
