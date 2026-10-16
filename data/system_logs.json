@@ -1,5 +1,473 @@
 [
   {
+    "id": 1792192565657,
+    "timestamp": "2026-10-16T23:16:05.657Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "PURGA_TOTAL_BD",
+    "descripcion": "Se ejecutó el vaciado de raíz y purga profunda de las tablas de preinscripciones, alumnos, representantes, recaudos y procedencia en la base de datos MySQL (AUTO_INCREMENT = 1).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565650,
+    "timestamp": "2026-10-16T23:16:05.650Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_ELIMINADO",
+    "descripcion": "El Administrador Maestro eliminó definitivamente la cuenta del docente Profesor Prueba (@profeprueba) de la base de datos.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565640,
+    "timestamp": "2026-10-16T23:16:05.640Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_REACTIVADO",
+    "descripcion": "El Superroot reactivó el acceso al sistema del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565633,
+    "timestamp": "2026-10-16T23:16:05.633Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "RESET_PASSWORD_ADMIN",
+    "descripcion": "El Administrador Maestro asignó una nueva contraseña a la cuenta del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565623,
+    "timestamp": "2026-10-16T23:16:05.623Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_SUSPENDIDO",
+    "descripcion": "El Superroot suspendió el acceso al sistema del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565615,
+    "timestamp": "2026-10-16T23:16:05.615Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "APROBACION_DOCENTE",
+    "descripcion": "El Administrador Maestro autorizó la cuenta del docente Profesor Prueba (@profeprueba, profe.prueba@feyalegria.edu.ve).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565605,
+    "timestamp": "2026-10-16T23:16:05.605Z",
+    "usuario": "profeprueba",
+    "rol": "DOCENTE",
+    "accion": "REGISTRO_DOCENTE",
+    "descripcion": "Nueva solicitud de acceso docente radicada por Profesor Prueba (profe.prueba@feyalegria.edu.ve). Estado: En espera de aprobación por el Superroot.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565596,
+    "timestamp": "2026-10-16T23:16:05.596Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "BACKUP_DESCARGADO",
+    "descripcion": "Exportación CSV de preinscritos generada satisfactoriamente (0 expedientes).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565590,
+    "timestamp": "2026-10-16T23:16:05.590Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "BACKUP_DESCARGADO",
+    "descripcion": "Respaldo completo del sistema descargado en formato JSON (0 expedientes, 1 docentes, 63 logs).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565581,
+    "timestamp": "2026-10-16T23:16:05.581Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "AJUSTE_CAPACIDAD_CUPOS",
+    "descripcion": "Se ajustó la capacidad del 1° Grado de Primaria a un máximo de 40 cupos.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565572,
+    "timestamp": "2026-10-16T23:16:05.572Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "PROCESO_ADMISIÓN_ABIERTO",
+    "descripcion": "El Administrador Maestro ACTIVÓ Y ABRIÓ el proceso general de preinscripciones escolares 2026-2027.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565559,
+    "timestamp": "2026-10-16T23:16:05.559Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "PROCESO_ADMISIÓN_CERRADO",
+    "descripcion": "El Administrador Maestro CERRÓ Y BLOQUEÓ el proceso general de preinscripciones escolares 2026-2027.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192565535,
+    "timestamp": "2026-10-16T23:16:05.535Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "LOGIN_SUPERROOT",
+    "descripcion": "Acceso autenticado al Panel Maestro Superroot.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546549,
+    "timestamp": "2026-10-16T23:15:46.549Z",
+    "usuario": "Docente / Admin",
+    "rol": "DOCENTE",
+    "accion": "PURGA_TOTAL_BD",
+    "descripcion": "Se ejecutó el vaciado de raíz y purga profunda de las tablas de preinscripciones, alumnos, representantes, recaudos y procedencia en la base de datos MySQL (AUTO_INCREMENT = 1).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546537,
+    "timestamp": "2026-10-16T23:15:46.537Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_ELIMINADO",
+    "descripcion": "El Administrador Maestro eliminó definitivamente la cuenta del docente Profesor Prueba (@profeprueba) de la base de datos.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546529,
+    "timestamp": "2026-10-16T23:15:46.529Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_REACTIVADO",
+    "descripcion": "El Superroot reactivó el acceso al sistema del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546519,
+    "timestamp": "2026-10-16T23:15:46.519Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "RESET_PASSWORD_ADMIN",
+    "descripcion": "El Administrador Maestro asignó una nueva contraseña a la cuenta del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546509,
+    "timestamp": "2026-10-16T23:15:46.509Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_SUSPENDIDO",
+    "descripcion": "El Superroot suspendió el acceso al sistema del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546500,
+    "timestamp": "2026-10-16T23:15:46.500Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "APROBACION_DOCENTE",
+    "descripcion": "El Administrador Maestro autorizó la cuenta del docente Profesor Prueba (@profeprueba, profe.prueba@feyalegria.edu.ve).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546489,
+    "timestamp": "2026-10-16T23:15:46.489Z",
+    "usuario": "profeprueba",
+    "rol": "DOCENTE",
+    "accion": "REGISTRO_DOCENTE",
+    "descripcion": "Nueva solicitud de acceso docente radicada por Profesor Prueba (profe.prueba@feyalegria.edu.ve). Estado: En espera de aprobación por el Superroot.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546481,
+    "timestamp": "2026-10-16T23:15:46.481Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "BACKUP_DESCARGADO",
+    "descripcion": "Exportación CSV de preinscritos generada satisfactoriamente (0 expedientes).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546474,
+    "timestamp": "2026-10-16T23:15:46.474Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "BACKUP_DESCARGADO",
+    "descripcion": "Respaldo completo del sistema descargado en formato JSON (0 expedientes, 1 docentes, 50 logs).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546467,
+    "timestamp": "2026-10-16T23:15:46.467Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "AJUSTE_CAPACIDAD_CUPOS",
+    "descripcion": "Se ajustó la capacidad del 1° Grado de Primaria a un máximo de 40 cupos.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546460,
+    "timestamp": "2026-10-16T23:15:46.460Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "PROCESO_ADMISIÓN_ABIERTO",
+    "descripcion": "El Administrador Maestro ACTIVÓ Y ABRIÓ el proceso general de preinscripciones escolares 2026-2027.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546443,
+    "timestamp": "2026-10-16T23:15:46.443Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "PROCESO_ADMISIÓN_CERRADO",
+    "descripcion": "El Administrador Maestro CERRÓ Y BLOQUEÓ el proceso general de preinscripciones escolares 2026-2027.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192546416,
+    "timestamp": "2026-10-16T23:15:46.416Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "LOGIN_SUPERROOT",
+    "descripcion": "Acceso autenticado al Panel Maestro Superroot.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492978,
+    "timestamp": "2026-10-16T23:14:52.978Z",
+    "usuario": "Docente / Admin",
+    "rol": "DOCENTE",
+    "accion": "PURGA_TOTAL_BD",
+    "descripcion": "Se ejecutó el vaciado de raíz y purga profunda de las tablas de preinscripciones, alumnos, representantes, recaudos y procedencia en la base de datos MySQL (AUTO_INCREMENT = 1).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492966,
+    "timestamp": "2026-10-16T23:14:52.966Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_ELIMINADO",
+    "descripcion": "El Administrador Maestro eliminó definitivamente la cuenta del docente Profesor Prueba (@profeprueba) de la base de datos.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492959,
+    "timestamp": "2026-10-16T23:14:52.959Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_REACTIVADO",
+    "descripcion": "El Superroot reactivó el acceso al sistema del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492953,
+    "timestamp": "2026-10-16T23:14:52.953Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "RESET_PASSWORD_ADMIN",
+    "descripcion": "El Administrador Maestro asignó una nueva contraseña a la cuenta del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492941,
+    "timestamp": "2026-10-16T23:14:52.940Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_SUSPENDIDO",
+    "descripcion": "El Superroot suspendió el acceso al sistema del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492933,
+    "timestamp": "2026-10-16T23:14:52.933Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "APROBACION_DOCENTE",
+    "descripcion": "El Administrador Maestro autorizó la cuenta del docente Profesor Prueba (@profeprueba, profe.prueba@feyalegria.edu.ve).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492920,
+    "timestamp": "2026-10-16T23:14:52.920Z",
+    "usuario": "profeprueba",
+    "rol": "DOCENTE",
+    "accion": "REGISTRO_DOCENTE",
+    "descripcion": "Nueva solicitud de acceso docente radicada por Profesor Prueba (profe.prueba@feyalegria.edu.ve). Estado: En espera de aprobación por el Superroot.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492912,
+    "timestamp": "2026-10-16T23:14:52.912Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "BACKUP_DESCARGADO",
+    "descripcion": "Exportación CSV de preinscritos generada satisfactoriamente (0 expedientes).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492901,
+    "timestamp": "2026-10-16T23:14:52.901Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "BACKUP_DESCARGADO",
+    "descripcion": "Respaldo completo del sistema descargado en formato JSON (0 expedientes, 1 docentes, 37 logs).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492888,
+    "timestamp": "2026-10-16T23:14:52.888Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "AJUSTE_CAPACIDAD_CUPOS",
+    "descripcion": "Se ajustó la capacidad del 1° Grado de Primaria a un máximo de 40 cupos.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492881,
+    "timestamp": "2026-10-16T23:14:52.881Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "PROCESO_ADMISIÓN_ABIERTO",
+    "descripcion": "El Administrador Maestro ACTIVÓ Y ABRIÓ el proceso general de preinscripciones escolares 2026-2027.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492864,
+    "timestamp": "2026-10-16T23:14:52.864Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "PROCESO_ADMISIÓN_CERRADO",
+    "descripcion": "El Administrador Maestro CERRÓ Y BLOQUEÓ el proceso general de preinscripciones escolares 2026-2027.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192492839,
+    "timestamp": "2026-10-16T23:14:52.839Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "LOGIN_SUPERROOT",
+    "descripcion": "Acceso autenticado al Panel Maestro Superroot.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446324,
+    "timestamp": "2026-10-16T23:14:06.324Z",
+    "usuario": "Docente / Admin",
+    "rol": "DOCENTE",
+    "accion": "PURGA_TOTAL_BD",
+    "descripcion": "Se ejecutó el vaciado de raíz y purga profunda de las tablas de preinscripciones, alumnos, representantes, recaudos y procedencia en la base de datos MySQL (AUTO_INCREMENT = 1).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446316,
+    "timestamp": "2026-10-16T23:14:06.316Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_ELIMINADO",
+    "descripcion": "El Administrador Maestro eliminó definitivamente la cuenta del docente Profesor Prueba (@profeprueba) de la base de datos.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446309,
+    "timestamp": "2026-10-16T23:14:06.309Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_REACTIVADO",
+    "descripcion": "El Superroot reactivó el acceso al sistema del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446297,
+    "timestamp": "2026-10-16T23:14:06.297Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "RESET_PASSWORD_ADMIN",
+    "descripcion": "El Administrador Maestro asignó una nueva contraseña a la cuenta del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446282,
+    "timestamp": "2026-10-16T23:14:06.282Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "DOCENTE_SUSPENDIDO",
+    "descripcion": "El Superroot suspendió el acceso al sistema del docente Profesor Prueba (@profeprueba).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446274,
+    "timestamp": "2026-10-16T23:14:06.274Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "APROBACION_DOCENTE",
+    "descripcion": "El Administrador Maestro autorizó la cuenta del docente Profesor Prueba (@profeprueba, profe.prueba@feyalegria.edu.ve).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446261,
+    "timestamp": "2026-10-16T23:14:06.261Z",
+    "usuario": "profeprueba",
+    "rol": "DOCENTE",
+    "accion": "REGISTRO_DOCENTE",
+    "descripcion": "Nueva solicitud de acceso docente radicada por Profesor Prueba (profe.prueba@feyalegria.edu.ve). Estado: En espera de aprobación por el Superroot.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446248,
+    "timestamp": "2026-10-16T23:14:06.248Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "BACKUP_DESCARGADO",
+    "descripcion": "Exportación CSV de preinscritos generada satisfactoriamente (4 expedientes).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446241,
+    "timestamp": "2026-10-16T23:14:06.241Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "BACKUP_DESCARGADO",
+    "descripcion": "Respaldo completo del sistema descargado en formato JSON (4 expedientes, 1 docentes, 24 logs).",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446232,
+    "timestamp": "2026-10-16T23:14:06.232Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "AJUSTE_CAPACIDAD_CUPOS",
+    "descripcion": "Se ajustó la capacidad del 1° Grado de Primaria a un máximo de 40 cupos.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446224,
+    "timestamp": "2026-10-16T23:14:06.224Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "PROCESO_ADMISIÓN_ABIERTO",
+    "descripcion": "El Administrador Maestro ACTIVÓ Y ABRIÓ el proceso general de preinscripciones escolares 2026-2027.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446211,
+    "timestamp": "2026-10-16T23:14:06.210Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "PROCESO_ADMISIÓN_CERRADO",
+    "descripcion": "El Administrador Maestro CERRÓ Y BLOQUEÓ el proceso general de preinscripciones escolares 2026-2027.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
+    "id": 1792192446192,
+    "timestamp": "2026-10-16T23:14:06.192Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "LOGIN_SUPERROOT",
+    "descripcion": "Acceso autenticado al Panel Maestro Superroot.",
+    "ip_address": "::ffff:127.0.0.1"
+  },
+  {
     "id": 1792184176604,
     "timestamp": "2026-10-16T20:56:16.604Z",
     "usuario": "Docente / Admin",

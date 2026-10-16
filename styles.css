@@ -3548,4 +3548,155 @@ body.mode-docente #docenteSidebarSection {
     justify-content: center;
 }
 
+/* ==============================================================================
+   MEDIDOR DE SEGURIDAD Y REQUISITOS DE CONTRASEÑA
+   ============================================================================== */
+.password-requirements-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: var(--radius-md, 10px);
+    padding: 0.85rem 1rem;
+    margin-top: 0.65rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.82rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s ease;
+}
+
+.dark-mode .password-requirements-card {
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.password-strength-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.45rem;
+}
+
+.password-strength-label {
+    font-weight: 700;
+    color: var(--text-secondary, #64748b);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.dark-mode .password-strength-label {
+    color: #94a3b8;
+}
+
+.password-strength-status {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.password-strength-meter {
+    height: 6px;
+    width: 100%;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.dark-mode .password-strength-meter {
+    background: #334155;
+}
+
+.password-strength-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    background-color: #ef4444;
+}
+
+.password-rules-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+}
+
+@media (min-width: 520px) {
+    .password-rules-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.password-rule-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #94a3b8;
+    font-size: 0.78rem;
+    transition: color 0.2s ease;
+}
+
+.password-rule-item.valid {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.dark-mode .password-rule-item.valid {
+    color: #4ade80;
+}
+
+.password-rule-item .rule-icon {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.dark-mode .password-rule-item .rule-icon {
+    color: #475569;
+}
+
+.password-rule-item.valid .rule-icon {
+    color: #16a34a;
+    transform: scale(1.1);
+}
+
+.dark-mode .password-rule-item.valid .rule-icon {
+    color: #4ade80;
+}
+
+.password-match-status {
+    margin-top: 0.65rem;
+    padding-top: 0.55rem;
+    border-top: 1px dashed #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.dark-mode .password-match-status {
+    border-top-color: #334155;
+}
+
+.password-match-status.match {
+    color: #16a34a;
+}
+
+.dark-mode .password-match-status.match {
+    color: #4ade80;
+}
+
+.password-match-status.mismatch {
+    color: #ef4444;
+}
+
+.dark-mode .password-match-status.mismatch {
+    color: #f87171;
+}
+
+
 

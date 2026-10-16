@@ -307,14 +307,63 @@
                     <input type="text" id="recupRespuesta" class="form-control" placeholder="Escriba la respuesta">
                 </div>
 
-                <div class="form-group mb-3" style="text-align: left;">
+                <div class="form-group mb-2" style="text-align: left;">
                     <label for="recupNuevaPassword" class="form-label">Nueva Contraseña de Seguridad *</label>
-                    <input type="password" id="recupNuevaPassword" class="form-control" placeholder="Mínimo 6 caracteres">
+                    <div class="input-group-password" style="position: relative;">
+                        <input type="password" id="recupNuevaPassword" class="form-control" placeholder="Mín. 8 caracteres (ej: Clave#2026)">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('recupNuevaPassword', this)" aria-label="Mostrar contraseña" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="form-group mb-3" style="text-align: left;">
+                <div class="form-group mb-2" style="text-align: left;">
                     <label for="recupConfirmPassword" class="form-label">Confirmar Nueva Contraseña *</label>
-                    <input type="password" id="recupConfirmPassword" class="form-control" placeholder="Repita la nueva contraseña">
+                    <div class="input-group-password" style="position: relative;">
+                        <input type="password" id="recupConfirmPassword" class="form-control" placeholder="Repita la nueva contraseña">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('recupConfirmPassword', this)" aria-label="Mostrar contraseña" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Requisitos y Medidor de Seguridad en Recuperación -->
+                <div class="password-requirements-card mb-3" id="recupPasswordRequirementsCard">
+                    <div class="password-strength-header">
+                        <span class="password-strength-label"><i class="fa-solid fa-shield-halved"></i> Parámetros Requeridos:</span>
+                        <span class="password-strength-status" id="recupPasswordStrengthText">Ingrese contraseña</span>
+                    </div>
+                    <div class="password-strength-meter">
+                        <div class="password-strength-bar" id="recupPasswordStrengthBar"></div>
+                    </div>
+                    
+                    <div class="password-rules-grid">
+                        <div class="password-rule-item" id="recup-rule-length">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Más de 8 caracteres (Mínimo 8)</span>
+                        </div>
+                        <div class="password-rule-item" id="recup-rule-upper">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Al menos una mayúscula (A-Z)</span>
+                        </div>
+                        <div class="password-rule-item" id="recup-rule-lower">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Al menos una minúscula (a-z)</span>
+                        </div>
+                        <div class="password-rule-item" id="recup-rule-number">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Al menos un número (0-9)</span>
+                        </div>
+                        <div class="password-rule-item" id="recup-rule-special">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Al menos un caracter especial (@, $, !, %, *, #, etc.)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="password-match-status" id="recupPasswordMatchStatus" style="display: none;">
+                        <i class="fa-solid fa-circle-xmark match-icon" id="recupMatchIcon"></i>
+                        <span id="recupMatchText">Las contraseñas no coinciden</span>
+                    </div>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem;">
@@ -363,6 +412,19 @@
             } else {
                 pass.type = 'password';
                 icon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+            } else {
+                input.type = 'password';
+                if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
             }
         }
 
@@ -544,6 +606,110 @@
             }
         }
 
+        // Validación en tiempo real de contraseña en Modal de Recuperación
+        const recupPass = document.getElementById('recupNuevaPassword');
+        const recupConf = document.getElementById('recupConfirmPassword');
+        const recupRuleLen = document.getElementById('recup-rule-length');
+        const recupRuleUpper = document.getElementById('recup-rule-upper');
+        const recupRuleLower = document.getElementById('recup-rule-lower');
+        const recupRuleNum = document.getElementById('recup-rule-number');
+        const recupRuleSpec = document.getElementById('recup-rule-special');
+        const recupBar = document.getElementById('recupPasswordStrengthBar');
+        const recupText = document.getElementById('recupPasswordStrengthText');
+        const recupMatchBox = document.getElementById('recupPasswordMatchStatus');
+        const recupMatchText = document.getElementById('recupMatchText');
+        const recupMatchIcon = document.getElementById('recupMatchIcon');
+
+        function setRecupRuleStatus(elem, isValid) {
+            if (!elem) return;
+            const icon = elem.querySelector('.rule-icon');
+            if (isValid) {
+                elem.classList.add('valid');
+                if (icon) icon.className = 'fa-solid fa-circle-check rule-icon';
+            } else {
+                elem.classList.remove('valid');
+                if (icon) icon.className = 'fa-solid fa-circle-xmark rule-icon';
+            }
+        }
+
+        function evaluarRequisitosPasswordRecup() {
+            const val = recupPass ? recupPass.value || '' : '';
+            const conf = recupConf ? recupConf.value || '' : '';
+
+            const hasLen = val.length >= 8;
+            const hasUp = /[A-Z]/.test(val);
+            const hasLow = /[a-z]/.test(val);
+            const hasNum = /[0-9]/.test(val);
+            const hasSpec = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(val);
+
+            setRecupRuleStatus(recupRuleLen, hasLen);
+            setRecupRuleStatus(recupRuleUpper, hasUp);
+            setRecupRuleStatus(recupRuleLower, hasLow);
+            setRecupRuleStatus(recupRuleNum, hasNum);
+            setRecupRuleStatus(recupRuleSpec, hasSpec);
+
+            let score = 0;
+            if (hasLen) score++;
+            if (hasUp) score++;
+            if (hasLow) score++;
+            if (hasNum) score++;
+            if (hasSpec) score++;
+
+            if (!recupBar || !recupText) return (hasLen && hasUp && hasLow && hasNum && hasSpec);
+
+            if (val.length === 0) {
+                recupBar.style.width = '0%';
+                recupBar.style.backgroundColor = '#ef4444';
+                recupText.textContent = 'Ingrese contraseña';
+                recupText.style.color = '#94a3b8';
+            } else if (score <= 1) {
+                recupBar.style.width = '20%';
+                recupBar.style.backgroundColor = '#ef4444';
+                recupText.textContent = 'Muy Débil';
+                recupText.style.color = '#ef4444';
+            } else if (score === 2) {
+                recupBar.style.width = '40%';
+                recupBar.style.backgroundColor = '#f97316';
+                recupText.textContent = 'Débil';
+                recupText.style.color = '#f97316';
+            } else if (score === 3) {
+                recupBar.style.width = '60%';
+                recupBar.style.backgroundColor = '#eab308';
+                recupText.textContent = 'Aceptable';
+                recupText.style.color = '#eab308';
+            } else if (score === 4) {
+                recupBar.style.width = '80%';
+                recupBar.style.backgroundColor = '#06b6d4';
+                recupText.textContent = 'Buena';
+                recupText.style.color = '#06b6d4';
+            } else {
+                recupBar.style.width = '100%';
+                recupBar.style.backgroundColor = '#16a34a';
+                recupText.textContent = 'Excelente y Segura';
+                recupText.style.color = '#16a34a';
+            }
+
+            if (conf.length > 0 && recupMatchBox) {
+                recupMatchBox.style.display = 'flex';
+                if (val === conf) {
+                    recupMatchBox.className = 'password-match-status match';
+                    recupMatchIcon.className = 'fa-solid fa-circle-check match-icon';
+                    recupMatchText.textContent = 'Las contraseñas coinciden perfectamente.';
+                } else {
+                    recupMatchBox.className = 'password-match-status mismatch';
+                    recupMatchIcon.className = 'fa-solid fa-circle-xmark match-icon';
+                    recupMatchText.textContent = 'Las contraseñas no coinciden aún.';
+                }
+            } else if (recupMatchBox) {
+                recupMatchBox.style.display = 'none';
+            }
+
+            return (hasLen && hasUp && hasLow && hasNum && hasSpec);
+        }
+
+        if (recupPass) recupPass.addEventListener('input', evaluarRequisitosPasswordRecup);
+        if (recupConf) recupConf.addEventListener('input', evaluarRequisitosPasswordRecup);
+
         async function ejecutarRestablecerClave() {
             const respuesta = document.getElementById('recupRespuesta').value.trim();
             const nueva = document.getElementById('recupNuevaPassword').value;
@@ -554,13 +720,16 @@
                 return;
             }
 
-            if (nueva.length < 6) {
-                mostrarModalAlerta('error', 'La nueva contraseña debe tener mínimo 6 caracteres.');
+            const cumpleSeguridad = evaluarRequisitosPasswordRecup();
+            if (!cumpleSeguridad) {
+                mostrarModalAlerta('error', 'La nueva contraseña debe tener mínimo 8 caracteres, al menos una mayúscula (A-Z), una minúscula (a-z), un número (0-9) y un caracter especial (@, $, !, %, *, #, etc.).');
+                recupPass.focus();
                 return;
             }
 
             if (nueva !== confirm) {
                 mostrarModalAlerta('error', 'Las nuevas contraseñas no coinciden.');
+                recupConf.focus();
                 return;
             }
 

@@ -1,0 +1,12 @@
+{
+  "procesoAbierto": true,
+  "cuposPorGrado": {
+    "1": 40,
+    "2": 35,
+    "3": 35,
+    "4": 35,
+    "5": 35,
+    "6": 35
+  },
+  "ultimaModificacion": "2026-10-16T23:16:05.579Z"
+}

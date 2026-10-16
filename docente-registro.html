@@ -210,11 +210,11 @@
                     <small style="color: var(--text-muted); font-size: 0.78rem;">Solo letras, números y puntos (sin espacios).</small>
                 </div>
 
-                <div class="form-row-2 mb-3">
+                <div class="form-row-2 mb-2">
                     <div class="form-group" style="text-align: left;">
                         <label for="regPassword" class="form-label">Contraseña de Seguridad *</label>
                         <div class="input-group-password">
-                            <input type="password" id="regPassword" name="regPassword" class="form-control" placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
+                            <input type="password" id="regPassword" name="regPassword" class="form-control" placeholder="Mín. 8 caracteres (ej: Clave#2026)" required autocomplete="new-password">
                             <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('regPassword', this)" aria-label="Mostrar contraseña">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
@@ -223,11 +223,50 @@
                     <div class="form-group" style="text-align: left;">
                         <label for="regPasswordConfirm" class="form-label">Confirmar Contraseña *</label>
                         <div class="input-group-password">
-                            <input type="password" id="regPasswordConfirm" name="regPasswordConfirm" class="form-control" placeholder="Repita su clave" required autocomplete="new-password">
+                            <input type="password" id="regPasswordConfirm" name="regPasswordConfirm" class="form-control" placeholder="Repita exactamente su clave" required autocomplete="new-password">
                             <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('regPasswordConfirm', this)" aria-label="Mostrar contraseña">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Requisitos y Medidor de Seguridad de Contraseña -->
+                <div class="password-requirements-card mb-3" id="passwordRequirementsCard">
+                    <div class="password-strength-header">
+                        <span class="password-strength-label"><i class="fa-solid fa-shield-halved"></i> Parámetros de Seguridad Requeridos:</span>
+                        <span class="password-strength-status" id="passwordStrengthText">Ingrese contraseña</span>
+                    </div>
+                    <div class="password-strength-meter">
+                        <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                    </div>
+                    
+                    <div class="password-rules-grid">
+                        <div class="password-rule-item" id="rule-length">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Más de 8 caracteres (Mínimo 8)</span>
+                        </div>
+                        <div class="password-rule-item" id="rule-upper">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Al menos una letra mayúscula (A-Z)</span>
+                        </div>
+                        <div class="password-rule-item" id="rule-lower">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Al menos una letra minúscula (a-z)</span>
+                        </div>
+                        <div class="password-rule-item" id="rule-number">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Al menos un número o dígito (0-9)</span>
+                        </div>
+                        <div class="password-rule-item" id="rule-special">
+                            <i class="fa-solid fa-circle-xmark rule-icon"></i>
+                            <span>Al menos un carácter especial (@, $, !, %, *, #, etc.)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="password-match-status" id="passwordMatchStatus" style="display: none;">
+                        <i class="fa-solid fa-circle-xmark match-icon" id="matchIcon"></i>
+                        <span id="matchText">Las contraseñas no coinciden</span>
                     </div>
                 </div>
 
@@ -312,6 +351,108 @@
         const alertIcon = document.getElementById('registerAlertIcon');
         const btnSubmit = document.getElementById('btnEnviarSolicitudDocente');
 
+        // Referencias a Requisitos de Contraseña
+        const passInp = document.getElementById('regPassword');
+        const passConfInp = document.getElementById('regPasswordConfirm');
+        const ruleLength = document.getElementById('rule-length');
+        const ruleUpper = document.getElementById('rule-upper');
+        const ruleLower = document.getElementById('rule-lower');
+        const ruleNumber = document.getElementById('rule-number');
+        const ruleSpecial = document.getElementById('rule-special');
+        const strengthBar = document.getElementById('passwordStrengthBar');
+        const strengthText = document.getElementById('passwordStrengthText');
+        const matchBox = document.getElementById('passwordMatchStatus');
+        const matchText = document.getElementById('matchText');
+        const matchIcon = document.getElementById('matchIcon');
+
+        function setRuleStatus(elem, isValid) {
+            if (!elem) return;
+            const icon = elem.querySelector('.rule-icon');
+            if (isValid) {
+                elem.classList.add('valid');
+                if (icon) icon.className = 'fa-solid fa-circle-check rule-icon';
+            } else {
+                elem.classList.remove('valid');
+                if (icon) icon.className = 'fa-solid fa-circle-xmark rule-icon';
+            }
+        }
+
+        function evaluarRequisitosPassword() {
+            const val = passInp.value || '';
+            const conf = passConfInp.value || '';
+
+            const hasLength = val.length >= 8;
+            const hasUpper = /[A-Z]/.test(val);
+            const hasLower = /[a-z]/.test(val);
+            const hasNumber = /[0-9]/.test(val);
+            const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(val);
+
+            setRuleStatus(ruleLength, hasLength);
+            setRuleStatus(ruleUpper, hasUpper);
+            setRuleStatus(ruleLower, hasLower);
+            setRuleStatus(ruleNumber, hasNumber);
+            setRuleStatus(ruleSpecial, hasSpecial);
+
+            let score = 0;
+            if (hasLength) score++;
+            if (hasUpper) score++;
+            if (hasLower) score++;
+            if (hasNumber) score++;
+            if (hasSpecial) score++;
+
+            if (val.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthBar.style.backgroundColor = '#ef4444';
+                strengthText.textContent = 'Ingrese contraseña';
+                strengthText.style.color = '#94a3b8';
+            } else if (score <= 1) {
+                strengthBar.style.width = '20%';
+                strengthBar.style.backgroundColor = '#ef4444';
+                strengthText.textContent = 'Muy Débil';
+                strengthText.style.color = '#ef4444';
+            } else if (score === 2) {
+                strengthBar.style.width = '40%';
+                strengthBar.style.backgroundColor = '#f97316';
+                strengthText.textContent = 'Débil';
+                strengthText.style.color = '#f97316';
+            } else if (score === 3) {
+                strengthBar.style.width = '60%';
+                strengthBar.style.backgroundColor = '#eab308';
+                strengthText.textContent = 'Aceptable';
+                strengthText.style.color = '#eab308';
+            } else if (score === 4) {
+                strengthBar.style.width = '80%';
+                strengthBar.style.backgroundColor = '#06b6d4';
+                strengthText.textContent = 'Buena';
+                strengthText.style.color = '#06b6d4';
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.style.backgroundColor = '#16a34a';
+                strengthText.textContent = 'Excelente y Segura';
+                strengthText.style.color = '#16a34a';
+            }
+
+            if (conf.length > 0) {
+                matchBox.style.display = 'flex';
+                if (val === conf) {
+                    matchBox.className = 'password-match-status match';
+                    matchIcon.className = 'fa-solid fa-circle-check match-icon';
+                    matchText.textContent = 'Las contraseñas coinciden perfectamente.';
+                } else {
+                    matchBox.className = 'password-match-status mismatch';
+                    matchIcon.className = 'fa-solid fa-circle-xmark match-icon';
+                    matchText.textContent = 'Las contraseñas no coinciden aún.';
+                }
+            } else {
+                matchBox.style.display = 'none';
+            }
+
+            return (hasLength && hasUpper && hasLower && hasNumber && hasSpecial);
+        }
+
+        if (passInp) passInp.addEventListener('input', evaluarRequisitosPassword);
+        if (passConfInp) passConfInp.addEventListener('input', evaluarRequisitosPassword);
+
         function mostrarAlerta(tipo, mensaje) {
             alertBox.className = `alert-box alert-${tipo}`;
             if (tipo === 'success') {
@@ -334,8 +475,8 @@
             const apellidos = document.getElementById('regApellidos').value.trim();
             const correo = document.getElementById('regCorreo').value.trim();
             const usuario = document.getElementById('regUsuario').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            const password = passInp.value;
+            const passwordConfirm = passConfInp.value;
             const pregunta = document.getElementById('regPreguntaSeguridad').value.trim();
             const respuesta = document.getElementById('regRespuestaSeguridad').value.trim();
 
@@ -345,13 +486,16 @@
                 return;
             }
 
-            if (password.length < 6) {
-                mostrarAlerta('error', '<strong>Contraseña débil:</strong> La contraseña debe contener al menos 6 caracteres.');
+            const cumpleSeguridad = evaluarRequisitosPassword();
+            if (!cumpleSeguridad) {
+                mostrarAlerta('error', '<strong>Contraseña no cumple los requisitos:</strong> Debe tener al menos 8 caracteres, al menos una letra mayúscula (A-Z), una letra minúscula (a-z), un número (0-9) y un carácter especial (@, $, !, %, *, #, etc.).');
+                passInp.focus();
                 return;
             }
 
             if (password !== passwordConfirm) {
-                mostrarAlerta('error', '<strong>Error de coincidencia:</strong> Las contraseñas ingresadas no coinciden.');
+                mostrarAlerta('error', '<strong>Error de coincidencia:</strong> Las contraseñas ingresadas no coinciden. Verifique e intente nuevamente.');
+                passConfInp.focus();
                 return;
             }
 

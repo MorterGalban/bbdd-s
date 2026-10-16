@@ -202,6 +202,190 @@
             color: #86efac;
             border: 1px solid #22c55e;
         }
+        .status-suspended {
+            background: #581c87;
+            color: #e9d5ff;
+            border: 1px solid #a855f7;
+        }
+        .btn-warning-action {
+            background: #854d0e;
+            color: #fef08a;
+            border: 1px solid #eab308;
+        }
+        .btn-warning-action:hover {
+            background: #a16207;
+            box-shadow: 0 0 12px rgba(234, 179, 8, 0.4);
+        }
+        .btn-info-action {
+            background: #1e3a8a;
+            color: #bfdbfe;
+            border: 1px solid #3b82f6;
+        }
+        .btn-info-action:hover {
+            background: #1d4ed8;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+        }
+        .btn-danger-action {
+            background: #991b1b;
+            color: #fee2e2;
+            border: 1px solid #ef4444;
+        }
+        .btn-danger-action:hover {
+            background: #b91c1c;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+        }
+        .btn-success-action {
+            background: #166534;
+            color: #dcfce7;
+            border: 1px solid #22c55e;
+        }
+        .btn-success-action:hover {
+            background: #15803d;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+        }
+        /* Switch Toggle */
+        .switch-toggle-label {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            gap: 0.75rem;
+        }
+        .switch-toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        .switch-slider {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            background-color: #ef4444;
+            border-radius: 34px;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            display: inline-block;
+        }
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+        .switch-toggle-input:checked + .switch-slider {
+            background-color: #22c55e;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+        }
+        .switch-toggle-input:checked + .switch-slider:before {
+            transform: translateX(24px);
+        }
+        /* Capacity Grid */
+        .capacity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.25rem;
+        }
+        .capacity-card {
+            background: #18181b;
+            border: 1.5px solid #27272a;
+            border-radius: var(--radius-lg);
+            padding: 1.35rem;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .capacity-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+        .capacity-progress-bg {
+            width: 100%;
+            background: #27272a;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 0.75rem 0;
+            border: 1px solid #3f3f46;
+        }
+        .capacity-progress-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Breakdown Stats Card */
+        .breakdown-card {
+            background: #18181b;
+            border: 1.5px solid #27272a;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .breakdown-bar-item {
+            margin-bottom: 1.15rem;
+        }
+        .breakdown-bar-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.86rem;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+        .breakdown-bar-bg {
+            background: #27272a;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #3f3f46;
+        }
+        .breakdown-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.8s ease;
+        }
+        /* Purge Box */
+        .purge-zone-box {
+            background: linear-gradient(135deg, rgba(69, 10, 10, 0.6) 0%, rgba(24, 24, 27, 0.95) 100%);
+            border: 2px dashed #ef4444;
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+        /* Modales Admin */
+        .modal-admin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(4px);
+        }
+        .modal-admin-box {
+            background: #18181b;
+            border: 1.5px solid #3f3f46;
+            border-radius: var(--radius-lg);
+            max-width: 520px;
+            width: 100%;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
         .log-mono {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
@@ -374,6 +558,12 @@
                 <button type="button" class="tab-btn" id="tabBtnDocentes" onclick="mostrarTab('docentes')">
                     <i class="fa-solid fa-users"></i> Directorio Docente
                 </button>
+                <button type="button" class="tab-btn" id="tabBtnCupos" onclick="mostrarTab('cupos')">
+                    <i class="fa-solid fa-gauge-high"></i> Control de Cupos y Admisión
+                </button>
+                <button type="button" class="tab-btn" id="tabBtnMantenimiento" onclick="mostrarTab('mantenimiento')">
+                    <i class="fa-solid fa-database"></i> Centro de Respaldo y Estadísticas
+                </button>
                 <button type="button" class="tab-btn" id="tabBtnLogs" onclick="mostrarTab('logs')">
                     <i class="fa-solid fa-list-check"></i> Historial de Auditoría (System Logs)
                 </button>
@@ -422,6 +612,19 @@
                             Personal con cuentas registradas y estado de autorización en la base de datos MySQL.
                         </p>
                     </div>
+                    <!-- Buscador rápido y filtro por estado -->
+                    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                        <div style="position: relative;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 11px; color: #94a3b8; font-size: 0.8rem;"></i>
+                            <input type="text" id="filtroDocenteTexto" placeholder="Buscar por nombre, usuario o correo..." class="form-control" style="padding-left: 30px; background: #27272a; border-color: #3f3f46; color: #ffffff; font-size: 0.82rem; width: 270px;" oninput="filtrarDirectorioDocente()">
+                        </div>
+                        <select id="filtroDocenteEstadoSelect" class="form-control" style="background: #27272a; border-color: #3f3f46; color: #ffffff; font-size: 0.82rem; width: 170px;" onchange="filtrarDirectorioDocente()">
+                            <option value="TODOS">Todos los Estados</option>
+                            <option value="1">Aprobados / Activos</option>
+                            <option value="2">Suspendidos</option>
+                            <option value="0">Pendientes</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div style="overflow-x: auto;">
@@ -445,7 +648,132 @@
                 </div>
             </section>
 
-            <!-- 3. SECCIÓN DE HISTORIAL DE AUDITORÍA (SYSTEM LOGS EN MYSQL) -->
+            <!-- 3. SECCIÓN DE CONTROL DE CUPOS Y ESTADO GLOBAL DE ADMISIÓN -->
+            <section id="viewCupos" class="admin-section-card" style="display: none;">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title">
+                            <i class="fa-solid fa-gauge-high" style="color: #10b981;"></i> Control de Capacidad y Cupos (1° a 6° Grado)
+                        </h2>
+                        <p style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
+                            Monitoreo de disponibilidad en tiempo real y bloqueo institucional del proceso de admisión.
+                        </p>
+                    </div>
+
+                    <!-- Interruptor Maestro del Proceso de Admisión -->
+                    <div style="display: flex; align-items: center; gap: 0.85rem; background: #27272a; padding: 0.6rem 1.25rem; border-radius: var(--radius-md); border: 1.5px solid #3f3f46;">
+                        <span style="font-size: 0.86rem; font-weight: 700; color: #ffffff;">
+                            <i class="fa-solid fa-power-off" style="color: #f59e0b; margin-right: 4px;"></i> Estado del Proceso:
+                        </span>
+                        <label class="switch-toggle-label" title="Alternar proceso abierto / cerrado">
+                            <input type="checkbox" id="switchProcesoAdmision" class="switch-toggle-input" onchange="toggleEstadoProcesoAdmision(this.checked)">
+                            <span class="switch-slider"></span>
+                            <span id="labelEstadoProceso" style="font-weight: 800; font-size: 0.82rem; color: #22c55e;">ABIERTO</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de Capacidad por Grado (1° a 6° Grado) -->
+                <div class="capacity-grid" id="contenedorTarjetasCupos">
+                    <!-- Inyectado dinámicamente por JS -->
+                </div>
+            </section>
+
+            <!-- 4. SECCIÓN DE CENTRO DE RESPALDO Y ESTADÍSTICAS RÁPIDAS DE RECAUDOS -->
+            <section id="viewMantenimiento" class="admin-section-card" style="display: none;">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title">
+                            <i class="fa-solid fa-database" style="color: #6366f1;"></i> Centro de Respaldo, Mantenimiento y Estadísticas
+                        </h2>
+                        <p style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
+                            Desglose analítico de recaudos, exportación integral de copias de seguridad y purga de raíz de base de datos.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Módulo 1: Desglose Porcentual de Expedientes Actuales -->
+                <div class="breakdown-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-chart-pie" style="color: #38bdf8;"></i> Desglose de Estado de Expedientes y Recaudos
+                        </h3>
+                        <span id="badgeTotalExpedientesEstadisticas" style="background: #27272a; border: 1px solid #3f3f46; color: #38bdf8; font-weight: 700; font-size: 0.82rem; padding: 0.3rem 0.75rem; border-radius: 999px;">
+                            Total: 0 expedientes
+                        </span>
+                    </div>
+
+                    <div class="breakdown-bar-item">
+                        <div class="breakdown-bar-header">
+                            <span style="color: #86efac;"><i class="fa-solid fa-circle-check"></i> Aprobados en regla</span>
+                            <span id="statAprobadosTxt" style="color: #86efac; font-weight: 700;">0 (0%)</span>
+                        </div>
+                        <div class="breakdown-bar-bg">
+                            <div id="statAprobadosBar" class="breakdown-bar-fill" style="width: 0%; background: #22c55e;"></div>
+                        </div>
+                    </div>
+
+                    <div class="breakdown-bar-item">
+                        <div class="breakdown-bar-header">
+                            <span style="color: #fde68a;"><i class="fa-solid fa-clock-rotate-left"></i> En Revisión institucional</span>
+                            <span id="statRevisionTxt" style="color: #fde68a; font-weight: 700;">0 (0%)</span>
+                        </div>
+                        <div class="breakdown-bar-bg">
+                            <div id="statRevisionBar" class="breakdown-bar-fill" style="width: 0%; background: #f59e0b;"></div>
+                        </div>
+                    </div>
+
+                    <div class="breakdown-bar-item" style="margin-bottom: 0;">
+                        <div class="breakdown-bar-header">
+                            <span style="color: #fca5a5;"><i class="fa-solid fa-triangle-exclamation"></i> Documentos Incompletos / Observados</span>
+                            <span id="statIncompletosTxt" style="color: #fca5a5; font-weight: 700;">0 (0%)</span>
+                        </div>
+                        <div class="breakdown-bar-bg">
+                            <div id="statIncompletosBar" class="breakdown-bar-fill" style="width: 0%; background: #ef4444;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Módulo 2: Centro de Copias de Seguridad (Backup) -->
+                <div style="background: #18181b; border: 1.5px solid #27272a; border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-cloud-arrow-down" style="color: #a855f7;"></i> Exportación y Respaldo Institucional
+                    </h3>
+                    <p style="font-size: 0.84rem; color: #94a3b8; margin-bottom: 1.25rem;">
+                        Descargue una instantánea completa de la base de datos (preinscripciones, docentes, configuración del sistema y registros de auditoría) antes de realizar labores de mantenimiento o purga.
+                    </p>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-primary" onclick="descargarRespaldoJSON()" style="background: #4f46e5; border-color: #6366f1; font-weight: 600;">
+                            <i class="fa-solid fa-file-code"></i> Descargar Respaldo Completo (Backup JSON)
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="descargarRespaldoCSV()" style="font-weight: 600;">
+                            <i class="fa-solid fa-file-excel"></i> Descargar Expedientes (CSV Excel)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Módulo 3: Zona de Peligro Máximo (Vaciado de Raíz / Purga Real en MySQL) -->
+                <div class="purge-zone-box">
+                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(239, 68, 68, 0.2); border: 2px solid #ef4444; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="font-size: 1.15rem; font-weight: 800; color: #fee2e2; margin-bottom: 0.35rem;">
+                                Zona de Alto Riesgo: Vaciado de Raíz en MySQL (Purga Real de Preinscripciones)
+                            </h3>
+                            <p style="font-size: 0.85rem; color: #fca5a5; line-height: 1.5; margin-bottom: 1rem;">
+                                Esta operación desactiva temporalmente las restricciones foráneas (<code>SET FOREIGN_KEY_CHECKS = 0</code>), ejecuta una purga profunda y total (<code>TRUNCATE TABLE</code>) sobre las tablas de <strong>preinscripciones, recaudos, alumnos, representantes y procedencia</strong>, y restablece los contadores <code>AUTO_INCREMENT</code> a 1. <strong>Las cuentas de usuarios y docentes jamás se eliminan.</strong>
+                            </p>
+                            <button type="button" class="btn btn-danger" onclick="abrirModalConfirmarPurga()" style="background: #dc2626; border-color: #ef4444; font-weight: 700; box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);">
+                                <i class="fa-solid fa-skull-crossbones"></i> Purgar Base de Datos de Preinscritos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. SECCIÓN DE HISTORIAL DE AUDITORÍA (SYSTEM LOGS EN MYSQL) -->
             <section id="viewLogs" class="admin-section-card" style="display: none;">
                 <div class="admin-section-header">
                     <div>
@@ -483,6 +811,78 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- MODAL ADMIN: RESETEAR CONTRASEÑA DOCENTE -->
+    <div id="modalResetClaveOverlay" class="modal-admin-overlay" style="display: none;">
+        <div class="modal-admin-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-key" style="color: #3b82f6;"></i> Resetear Contraseña Docente
+                </h3>
+                <button type="button" onclick="cerrarModalResetClave()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">&times;</button>
+            </div>
+            <p style="font-size: 0.84rem; color: #94a3b8; margin-bottom: 1.25rem;">
+                Asignando nueva contraseña para: <strong id="resetDocenteNombre" style="color: #ffffff;">Docente</strong> (<code id="resetDocenteUsuario" style="color: #f59e0b;">@usuario</code>).
+            </p>
+            <input type="hidden" id="resetDocenteId">
+            <input type="hidden" id="resetDocenteUsuarioHidden">
+            <div class="form-group mb-3">
+                <label class="form-label" style="color: #cbd5e1; font-size: 0.85rem;">Nueva Contraseña Temporal *</label>
+                <div style="position: relative;">
+                    <input type="password" id="inputResetPassword" class="form-control" placeholder="••••••••••••" style="background: #27272a; border-color: #3f3f46; color: #ffffff; padding-right: 40px;" oninput="validarResetPassEnVivo(this.value)">
+                    <button type="button" onclick="toggleVerResetPass()" style="position: absolute; right: 10px; top: 10px; background: none; border: none; color: #94a3b8; cursor: pointer;">
+                        <i class="fa-solid fa-eye" id="iconVerResetPass"></i>
+                    </button>
+                </div>
+                <div id="resetPassHelp" style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.4rem;">
+                    Debe contener mín. 8 caracteres, mayúscula, minúscula, número y símbolo especial.
+                </div>
+            </div>
+            <div id="resetAlertError" style="display: none; background: #450a0a; border: 1px solid #ef4444; color: #fecaca; font-size: 0.8rem; padding: 0.6rem; border-radius: 4px; margin-bottom: 1rem;"></div>
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalResetClave()" style="background: #3f3f46; color: #ffffff; border: none;">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarResetClave" onclick="ejecutarResetClaveDocente()" style="background: #2563eb; border-color: #3b82f6;">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Nueva Clave
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADMIN: CONFIRMAR PURGA REAL DE LA BASE DE DATOS -->
+    <div id="modalConfirmarPurgaOverlay" class="modal-admin-overlay" style="display: none;">
+        <div class="modal-admin-box" style="border-color: #ef4444; max-width: 540px;">
+            <div style="text-align: center; margin-bottom: 1.25rem;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(220, 38, 38, 0.2); border: 2px solid #ef4444; color: #ef4444; display: inline-flex; align-items: center; justify-content: center; font-size: 1.85rem; margin-bottom: 0.85rem;">
+                    <i class="fa-solid fa-skull-crossbones"></i>
+                </div>
+                <h3 style="font-size: 1.35rem; font-weight: 800; color: #ffffff; margin-bottom: 0.35rem;">
+                    Confirmación de Máxima Seguridad
+                </h3>
+                <p style="font-size: 0.85rem; color: #fca5a5; line-height: 1.45;">
+                    ¡ATENCIÓN! Está a punto de realizar un <strong>vaciado irreversible</strong> de todas las tablas de preinscripciones en MySQL.
+                </p>
+            </div>
+            <div style="background: #27272a; border-radius: var(--radius-sm); padding: 0.85rem; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 1.25rem; line-height: 1.4;">
+                • Se truncarán: <code>preinscripciones</code>, <code>alumnos</code>, <code>representantes</code>, <code>recaudos</code>, <code>institutos</code>.<br>
+                • Los contadores AUTO_INCREMENT volverán a 1.<br>
+                • Se limpiará la memoria caché de preinscritos en el navegador.<br>
+                • Se registrará el evento inmutable en <code>system_logs</code>.<br>
+                • <strong>Las cuentas docentes y usuarios quedarán 100% intactas.</strong>
+            </div>
+            <div class="form-group mb-3">
+                <label style="font-size: 0.82rem; color: #cbd5e1; font-weight: 700; display: block; margin-bottom: 0.35rem;">
+                    Para confirmar, escriba la palabra <span style="color: #ef4444; font-family: monospace; font-size: 0.95rem;">PURGAR</span> a continuación:
+                </label>
+                <input type="text" id="inputPalabraPurga" class="form-control" placeholder="PURGAR" style="background: #18181b; border-color: #ef4444; color: #ffffff; text-transform: uppercase; font-weight: bold; letter-spacing: 0.1em; text-align: center;" oninput="comprobarPalabraPurga(this.value)">
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalConfirmarPurga()" style="flex: 1; background: #3f3f46; color: #ffffff; border: none;">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnEjecutarPurgaDefinitiva" onclick="ejecutarPurgaBaseDeDatos()" disabled style="flex: 1.5; background: #dc2626; border-color: #ef4444; opacity: 0.5;">
+                    <i class="fa-solid fa-trash-can"></i> Ejecutar Purga Real
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Script de Seguridad, Validación Estricta y Operaciones -->
@@ -638,6 +1038,8 @@
                 let html = '';
                 pendientes.forEach(d => {
                     const fecha = d.fecha_registro ? new Date(d.fecha_registro).toLocaleString('es-VE') : 'Reciente';
+                    const safeId = String(d.id).replace(/'/g, "\\'");
+                    const safeUsuario = String(d.usuario || '').replace(/'/g, "\\'");
                     html += `
                         <tr>
                             <td style="color: #94a3b8; font-size: 0.82rem;"><i class="fa-regular fa-clock"></i> ${fecha}</td>
@@ -646,10 +1048,10 @@
                             <td><a href="mailto:${d.correo}" style="color: #93c5fd; text-decoration: underline;">${d.correo}</a></td>
                             <td style="font-size: 0.8rem; color: #cbd5e1;">${d.pregunta_seguridad || 'Pregunta de seguridad'}</td>
                             <td style="text-align: center; white-space: nowrap;">
-                                <button type="button" class="btn-action-admin btn-approve" onclick="aprobarDocente(${d.id}, '${d.usuario}')" title="Aprobar solicitud y permitir acceso">
+                                <button type="button" class="btn-action-admin btn-approve" onclick="aprobarDocente('${safeId}', '${safeUsuario}')" title="Aprobar solicitud y permitir acceso">
                                     <i class="fa-solid fa-check"></i> Aprobar
                                 </button>
-                                <button type="button" class="btn-action-admin btn-reject" onclick="rechazarDocente(${d.id}, '${d.usuario}')" title="Rechazar solicitud y removerla">
+                                <button type="button" class="btn-action-admin btn-reject" onclick="rechazarDocente('${safeId}', '${safeUsuario}')" title="Rechazar solicitud y removerla">
                                     <i class="fa-solid fa-xmark"></i> Rechazar
                                 </button>
                             </td>
@@ -669,9 +1071,13 @@
             }
 
             try {
-                const res = await fetch(`/api/admin/docentes/${id}/aprobar`, {
+                const res = await fetch(`/api/admin/docentes/${encodeURIComponent(id)}/aprobar`, {
                     method: 'POST',
-                    headers: getAuthHeader()
+                    headers: {
+                        ...getAuthHeader(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ usuario })
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
@@ -691,9 +1097,13 @@
             }
 
             try {
-                const res = await fetch(`/api/admin/docentes/${id}/rechazar`, {
+                const res = await fetch(`/api/admin/docentes/${encodeURIComponent(id)}/rechazar`, {
                     method: 'POST',
-                    headers: getAuthHeader()
+                    headers: {
+                        ...getAuthHeader(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ usuario })
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
@@ -707,6 +1117,28 @@
             }
         }
 
+        let docentesGlobales = [];
+
+        async function cargarTodoSuperroot() {
+            const icon = document.getElementById('iconRefreshAdmin');
+            if (icon) icon.classList.add('fa-spin');
+
+            try {
+                await Promise.all([
+                    cargarSolicitudesPendientes(),
+                    cargarDirectorioDocentes(),
+                    cargarControlCuposYAdmision(),
+                    cargarEstadisticasRecaudos(),
+                    cargarHistorialLogs(),
+                    cargarContadorPreinscripciones()
+                ]);
+            } catch (e) {
+                console.error('[Error carga Superroot]', e);
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        }
+
         async function cargarDirectorioDocentes() {
             const tbody = document.getElementById('tablaTodosDocentesBody');
             try {
@@ -714,43 +1146,586 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error);
 
-                const docentes = data.data || [];
-                const aprobados = docentes.filter(d => d.is_approved === 1);
+                docentesGlobales = data.data || [];
+                const aprobados = docentesGlobales.filter(d => d.is_approved === 1);
                 document.getElementById('kpiAprobadosCount').textContent = aprobados.length;
 
-                let html = '';
-                docentes.forEach(d => {
-                    const statusPill = d.is_approved === 1
-                        ? '<span class="status-pill status-approved"><i class="fa-solid fa-check"></i> Aprobado</span>'
-                        : '<span class="status-pill status-pending"><i class="fa-solid fa-clock"></i> Pendiente</span>';
-                    
-                    const fechaReg = d.fecha_registro ? new Date(d.fecha_registro).toLocaleDateString('es-VE') : 'N/D';
-                    const aprobadoPor = d.aprobado_por || 'Superroot';
-
-                    html += `
-                        <tr>
-                            <td>#${d.id}</td>
-                            <td><strong style="color: #ffffff;">${d.nombres} ${d.apellidos}</strong></td>
-                            <td><code>@${d.usuario}</code></td>
-                            <td>${d.correo}</td>
-                            <td>${statusPill}</td>
-                            <td style="color: #94a3b8; font-size: 0.82rem;">${fechaReg}</td>
-                            <td style="color: #cbd5e1; font-size: 0.82rem;">${d.is_approved === 1 ? aprobadoPor : 'En espera'}</td>
-                            <td style="text-align: center;">
-                                ${d.usuario === 'manteca' 
-                                    ? '<span style="font-size: 0.75rem; color: #a1a1aa; font-style: italic;">Cuenta Base</span>' 
-                                    : (d.is_approved === 0 
-                                        ? `<button type="button" class="btn-action-admin btn-approve" onclick="aprobarDocente(${d.id}, '${d.usuario}')"><i class="fa-solid fa-check"></i> Aprobar</button>` 
-                                        : `<button type="button" class="btn-action-admin btn-reject" onclick="rechazarDocente(${d.id}, '${d.usuario}')"><i class="fa-solid fa-trash-can"></i> Revocar</button>`
-                                      )
-                                }
-                            </td>
-                        </tr>
-                    `;
-                });
-                tbody.innerHTML = html;
+                filtrarDirectorioDocente();
             } catch (err) {
                 console.error('[Error Cargar Docentes]', err);
+                if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="color: #ef4444; text-align: center; padding: 1.5rem;">Error al cargar el directorio docente.</td></tr>`;
+            }
+        }
+
+        function filtrarDirectorioDocente() {
+            const texto = (document.getElementById('filtroDocenteTexto')?.value || '').trim().toLowerCase();
+            const estado = document.getElementById('filtroDocenteEstadoSelect')?.value || 'TODOS';
+
+            const filtrados = docentesGlobales.filter(d => {
+                if (!d) return false;
+                const matchTexto = !texto ||
+                    (d.nombres && d.nombres.toLowerCase().includes(texto)) ||
+                    (d.apellidos && d.apellidos.toLowerCase().includes(texto)) ||
+                    (d.usuario && d.usuario.toLowerCase().includes(texto)) ||
+                    (d.correo && d.correo.toLowerCase().includes(texto));
+
+                let matchEstado = true;
+                if (estado !== 'TODOS') {
+                    matchEstado = (String(d.is_approved) === estado);
+                }
+
+                return matchTexto && matchEstado;
+            });
+
+            renderizarTablaTodosDocentes(filtrados);
+        }
+
+        function renderizarTablaTodosDocentes(docentes) {
+            const tbody = document.getElementById('tablaTodosDocentesBody');
+            if (!tbody) return;
+
+            if (docentes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 2.5rem;">No se encontraron docentes con los criterios de búsqueda aplicados.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            docentes.forEach(d => {
+                let statusPill = '';
+                if (d.is_approved === 1) {
+                    statusPill = '<span class="status-pill status-approved"><i class="fa-solid fa-check"></i> Aprobado</span>';
+                } else if (d.is_approved === 2) {
+                    statusPill = '<span class="status-pill status-suspended"><i class="fa-solid fa-user-slash"></i> Suspendido</span>';
+                } else if (d.is_approved === 0) {
+                    statusPill = '<span class="status-pill status-pending"><i class="fa-solid fa-clock"></i> Pendiente</span>';
+                } else {
+                    statusPill = '<span class="status-pill" style="background: #450a0a; color: #fecaca; border: 1px solid #ef4444;"><i class="fa-solid fa-ban"></i> Rechazado</span>';
+                }
+
+                const fechaReg = d.fecha_registro ? new Date(d.fecha_registro).toLocaleDateString('es-VE') : 'N/D';
+                const aprobadoPor = d.aprobado_por || 'Superroot';
+
+                const safeId = String(d.id).replace(/'/g, "\\'");
+                const safeUsuario = String(d.usuario || '').replace(/'/g, "\\'");
+                const safeNombreCompleto = String(`${d.nombres} ${d.apellidos}`).replace(/'/g, "\\'");
+
+                let botonesGestion = '';
+                if (d.usuario === 'manteca' || d.id === 1) {
+                    botonesGestion = `<span style="font-size: 0.75rem; color: #a1a1aa; background: #27272a; padding: 4px 8px; border-radius: 4px; border: 1px solid #3f3f46; font-style: italic;"><i class="fa-solid fa-shield"></i> Cuenta Base (Protegida)</span>`;
+                } else if (d.is_approved === 0) {
+                    botonesGestion = `
+                        <div style="display: inline-flex; gap: 0.35rem;">
+                            <button type="button" class="btn-action-admin btn-approve" onclick="aprobarDocente('${safeId}', '${safeUsuario}')" title="Aprobar solicitud">
+                                <i class="fa-solid fa-check"></i> Aprobar
+                            </button>
+                            <button type="button" class="btn-action-admin btn-reject" onclick="rechazarDocente('${safeId}', '${safeUsuario}')" title="Rechazar solicitud">
+                                <i class="fa-solid fa-xmark"></i> Rechazar
+                            </button>
+                        </div>
+                    `;
+                } else if (d.is_approved === 1) {
+                    botonesGestion = `
+                        <div style="display: inline-flex; gap: 0.35rem; flex-wrap: wrap; justify-content: center;">
+                            <button type="button" class="btn-action-admin btn-warning-action" onclick="toggleSuspenderDocente('${safeId}', '${safeUsuario}', 2)" title="Suspender acceso sin borrar historial">
+                                <i class="fa-solid fa-user-slash"></i> Suspender
+                            </button>
+                            <button type="button" class="btn-action-admin btn-info-action" onclick="abrirModalResetClave('${safeId}', '${safeUsuario}', '${safeNombreCompleto}')" title="Asignar nueva contraseña segura">
+                                <i class="fa-solid fa-key"></i> Reset Clave
+                            </button>
+                            <button type="button" class="btn-action-admin btn-danger-action" onclick="eliminarDocenteDefinitivo('${safeId}', '${safeUsuario}')" title="Eliminar definitivamente de MySQL">
+                                <i class="fa-solid fa-trash-can"></i> Eliminar
+                            </button>
+                        </div>
+                    `;
+                } else if (d.is_approved === 2) {
+                    botonesGestion = `
+                        <div style="display: inline-flex; gap: 0.35rem; flex-wrap: wrap; justify-content: center;">
+                            <button type="button" class="btn-action-admin btn-success-action" onclick="toggleSuspenderDocente('${safeId}', '${safeUsuario}', 1)" title="Reactivar acceso al docente">
+                                <i class="fa-solid fa-user-check"></i> Reactivar
+                            </button>
+                            <button type="button" class="btn-action-admin btn-info-action" onclick="abrirModalResetClave('${safeId}', '${safeUsuario}', '${safeNombreCompleto}')" title="Asignar nueva contraseña segura">
+                                <i class="fa-solid fa-key"></i> Reset Clave
+                            </button>
+                            <button type="button" class="btn-action-admin btn-danger-action" onclick="eliminarDocenteDefinitivo('${safeId}', '${safeUsuario}')" title="Eliminar definitivamente de MySQL">
+                                <i class="fa-solid fa-trash-can"></i> Eliminar
+                            </button>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <tr>
+                        <td>#${d.id}</td>
+                        <td><strong style="color: #ffffff;">${d.nombres} ${d.apellidos}</strong></td>
+                        <td><code>@${d.usuario}</code></td>
+                        <td><a href="mailto:${d.correo}" style="color: #93c5fd; text-decoration: underline;">${d.correo}</a></td>
+                        <td>${statusPill}</td>
+                        <td style="color: #94a3b8; font-size: 0.82rem;">${fechaReg}</td>
+                        <td style="color: #cbd5e1; font-size: 0.82rem;">${d.is_approved === 1 ? aprobadoPor : (d.is_approved === 2 ? '<span style="color:#f87171;">Suspendido</span>' : 'En espera')}</td>
+                        <td style="text-align: center; white-space: nowrap;">
+                            ${botonesGestion}
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        async function toggleSuspenderDocente(id, usuario, nuevoEstado) {
+            const accionTxt = nuevoEstado === 2 ? 'SUSPENDER' : 'REACTIVAR';
+            const advertencia = nuevoEstado === 2
+                ? `¿Confirma que desea SUSPENDER al docente @${usuario}? No podrá acceder al sistema pero se conservará todo su historial.`
+                : `¿Confirma que desea REACTIVAR al docente @${usuario}? Podrá volver a iniciar sesión de inmediato.`;
+
+            if (!confirm(advertencia)) return;
+
+            try {
+                const res = await fetch(`/api/admin/docentes/${encodeURIComponent(id)}/suspender`, {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeader(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ usuario, nuevoEstado })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(`¡Acceso del docente @${usuario} actualizado (${accionTxt}) satisfactoriamente!`);
+                    cargarTodoSuperroot();
+                } else {
+                    alert(`Error: ${data.error || 'No se pudo actualizar el estado del docente.'}`);
+                }
+            } catch (err) {
+                alert('Error al comunicar con el servidor.');
+            }
+        }
+
+        function abrirModalResetClave(id, usuario, nombre) {
+            document.getElementById('resetDocenteId').value = id;
+            document.getElementById('resetDocenteUsuarioHidden').value = usuario;
+            document.getElementById('resetDocenteNombre').textContent = nombre;
+            document.getElementById('resetDocenteUsuario').textContent = `@${usuario}`;
+
+            const inputPass = document.getElementById('inputResetPassword');
+            inputPass.value = '';
+            inputPass.type = 'password';
+
+            const errBox = document.getElementById('resetAlertError');
+            errBox.style.display = 'none';
+
+            document.getElementById('modalResetClaveOverlay').style.display = 'flex';
+            setTimeout(() => inputPass.focus(), 100);
+        }
+
+        function cerrarModalResetClave() {
+            document.getElementById('modalResetClaveOverlay').style.display = 'none';
+        }
+
+        function toggleVerResetPass() {
+            const input = document.getElementById('inputResetPassword');
+            const icon = document.getElementById('iconVerResetPass');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        function validarResetPassEnVivo(val) {
+            const help = document.getElementById('resetPassHelp');
+            const errBox = document.getElementById('resetAlertError');
+            errBox.style.display = 'none';
+
+            const tieneLongitud = val.length >= 8;
+            const tieneMayus = /[A-Z]/.test(val);
+            const tieneMinus = /[a-z]/.test(val);
+            const tieneNum = /[0-9]/.test(val);
+            const tieneEsp = /[^A-Za-z0-9]/.test(val);
+
+            if (tieneLongitud && tieneMayus && tieneMinus && tieneNum && tieneEsp) {
+                help.innerHTML = '<span style="color: #22c55e;"><i class="fa-solid fa-check"></i> Contraseña segura y válida según los parámetros institucionales.</span>';
+            } else {
+                help.innerHTML = '<span style="color: #f59e0b;"><i class="fa-solid fa-circle-info"></i> Requiere: Mín. 8 caracteres, mayúscula, minúscula, número y símbolo especial.</span>';
+            }
+        }
+
+        async function ejecutarResetClaveDocente() {
+            const id = document.getElementById('resetDocenteId').value;
+            const usuario = document.getElementById('resetDocenteUsuarioHidden').value;
+            const nuevaPassword = document.getElementById('inputResetPassword').value;
+            const errBox = document.getElementById('resetAlertError');
+            const btn = document.getElementById('btnConfirmarResetClave');
+
+            errBox.style.display = 'none';
+
+            if (!nuevaPassword) {
+                errBox.textContent = 'Debe ingresar una nueva contraseña.';
+                errBox.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+            try {
+                const res = await fetch(`/api/admin/docentes/${encodeURIComponent(id)}/reset-password`, {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeader(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nueva_password: nuevaPassword, usuario })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    cerrarModalResetClave();
+                    alert(`¡Contraseña para el docente @${usuario} actualizada con éxito! La clave se encuentra encriptada en la base de datos.`);
+                    cargarHistorialLogs();
+                } else {
+                    errBox.textContent = data.error || 'Error al actualizar contraseña.';
+                    errBox.style.display = 'block';
+                }
+            } catch (e) {
+                errBox.textContent = 'Error de conexión con el servidor.';
+                errBox.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar Nueva Clave';
+            }
+        }
+
+        async function eliminarDocenteDefinitivo(id, usuario) {
+            const advertencia = `⚠️ ¡ADVERTENCIA CRÍTICA!\n\n¿Está totalmente seguro de ELIMINAR DEFINITIVAMENTE la cuenta del docente @${usuario} de la base de datos MySQL?\n\nEsta acción es irreversible y removerá la cuenta por completo.`;
+            if (!confirm(advertencia)) return;
+
+            try {
+                const res = await fetch(`/api/admin/docentes/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        ...getAuthHeader(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ usuario })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(`¡Cuenta docente @${usuario} eliminada definitivamente de la base de datos MySQL!`);
+                    cargarTodoSuperroot();
+                } else {
+                    alert(`Error: ${data.error || 'No se pudo eliminar la cuenta docente.'}`);
+                }
+            } catch (err) {
+                alert('Error al comunicar con el servidor.');
+            }
+        }
+
+        // ==============================================================================
+        // CONTROL DE CUPOS POR GRADO Y ESTADO GLOBAL DE ADMISIÓN
+        // ==============================================================================
+        async function cargarControlCuposYAdmision() {
+            try {
+                const res = await fetch('/api/proceso-admision/estado');
+                const data = await res.json();
+                if (!res.ok || !data.success) return;
+
+                // 1. Actualizar interruptor maestro
+                const sw = document.getElementById('switchProcesoAdmision');
+                const lbl = document.getElementById('labelEstadoProceso');
+                if (sw) sw.checked = Boolean(data.procesoAbierto);
+                if (lbl) {
+                    if (data.procesoAbierto) {
+                        lbl.textContent = 'ABIERTO';
+                        lbl.style.color = '#22c55e';
+                    } else {
+                        lbl.textContent = 'CERRADO';
+                        lbl.style.color = '#ef4444';
+                    }
+                }
+
+                // 2. Renderizar tarjetas de cupos por grado (1° a 6°)
+                const contenedor = document.getElementById('contenedorTarjetasCupos');
+                if (!contenedor) return;
+
+                const nombresGrados = {
+                    '1': '1er Grado de Primaria',
+                    '2': '2do Grado de Primaria',
+                    '3': '3er Grado de Primaria',
+                    '4': '4to Grado de Primaria',
+                    '5': '5to Grado de Primaria',
+                    '6': '6to Grado de Primaria'
+                };
+
+                let html = '';
+                for (let i = 1; i <= 6; i++) {
+                    const gid = String(i);
+                    const limite = (data.cuposPorGrado && data.cuposPorGrado[gid]) || 35;
+                    const ocupados = (data.cuposOcupados && data.cuposOcupados[gid]) || 0;
+                    const porcentaje = Math.min(100, Math.round((ocupados / limite) * 100));
+                    const disponibles = Math.max(0, limite - ocupados);
+
+                    let barColor = '#22c55e';
+                    let statusLabel = `<span style="color: #86efac; font-size: 0.78rem;"><i class="fa-solid fa-circle-check"></i> Disponible (${disponibles} cupos libres)</span>`;
+                    if (porcentaje >= 90) {
+                        barColor = '#ef4444';
+                        statusLabel = `<span style="color: #fca5a5; font-size: 0.78rem;"><i class="fa-solid fa-triangle-exclamation"></i> Crítico / Casi Lleno</span>`;
+                    } else if (porcentaje >= 70) {
+                        barColor = '#f59e0b';
+                        statusLabel = `<span style="color: #fde68a; font-size: 0.78rem;"><i class="fa-solid fa-chart-line"></i> Alta demanda (${disponibles} libres)</span>`;
+                    }
+
+                    html += `
+                        <div class="capacity-card">
+                            <div>
+                                <div class="capacity-card-header">
+                                    <div>
+                                        <h4 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin: 0 0 2px 0;">
+                                            <i class="fa-solid fa-graduation-cap" style="color: #3b82f6; margin-right: 4px;"></i> ${nombresGrados[gid]}
+                                        </h4>
+                                        <div style="font-size: 0.75rem; color: #94a3b8;">Nivel Primario Oficial</div>
+                                    </div>
+                                    <span style="font-size: 1.15rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: ${barColor};">
+                                        ${porcentaje}%
+                                    </span>
+                                </div>
+
+                                <div class="capacity-progress-bg">
+                                    <div class="capacity-progress-fill" style="width: ${porcentaje}%; background: ${barColor};"></div>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; font-size: 0.84rem;">
+                                    <span style="color: #cbd5e1;">Ocupados: <strong style="color: #ffffff;">${ocupados}</strong> / ${limite}</span>
+                                    <span>${statusLabel}</span>
+                                </div>
+                            </div>
+
+                            <div style="border-top: 1px solid #27272a; padding-top: 0.85rem; display: flex; justify-content: flex-end;">
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="ajustarCupoGrado(${i}, ${limite})" style="font-size: 0.78rem;">
+                                    <i class="fa-solid fa-pen-to-square"></i> Ajustar Capacidad
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                contenedor.innerHTML = html;
+            } catch (err) {
+                console.error('[Error Cargar Cupos]', err);
+            }
+        }
+
+        async function toggleEstadoProcesoAdmision(procesoAbierto) {
+            const accionTxt = procesoAbierto ? 'ABRIR' : 'CERRAR Y BLOQUEAR';
+            const advertencia = procesoAbierto
+                ? '¿Desea ABRIR el proceso general de preinscripciones escolares 2026-2027 para representantes?'
+                : '¿Desea CERRAR Y BLOQUEAR el proceso de preinscripción? Los representantes no podrán asentar nuevas solicitudes.';
+
+            if (!confirm(advertencia)) {
+                // Revertir switch
+                document.getElementById('switchProcesoAdmision').checked = !procesoAbierto;
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/proceso-admision/toggle', {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeader(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ procesoAbierto })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(data.message || 'Estado del proceso actualizado exitosamente.');
+                    cargarControlCuposYAdmision();
+                    cargarHistorialLogs();
+                } else {
+                    alert(`Error: ${data.error || 'No se pudo alternar el proceso.'}`);
+                    cargarControlCuposYAdmision();
+                }
+            } catch (err) {
+                alert('Error al comunicar con el servidor.');
+                cargarControlCuposYAdmision();
+            }
+        }
+
+        async function ajustarCupoGrado(gradoId, cupoActual) {
+            const nuevo = prompt(`Ingrese la nueva capacidad máxima de cupos para el ${gradoId}° Grado de Primaria:`, cupoActual);
+            if (nuevo === null) return;
+
+            const num = parseInt(nuevo.trim(), 10);
+            if (isNaN(num) || num <= 0 || num > 500) {
+                alert('Debe ingresar un número entero válido entre 1 y 500.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/proceso-admision/cupos', {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeader(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ gradoId, nuevoLimite: num })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(data.message || 'Capacidad de cupos actualizada exitosamente.');
+                    cargarControlCuposYAdmision();
+                    cargarHistorialLogs();
+                } else {
+                    alert(`Error: ${data.error || 'No se pudo actualizar la capacidad.'}`);
+                }
+            } catch (err) {
+                alert('Error al comunicar con el servidor.');
+            }
+        }
+
+        // ==============================================================================
+        // CENTRO DE RESPALDO Y ESTADÍSTICAS RÁPIDAS
+        // ==============================================================================
+        async function cargarEstadisticasRecaudos() {
+            try {
+                const res = await fetch('/api/proceso-admision/estado');
+                const data = await res.json();
+                if (!res.ok || !data.success) return;
+
+                const desglose = data.desgloseEstados || { total: 0, aprobadas: 0, en_revision: 0, incompletas: 0 };
+                const total = desglose.total || 0;
+
+                const badgeTotal = document.getElementById('badgeTotalExpedientesEstadisticas');
+                if (badgeTotal) badgeTotal.textContent = `Total: ${total} expedientes`;
+
+                const pctAprob = total > 0 ? Math.round((desglose.aprobadas / total) * 100) : 0;
+                const pctRev = total > 0 ? Math.round((desglose.en_revision / total) * 100) : 0;
+                const pctInc = total > 0 ? Math.round((desglose.incompletas / total) * 100) : 0;
+
+                document.getElementById('statAprobadosTxt').textContent = `${desglose.aprobadas} (${pctAprob}%)`;
+                document.getElementById('statAprobadosBar').style.width = `${pctAprob}%`;
+
+                document.getElementById('statRevisionTxt').textContent = `${desglose.en_revision} (${pctRev}%)`;
+                document.getElementById('statRevisionBar').style.width = `${pctRev}%`;
+
+                document.getElementById('statIncompletosTxt').textContent = `${desglose.incompletas} (${pctInc}%)`;
+                document.getElementById('statIncompletosBar').style.width = `${pctInc}%`;
+            } catch (err) {
+                console.error('[Error Cargar Estadísticas]', err);
+            }
+        }
+
+        async function descargarRespaldoJSON() {
+            try {
+                const res = await fetch('/api/admin/backup', { headers: getAuthHeader() });
+                if (!res.ok) throw new Error('Error al generar respaldo en el servidor.');
+
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Backup_Institucional_FeYAlegria_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                cargarHistorialLogs();
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        async function descargarRespaldoCSV() {
+            try {
+                const res = await fetch('/api/admin/backup/csv', { headers: getAuthHeader() });
+                if (!res.ok) throw new Error('Error al generar archivo CSV en el servidor.');
+
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Preinscripciones_FeYAlegria_${new Date().toISOString().slice(0, 10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                cargarHistorialLogs();
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        // ==============================================================================
+        // VACIADO DE RAÍZ EN MYSQL (PURGA REAL DE PREINSCRIPCIONES)
+        // ==============================================================================
+        function abrirModalConfirmarPurga() {
+            const inp = document.getElementById('inputPalabraPurga');
+            inp.value = '';
+            const btn = document.getElementById('btnEjecutarPurgaDefinitiva');
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+
+            document.getElementById('modalConfirmarPurgaOverlay').style.display = 'flex';
+            setTimeout(() => inp.focus(), 100);
+        }
+
+        function cerrarModalConfirmarPurga() {
+            document.getElementById('modalConfirmarPurgaOverlay').style.display = 'none';
+        }
+
+        function comprobarPalabraPurga(val) {
+            const btn = document.getElementById('btnEjecutarPurgaDefinitiva');
+            if (val.trim().toUpperCase() === 'PURGAR') {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6)';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.boxShadow = 'none';
+            }
+        }
+
+        async function ejecutarPurgaBaseDeDatos() {
+            const btn = document.getElementById('btnEjecutarPurgaDefinitiva');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ejecutando Purga Profunda...';
+
+            try {
+                const res = await fetch('/api/preinscripciones/purge', {
+                    method: 'DELETE',
+                    headers: {
+                        ...getAuthHeader(),
+                        'Content-Type': 'application/json',
+                        'x-user': 'superroot'
+                    },
+                    body: JSON.stringify({ usuario: 'superroot' })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    // Limpieza rigurosa de cualquier caché en el navegador
+                    localStorage.removeItem('fya_preinscripciones_db');
+                    localStorage.setItem('fya_preinscripciones_db', JSON.stringify([]));
+
+                    cerrarModalConfirmarPurga();
+                    alert('¡Purga profunda de raíz completada con éxito!\n\nTodas las tablas de preinscripciones en MySQL han sido reseteadas a 0 registros con contadores AUTO_INCREMENT en 1.\nLas cuentas de docentes han sido preservadas.');
+                    cargarTodoSuperroot();
+                } else {
+                    alert(`Error en la purga: ${data.error || 'No se pudo completar la operación en MySQL.'}`);
+                }
+            } catch (err) {
+                alert('Error al comunicar con el servidor backend durante la purga.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Ejecutar Purga Real';
             }
         }
 
@@ -784,6 +1759,15 @@
                     'RECHAZO_DOCENTE': '#ef4444',
                     'REGISTRO_DOCENTE': '#f59e0b',
                     'VACIADO_TABLAS': '#dc2626',
+                    'PURGA_TOTAL_BD': '#ef4444',
+                    'DOCENTE_SUSPENDIDO': '#f59e0b',
+                    'DOCENTE_REACTIVADO': '#22c55e',
+                    'RESET_PASSWORD_ADMIN': '#3b82f6',
+                    'DOCENTE_ELIMINADO': '#dc2626',
+                    'PROCESO_ADMISIÓN_ABIERTO': '#22c55e',
+                    'PROCESO_ADMISIÓN_CERRADO': '#ef4444',
+                    'AJUSTE_CAPACIDAD_CUPOS': '#8b5cf6',
+                    'BACKUP_DESCARGADO': '#6366f1',
                     'CAMBIO_ESTADO_ALUMNO': '#3b82f6',
                     'NUEVA_PREINSCRIPCION': '#10b981',
                     'RECUPERACION_CLAVE': '#a855f7',
@@ -864,6 +1848,8 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('viewPendientes').style.display = 'none';
             document.getElementById('viewDocentes').style.display = 'none';
+            document.getElementById('viewCupos').style.display = 'none';
+            document.getElementById('viewMantenimiento').style.display = 'none';
             document.getElementById('viewLogs').style.display = 'none';
 
             if (tabName === 'pendientes') {
@@ -872,9 +1858,18 @@
             } else if (tabName === 'docentes') {
                 document.getElementById('tabBtnDocentes').classList.add('active');
                 document.getElementById('viewDocentes').style.display = 'block';
+            } else if (tabName === 'cupos') {
+                document.getElementById('tabBtnCupos').classList.add('active');
+                document.getElementById('viewCupos').style.display = 'block';
+                cargarControlCuposYAdmision();
+            } else if (tabName === 'mantenimiento') {
+                document.getElementById('tabBtnMantenimiento').classList.add('active');
+                document.getElementById('viewMantenimiento').style.display = 'block';
+                cargarEstadisticasRecaudos();
             } else if (tabName === 'logs') {
                 document.getElementById('tabBtnLogs').classList.add('active');
                 document.getElementById('viewLogs').style.display = 'block';
+                cargarHistorialLogs();
             }
         }
 

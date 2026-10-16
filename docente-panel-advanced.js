@@ -308,7 +308,7 @@
 
             try {
                 const usuarioActual = localStorage.getItem('fya_docente_user') || 'manteca';
-                const res = await fetch('/api/preinscripciones', {
+                const res = await fetch('/api/preinscripciones/purge', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
