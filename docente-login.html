@@ -22,12 +22,12 @@
             background: radial-gradient(circle at 50% 20%, rgba(217, 4, 41, 0.08) 0%, transparent 60%);
         }
         .login-card {
-            max-width: 460px;
+            max-width: 480px;
             width: 100%;
             background: var(--bg-surface);
             border: 1.5px solid var(--border-color);
             border-radius: var(--radius-xl);
-            padding: 2.25rem;
+            padding: 2.5rem;
             box-shadow: var(--shadow-lg);
             text-align: center;
             position: relative;
@@ -56,7 +56,7 @@
             margin-bottom: 1rem;
         }
         .login-card-title {
-            font-size: 1.4rem;
+            font-size: 1.45rem;
             font-weight: 800;
             font-family: 'Outfit', sans-serif;
             color: var(--text-primary);
@@ -65,24 +65,26 @@
         .login-card-subtitle {
             font-size: 0.88rem;
             color: var(--text-secondary);
-            margin-bottom: 1.75rem;
+            margin-bottom: 1.5rem;
             line-height: 1.45;
         }
         .login-hint-box {
             background: var(--fya-red-bg);
             border: 1px dashed var(--fya-red-border);
             border-radius: var(--radius-sm);
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 1rem;
             margin-bottom: 1.5rem;
             font-size: 0.82rem;
             color: var(--fya-red-dark);
             text-align: left;
+            line-height: 1.45;
         }
         .login-hint-box code {
             font-weight: 700;
-            background: rgba(255,255,255,0.7);
-            padding: 0.1rem 0.35rem;
+            background: rgba(255,255,255,0.85);
+            padding: 0.15rem 0.4rem;
             border-radius: 4px;
+            color: var(--fya-red);
         }
         .login-footer-links {
             margin-top: 1.5rem;
@@ -94,6 +96,70 @@
             font-size: 0.85rem;
             flex-wrap: wrap;
             gap: 0.75rem;
+        }
+        .alert-box {
+            padding: 0.85rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.86rem;
+            margin-bottom: 1.25rem;
+            text-align: left;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            line-height: 1.45;
+        }
+        .alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+        }
+        .alert-warning {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+        }
+        .alert-success {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            color: #166534;
+        }
+        .btn-link-action {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 0.84rem;
+            color: var(--fya-red);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .btn-link-action:hover {
+            color: var(--fya-red-dark);
+        }
+        /* Modal Backdrop */
+        .modal-custom-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 1rem;
+        }
+        .modal-custom-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            max-width: 480px;
+            width: 100%;
+            padding: 2rem;
+            border: 1.5px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            position: relative;
         }
     </style>
 </head>
@@ -122,8 +188,8 @@
                 <a href="index.html" class="btn btn-secondary">
                     <i class="fa-solid fa-arrow-left"></i> Inicio
                 </a>
-                <a href="preinscripcion.html?rol=representante" class="btn btn-outline-red">
-                    <i class="fa-solid fa-user-pen"></i> Modo Representante
+                <a href="docente-registro.html" class="btn btn-outline-red">
+                    <i class="fa-solid fa-user-plus"></i> Solicitar Registro
                 </a>
             </div>
         </div>
@@ -137,47 +203,129 @@
             </div>
             <h1 class="login-card-title">Acceso Docente y Control de Estudios</h1>
             <p class="login-card-subtitle">
-                Ingresa con tus credenciales institucionales para gestionar las preinscripciones, auditar recaudos y acceder al panel de admisiones 2026-2027.
+                Ingresa con tus credenciales institucionales para auditar expedientes, validar recaudos y gestionar las preinscripciones 2026-2027.
             </p>
 
-            <!-- Credenciales de acceso autorizadas -->
+            <!-- Credenciales autorizadas del único docente base -->
             <div class="login-hint-box">
-                <i class="fa-solid fa-key"></i> <strong>Credenciales autorizadas del personal:</strong><br>
-                • Usuario: <code>admin</code> &nbsp;|&nbsp; Contraseña: <code>feyalegria2026</code>
+                <i class="fa-solid fa-key"></i> <strong>Credencial Docente Autorizada:</strong><br>
+                • Usuario: <code>manteca</code> &nbsp;|&nbsp; Contraseña: <code>manteca</code><br>
+                <span style="font-size: 0.78rem; color: var(--text-secondary); display: block; margin-top: 4px;">
+                    * Los nuevos docentes deben <a href="docente-registro.html" style="font-weight: 700; color: var(--fya-red);">solicitar su registro aquí</a> y esperar la aprobación del Administrador Maestro.
+                </span>
+            </div>
+
+            <!-- Caja de Mensaje de Error / Estado -->
+            <div id="loginDocenteAlert" style="display: none;" class="alert-box" role="alert">
+                <i id="loginDocenteAlertIcon" class="fa-solid fa-circle-xmark" style="font-size: 1.15rem; margin-top: 1px;"></i>
+                <div id="loginDocenteAlertText"></div>
             </div>
 
             <form id="formDocenteLoginDirect" novalidate>
                 <div class="form-group mb-3" style="text-align: left;">
-                    <label for="docenteUsername" class="form-label">Usuario Único del Docente *</label>
+                    <label for="docenteUsername" class="form-label">Usuario o Correo Institucional *</label>
                     <div style="position: relative;">
-                        <input type="text" id="docenteUsername" class="form-control" placeholder="Ej: admin o docente" required autocomplete="username" autofocus>
+                        <input type="text" id="docenteUsername" class="form-control" placeholder="Ej: manteca" required autocomplete="username" autofocus>
                     </div>
                 </div>
 
-                <div class="form-group mb-3" style="text-align: left;">
-                    <label for="docentePassword" class="form-label">Contraseña de Seguridad *</label>
-                    <input type="password" id="docentePassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                <div class="form-group mb-2" style="text-align: left;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="docentePassword" class="form-label" style="margin-bottom: 0;">Contraseña de Seguridad *</label>
+                        <button type="button" class="btn-link-action" onclick="abrirModalRecuperacion()">¿Olvidó su clave?</button>
+                    </div>
+                    <div style="position: relative;">
+                        <input type="password" id="docentePassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" onclick="togglePasswordLogin()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;" aria-label="Mostrar contraseña">
+                            <i id="eyeIconLogin" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <div id="loginDocenteErrorMsg" style="display: none; color: #dc2626; font-size: 0.85rem; margin-bottom: 1.25rem; padding: 0.65rem 0.85rem; background: #fef2f2; border-radius: var(--radius-sm); border: 1px solid #fecaca; text-align: left;">
-                    <i class="fa-solid fa-circle-xmark"></i> <strong>Error de autenticación:</strong> Usuario o contraseña incorrectos. Por favor verifique sus datos.
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;" id="btnIniciarSesionDocente">
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1.25rem;" id="btnIniciarSesionDocente">
                     <i class="fa-solid fa-right-to-bracket"></i> Ingresar al Panel de Docente
                 </button>
             </form>
+
+            <div style="margin-top: 1.25rem; padding: 0.75rem; background: var(--bg-page); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                ¿Aún no tienes cuenta docente? <br>
+                <a href="docente-registro.html" style="font-weight: 700; color: var(--fya-red); text-decoration: underline;">
+                    <i class="fa-solid fa-user-plus"></i> Solicitar Registro Docente
+                </a>
+            </div>
 
             <div class="login-footer-links">
                 <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">
                     <i class="fa-solid fa-house"></i> Volver a Inicio
                 </a>
                 <a href="preinscripcion.html?rol=representante" style="color: var(--fya-red); text-decoration: none; font-weight: 600;">
-                    <i class="fa-solid fa-pencil"></i> Llenar como Representante
+                    <i class="fa-solid fa-pencil"></i> Modo Representante
                 </a>
             </div>
         </div>
     </main>
+
+    <!-- Modal de Recuperación de Contraseña -->
+    <div id="modalRecuperarBackdrop" class="modal-custom-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalRecuperarTitle">
+        <div class="modal-custom-card">
+            <button type="button" onclick="cerrarModalRecuperacion()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.4rem; color: var(--text-muted); cursor: pointer;" aria-label="Cerrar">&times;</button>
+            
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="width: 52px; height: 52px; background: var(--fya-red-bg); color: var(--fya-red); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 0.5rem;">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h2 id="modalRecuperarTitle" style="font-size: 1.25rem; font-weight: 800; font-family: 'Outfit', sans-serif;">Restablecer Contraseña</h2>
+                <p style="font-size: 0.82rem; color: var(--text-secondary);">Recupere su acceso validando su pregunta secreta de seguridad.</p>
+            </div>
+
+            <div id="modalRecuperarAlert" style="display: none;" class="alert-box">
+                <i id="modalRecuperarAlertIcon" class="fa-solid fa-circle-exmark"></i>
+                <div id="modalRecuperarAlertText"></div>
+            </div>
+
+            <!-- Paso 1: Identificación de Usuario -->
+            <div id="recuperarPaso1">
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="recupIdentificador" class="form-label">Usuario o Correo Institucional *</label>
+                    <input type="text" id="recupIdentificador" class="form-control" placeholder="Ej: manteca o docente@feyalegrianuevaamerica.edu.ve">
+                </div>
+                <button type="button" class="btn btn-primary" style="width: 100%;" id="btnBuscarPregunta" onclick="buscarPreguntaSeguridad()">
+                    <i class="fa-solid fa-magnifying-glass"></i> Continuar
+                </button>
+            </div>
+
+            <!-- Paso 2: Responder Pregunta y Nueva Contraseña -->
+            <div id="recuperarPaso2" style="display: none;">
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label class="form-label">Pregunta de Seguridad Registrada:</label>
+                    <div id="displayPreguntaSeguridad" style="padding: 0.65rem 0.85rem; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">
+                    </div>
+                </div>
+
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="recupRespuesta" class="form-label">Su Respuesta Secreta *</label>
+                    <input type="text" id="recupRespuesta" class="form-control" placeholder="Escriba la respuesta">
+                </div>
+
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="recupNuevaPassword" class="form-label">Nueva Contraseña de Seguridad *</label>
+                    <input type="password" id="recupNuevaPassword" class="form-control" placeholder="Mínimo 6 caracteres">
+                </div>
+
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="recupConfirmPassword" class="form-label">Confirmar Nueva Contraseña *</label>
+                    <input type="password" id="recupConfirmPassword" class="form-control" placeholder="Repita la nueva contraseña">
+                </div>
+
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="volverPaso1Recuperacion()">Volver</button>
+                    <button type="button" class="btn btn-primary" style="flex: 2;" id="btnEjecutarReset" onclick="ejecutarRestablecerClave()">
+                        <i class="fa-solid fa-lock"></i> Actualizar Clave
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Script de autenticación y tema -->
     <script>
@@ -205,40 +353,255 @@
             });
         }
 
-        // Validación de credenciales
+        // Toggle visor de contraseña login
+        function togglePasswordLogin() {
+            const pass = document.getElementById('docentePassword');
+            const icon = document.getElementById('eyeIconLogin');
+            if (pass.type === 'password') {
+                pass.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash';
+            } else {
+                pass.type = 'password';
+                icon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        // Gestión de Alertas en Login
+        const alertDiv = document.getElementById('loginDocenteAlert');
+        const alertText = document.getElementById('loginDocenteAlertText');
+        const alertIcon = document.getElementById('loginDocenteAlertIcon');
+
+        function mostrarAlertaLogin(tipo, mensaje) {
+            alertDiv.className = `alert-box alert-${tipo}`;
+            if (tipo === 'warning') {
+                alertIcon.className = 'fa-solid fa-triangle-exclamation';
+            } else if (tipo === 'success') {
+                alertIcon.className = 'fa-solid fa-circle-check';
+            } else {
+                alertIcon.className = 'fa-solid fa-circle-xmark';
+            }
+            alertText.innerHTML = mensaje;
+            alertDiv.style.display = 'flex';
+        }
+
+        function ocultarAlertaLogin() {
+            alertDiv.style.display = 'none';
+        }
+
+        // Validación de credenciales con Backend y Fallback
         const form = document.getElementById('formDocenteLoginDirect');
         const userInp = document.getElementById('docenteUsername');
         const passInp = document.getElementById('docentePassword');
-        const errorDiv = document.getElementById('loginDocenteErrorMsg');
+        const btnSubmit = document.getElementById('btnIniciarSesionDocente');
 
-        form.addEventListener('submit', (e) => {
+        [userInp, passInp].forEach(inp => {
+            inp.addEventListener('input', ocultarAlertaLogin);
+        });
+
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            ocultarAlertaLogin();
+
             const u = userInp.value.trim().toLowerCase();
             const p = passInp.value.trim();
 
-            if ((u === 'admin' && p === 'feyalegria2026') ||
-                (u === 'docente' && p === 'feyalegria2026') ||
-                (u === 'admin' && p === 'admin123')) {
-                
-                // Guardar sesión autenticada en localStorage
-                localStorage.setItem('fya_rol', 'docente');
-                localStorage.setItem('fya_docente_auth', 'true');
-                
-                // Redirigir al panel docente en preinscripcion.html
-                window.location.href = 'preinscripcion.html?rol=docente';
-            } else {
-                errorDiv.style.display = 'block';
-                userInp.classList.add('input-invalid');
-                passInp.classList.add('input-invalid');
+            if (!u || !p) {
+                mostrarAlertaLogin('error', 'Por favor ingrese su usuario y contraseña.');
+                return;
+            }
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando credenciales...';
+
+            try {
+                const res = await fetch('/api/docente/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario: u, password: p })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    // Éxito: Guardar sesión
+                    localStorage.setItem('fya_rol', 'docente');
+                    localStorage.setItem('fya_docente_auth', 'true');
+                    localStorage.setItem('fya_docente_user', data.docente?.usuario || u);
+                    localStorage.setItem('fya_docente_nombre', `${data.docente?.nombres || ''} ${data.docente?.apellidos || ''}`.trim() || 'Docente Autorizado');
+
+                    mostrarAlertaLogin('success', '¡Autenticación exitosa! Ingresando al panel...');
+                    setTimeout(() => {
+                        window.location.href = 'preinscripcion.html?rol=docente';
+                    }, 500);
+                } else if (res.status === 403 && data.isPending) {
+                    // Estado Pendiente: Alerta explicativa requerida
+                    mostrarAlertaLogin('warning', `
+                        <div>
+                            <strong>Solicitud en Espera de Autorización:</strong><br>
+                            Su cuenta se encuentra registrada pero <strong>aún está a la espera de autorización por parte del Administrador Maestro</strong>.<br>
+                            <small style="margin-top: 4px; display: block; color: #78350f;">Tan pronto el Administrador Maestro (Superroot) apruebe su solicitud en el panel de control, podrá acceder de inmediato.</small>
+                        </div>
+                    `);
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Ingresar al Panel de Docente';
+                } else if (res.status === 403 && data.isRejected) {
+                    mostrarAlertaLogin('error', '<strong>Solicitud Denegada:</strong> Su solicitud de registro docente ha sido denegada por la Coordinación.');
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Ingresar al Panel de Docente';
+                } else {
+                    mostrarAlertaLogin('error', data.error || 'Usuario o contraseña incorrectos. Por favor verifique sus datos.');
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Ingresar al Panel de Docente';
+                }
+            } catch (err) {
+                console.warn('[Fetch Login Fallback]', err.message);
+                // Fallback de contingencia si el servidor node está fuera de línea momentáneamente
+                if (u === 'manteca' && p === 'manteca') {
+                    localStorage.setItem('fya_rol', 'docente');
+                    localStorage.setItem('fya_docente_auth', 'true');
+                    localStorage.setItem('fya_docente_user', 'manteca');
+                    localStorage.setItem('fya_docente_nombre', 'Profesor Manteca');
+                    window.location.href = 'preinscripcion.html?rol=docente';
+                } else {
+                    mostrarAlertaLogin('error', 'Usuario o contraseña incorrectos, o servidor en reinicio. Verifique sus datos.');
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Ingresar al Panel de Docente';
+                }
             }
         });
 
-        [userInp, passInp].forEach(inp => {
-            inp.addEventListener('input', () => {
-                errorDiv.style.display = 'none';
-                inp.classList.remove('input-invalid');
-            });
-        });
+        // ==============================================================================
+        // FLUJO DE RECUPERACIÓN DE CONTRASEÑA
+        // ==============================================================================
+        const modalRecup = document.getElementById('modalRecuperarBackdrop');
+        const modalAlert = document.getElementById('modalRecuperarAlert');
+        const modalAlertText = document.getElementById('modalRecuperarAlertText');
+        const modalAlertIcon = document.getElementById('modalRecuperarAlertIcon');
+        let identificadorActual = '';
+
+        function abrirModalRecuperacion() {
+            modalRecup.style.display = 'flex';
+            volverPaso1Recuperacion();
+            modalAlert.style.display = 'none';
+        }
+
+        function cerrarModalRecuperacion() {
+            modalRecup.style.display = 'none';
+        }
+
+        function mostrarModalAlerta(tipo, mensaje) {
+            modalAlert.className = `alert-box alert-${tipo}`;
+            if (tipo === 'success') {
+                modalAlertIcon.className = 'fa-solid fa-circle-check';
+            } else if (tipo === 'warning') {
+                modalAlertIcon.className = 'fa-solid fa-triangle-exclamation';
+            } else {
+                modalAlertIcon.className = 'fa-solid fa-circle-xmark';
+            }
+            modalAlertText.innerHTML = mensaje;
+            modalAlert.style.display = 'flex';
+        }
+
+        function volverPaso1Recuperacion() {
+            document.getElementById('recuperarPaso1').style.display = 'block';
+            document.getElementById('recuperarPaso2').style.display = 'none';
+            modalAlert.style.display = 'none';
+        }
+
+        async function buscarPreguntaSeguridad() {
+            const id = document.getElementById('recupIdentificador').value.trim();
+            if (!id) {
+                mostrarModalAlerta('error', 'Ingrese su nombre de usuario o correo registrado.');
+                return;
+            }
+
+            const btn = document.getElementById('btnBuscarPregunta');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Consultando...';
+            modalAlert.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/docente/recuperar/pregunta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identificador: id })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    identificadorActual = data.usuario || id;
+                    document.getElementById('displayPreguntaSeguridad').textContent = data.pregunta || '¿Pregunta secreta de seguridad?';
+                    document.getElementById('recuperarPaso1').style.display = 'none';
+                    document.getElementById('recuperarPaso2').style.display = 'block';
+                } else {
+                    mostrarModalAlerta('error', data.error || 'No se encontró ninguna cuenta docente asociada.');
+                }
+            } catch (e) {
+                mostrarModalAlerta('error', 'Error al comunicar con el servidor.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Continuar';
+            }
+        }
+
+        async function ejecutarRestablecerClave() {
+            const respuesta = document.getElementById('recupRespuesta').value.trim();
+            const nueva = document.getElementById('recupNuevaPassword').value;
+            const confirm = document.getElementById('recupConfirmPassword').value;
+
+            if (!respuesta || !nueva || !confirm) {
+                mostrarModalAlerta('error', 'Todos los campos son obligatorios.');
+                return;
+            }
+
+            if (nueva.length < 6) {
+                mostrarModalAlerta('error', 'La nueva contraseña debe tener mínimo 6 caracteres.');
+                return;
+            }
+
+            if (nueva !== confirm) {
+                mostrarModalAlerta('error', 'Las nuevas contraseñas no coinciden.');
+                return;
+            }
+
+            const btn = document.getElementById('btnEjecutarReset');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Actualizando clave...';
+            modalAlert.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/docente/recuperar/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        identificador: identificadorActual,
+                        respuesta,
+                        nueva_password: nueva
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    mostrarModalAlerta('success', '<strong>¡Contraseña actualizada exitosamente!</strong> Puede cerrar este diálogo e iniciar sesión con su nueva clave.');
+                    document.getElementById('recupRespuesta').value = '';
+                    document.getElementById('recupNuevaPassword').value = '';
+                    document.getElementById('recupConfirmPassword').value = '';
+                    setTimeout(() => {
+                        cerrarModalRecuperacion();
+                        userInp.value = identificadorActual;
+                        passInp.value = '';
+                        mostrarAlertaLogin('success', 'Contraseña restablecida con éxito. Ingrese su nueva clave.');
+                    }, 2000);
+                } else {
+                    mostrarModalAlerta('error', data.error || 'La respuesta de seguridad es incorrecta.');
+                }
+            } catch (e) {
+                mostrarModalAlerta('error', 'Error al procesar el cambio de contraseña.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Actualizar Clave';
+            }
+        }
     </script>
 </body>
 </html>

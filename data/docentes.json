@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "nombres": "Profesor",
+    "apellidos": "Manteca",
+    "usuario": "manteca",
+    "correo": "manteca@feyalegrianuevaamerica.edu.ve",
+    "password_hash": "manteca",
+    "pregunta_seguridad": "¿Color institucional favorito?",
+    "respuesta_seguridad_hash": "rojo",
+    "is_approved": 1,
+    "fecha_registro": "2026-10-16T12:00:00.000Z",
+    "fecha_aprobacion": "2026-10-16T12:00:00.000Z",
+    "aprobado_por": "superroot"
+  }
+]

@@ -2,6 +2,13 @@
  * SERVIDOR BACKEND INSTITUCIONAL (Node.js + Express + MySQL / Cloud Storage)
  * U.E. Fe y Alegría "Nueva América" - Periodo Escolar 2026 - 2027
  * Sincronización en la nube para Railway y despliegues web
+ * 
+ * Módulos Integrados:
+ * - Preinscripción Estudiantil (CRUD y persistencia Cloud/MySQL)
+ * - Registro y Autenticación Jerárquica de Docentes
+ * - Recuperación de Contraseñas mediante Pregunta de Seguridad
+ * - Panel Maestro Superroot (mantecosadmin67) con Protección de Ruta Estricta
+ * - Sistema de Auditoría y Logs en MySQL y Archivo de Persistencia
  */
 
 const express = require('express');
@@ -9,15 +16,25 @@ const mysql = require('mysql2/promise');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Directorio y archivo de persistencia cloud persistente en el servidor
+// ==============================================================================
+// RUTAS Y ARCHIVOS DE PERSISTENCIA CLOUD LOCAL
+// ==============================================================================
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'preinscripciones.json');
+const DOCENTES_FILE = path.join(DATA_DIR, 'docentes.json');
+const LOGS_FILE = path.join(DATA_DIR, 'system_logs.json');
 
-// Semilla institucional de demostración
+// Constantes de Seguridad para el Administrador Maestro (Superroot)
+const SUPERROOT_USER = process.env.SUPERROOT_USER || 'superroot';
+const SUPERROOT_PASS = process.env.SUPERROOT_PASS || 'Mantec0s#SuperRoot2026!';
+const SUPERROOT_TOKEN_SECRET = process.env.SUPERROOT_SECRET || 'fya-superroot-secret-key-2026';
+
+// Semilla institucional de demostración para preinscripciones
 const REGISTROS_DEMO = [
     {
         codigo: 'PRE-2026-0001',
@@ -149,8 +166,28 @@ const REGISTROS_DEMO = [
     }
 ];
 
-// Inicializar persistencia en archivo
-function asegurarDirectorioYArchivo() {
+// Semilla inicial del docente único autorizado por defecto ('manteca' / 'manteca')
+const DOCENTES_SEMILLA = [
+    {
+        id: 1,
+        nombres: 'Profesor',
+        apellidos: 'Manteca',
+        usuario: 'manteca',
+        correo: 'manteca@feyalegrianuevaamerica.edu.ve',
+        password_hash: 'manteca',
+        pregunta_seguridad: '¿Color institucional representativo?',
+        respuesta_seguridad_hash: 'rojo',
+        is_approved: 1,
+        fecha_registro: new Date().toISOString(),
+        fecha_aprobacion: new Date().toISOString(),
+        aprobado_por: 'superroot'
+    }
+];
+
+// ==============================================================================
+// GESTIÓN DE ARCHIVOS LOCALES PERSISTENTES
+// ==============================================================================
+function asegurarDirectorioYArchivos() {
     try {
         if (!fs.existsSync(DATA_DIR)) {
             fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -158,34 +195,183 @@ function asegurarDirectorioYArchivo() {
         if (!fs.existsSync(DATA_FILE)) {
             fs.writeFileSync(DATA_FILE, JSON.stringify(REGISTROS_DEMO, null, 2), 'utf8');
         }
+        if (!fs.existsSync(DOCENTES_FILE)) {
+            fs.writeFileSync(DOCENTES_FILE, JSON.stringify(DOCENTES_SEMILLA, null, 2), 'utf8');
+        }
+        if (!fs.existsSync(LOGS_FILE)) {
+            const logInicial = [{
+                id: 1,
+                timestamp: new Date().toISOString(),
+                usuario: 'superroot',
+                rol: 'SUPERROOT',
+                accion: 'INICIALIZACION_SISTEMA',
+                descripcion: "Sistema de Control y Preinscripción 2026-2027 iniciado. Docente predefinido 'manteca' configurado.",
+                ip_address: '127.0.0.1'
+            }];
+            fs.writeFileSync(LOGS_FILE, JSON.stringify(logInicial, null, 2), 'utf8');
+        }
     } catch (e) {
-        console.error('[Storage Local File] Error inicializando archivo:', e.message);
+        console.error('[Storage Local File] Error inicializando archivos:', e.message);
     }
 }
 
 function leerRegistrosArchivo() {
     try {
-        asegurarDirectorioYArchivo();
+        asegurarDirectorioYArchivos();
         const raw = fs.readFileSync(DATA_FILE, 'utf8');
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
-        console.error('[Storage Local File] Error leyendo archivo:', e.message);
+        console.error('[Storage Local File] Error leyendo registros:', e.message);
         return [];
     }
 }
 
 function guardarRegistrosArchivo(registros) {
     try {
-        asegurarDirectorioYArchivo();
+        asegurarDirectorioYArchivos();
         const tmpFile = `${DATA_FILE}.tmp`;
         fs.writeFileSync(tmpFile, JSON.stringify(registros, null, 2), 'utf8');
         fs.renameSync(tmpFile, DATA_FILE);
         return true;
     } catch (e) {
-        console.error('[Storage Local File] Error guardando archivo:', e.message);
+        console.error('[Storage Local File] Error guardando registros:', e.message);
         return false;
     }
+}
+
+function leerDocentesArchivo() {
+    try {
+        asegurarDirectorioYArchivos();
+        const raw = fs.readFileSync(DOCENTES_FILE, 'utf8');
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : DOCENTES_SEMILLA;
+    } catch (e) {
+        return DOCENTES_SEMILLA;
+    }
+}
+
+function guardarDocentesArchivo(docentes) {
+    try {
+        asegurarDirectorioYArchivos();
+        const tmp = `${DOCENTES_FILE}.tmp`;
+        fs.writeFileSync(tmp, JSON.stringify(docentes, null, 2), 'utf8');
+        fs.renameSync(tmp, DOCENTES_FILE);
+        return true;
+    } catch (e) {
+        console.error('[Docentes Storage] Error guardando:', e.message);
+        return false;
+    }
+}
+
+function leerLogsArchivo() {
+    try {
+        asegurarDirectorioYArchivos();
+        const raw = fs.readFileSync(LOGS_FILE, 'utf8');
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function guardarLogsArchivo(logs) {
+    try {
+        asegurarDirectorioYArchivos();
+        const tmp = `${LOGS_FILE}.tmp`;
+        fs.writeFileSync(tmp, JSON.stringify(logs, null, 2), 'utf8');
+        fs.renameSync(tmp, LOGS_FILE);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// ==============================================================================
+// FUNCIONES AUXILIARES DE CRIPTOGRAFÍA Y AUDITORÍA
+// ==============================================================================
+function hashPassword(pass) {
+    return crypto.createHash('sha256').update(String(pass)).digest('hex');
+}
+
+function verifyPassword(pass, hash) {
+    if (!hash || !pass) return false;
+    const cleanPass = String(pass);
+    return hash === cleanPass || hash === hashPassword(cleanPass);
+}
+
+function hashRespuesta(ans) {
+    return crypto.createHash('sha256').update(String(ans).trim().toLowerCase()).digest('hex');
+}
+
+function verifyRespuesta(ans, hash) {
+    if (!hash || !ans) return false;
+    const clean = String(ans).trim().toLowerCase();
+    return hash === clean || hash === hashRespuesta(clean);
+}
+
+function generarTokenSuperroot() {
+    const payload = { role: 'SUPERROOT', ts: Date.now() };
+    const str = JSON.stringify(payload);
+    const hmac = crypto.createHmac('sha256', SUPERROOT_TOKEN_SECRET).update(str).digest('hex');
+    return Buffer.from(str).toString('base64') + '.' + hmac;
+}
+
+function verificarTokenSuperroot(token) {
+    try {
+        if (!token) return false;
+        const [base64, hmac] = token.split('.');
+        if (!base64 || !hmac) return false;
+        const str = Buffer.from(base64, 'base64').toString('utf8');
+        const expectedHmac = crypto.createHmac('sha256', SUPERROOT_TOKEN_SECRET).update(str).digest('hex');
+        if (hmac !== expectedHmac) return false;
+        const payload = JSON.parse(str);
+        if (Date.now() - payload.ts > 24 * 60 * 60 * 1000) return false; // 24 horas de validez
+        return payload.role === 'SUPERROOT';
+    } catch (e) {
+        return false;
+    }
+}
+
+// Registro global de Auditoría (MySQL + Fallback Cloud Storage)
+async function registrarLog(usuario, rol, accion, descripcion, req = null) {
+    const ip = req ? (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1') : '127.0.0.1';
+    const timestamp = new Date().toISOString();
+
+    const logEntry = {
+        id: Date.now(),
+        timestamp,
+        usuario: String(usuario || 'SISTEMA'),
+        rol: String(rol || 'SISTEMA'),
+        accion: String(accion || 'OPERACION'),
+        descripcion: String(descripcion || ''),
+        ip_address: String(ip)
+    };
+
+    // 1. Guardar en archivo local
+    try {
+        const logs = leerLogsArchivo();
+        logs.unshift(logEntry);
+        if (logs.length > 500) logs.pop(); // Mantener últimos 500
+        guardarLogsArchivo(logs);
+    } catch (e) {
+        console.error('[Auditoría Archivo Error]:', e.message);
+    }
+
+    // 2. Guardar en MySQL si está conectado
+    if (isMySQLConnected && pool) {
+        try {
+            await pool.query(
+                `INSERT INTO system_logs (usuario, rol, accion, descripcion, ip_address)
+                 VALUES (?, ?, ?, ?, ?)`,
+                [logEntry.usuario, logEntry.rol, logEntry.accion, logEntry.descripcion, logEntry.ip_address]
+            );
+        } catch (sqlErr) {
+            console.error('[MySQL Auditoría Log Error]:', sqlErr.message);
+        }
+    }
+
+    console.log(`[AUDIT] [${logEntry.rol}] ${logEntry.usuario} -> ${logEntry.accion}: ${logEntry.descripcion}`);
 }
 
 // ==============================================================================
@@ -195,13 +381,9 @@ let pool = null;
 let isMySQLConnected = false;
 
 function buildMySQLConfig() {
-    // Si Railway proporciona la URL completa (MYSQL_URL o DATABASE_URL)
     const dbUrl = process.env.MYSQL_URL || process.env.DATABASE_URL;
-    if (dbUrl) {
-        return dbUrl;
-    }
+    if (dbUrl) return dbUrl;
 
-    // Configuración por variables individuales (Railway o manuales)
     return {
         host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.MYSQLPORT || process.env.DB_PORT || '3306', 10),
@@ -219,26 +401,22 @@ async function inicializarMySQL() {
         const config = buildMySQLConfig();
         pool = mysql.createPool(config);
 
-        // Prueba de conexión inmediata
         const conn = await pool.getConnection();
         console.log('[MySQL] Conexión establecida con éxito en la nube.');
         conn.release();
 
-        // Inicializar esquema de tablas si no existen
         await inicializarEsquemaMySQL(pool);
         isMySQLConnected = true;
     } catch (err) {
         isMySQLConnected = false;
         console.warn('[MySQL] No se pudo conectar a MySQL:', err.message);
-        console.info('[Storage] Utilizando almacenamiento Cloud persistente en servidor (data/preinscripciones.json).');
-        console.info('[Storage] Todos los usuarios y amigos compartirán los datos en línea.');
+        console.info('[Storage] Utilizando almacenamiento Cloud persistente en servidor.');
     }
 }
 
 async function inicializarEsquemaMySQL(poolInstance) {
     const conn = await poolInstance.getConnection();
     try {
-        // Tablas requeridas
         await conn.query(`
             CREATE TABLE IF NOT EXISTS usuarios (
                 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -358,20 +536,49 @@ async function inicializarEsquemaMySQL(poolInstance) {
             ) ENGINE=InnoDB;
         `);
 
-        // Comprobar y asegurar columna datos_completos
-        try {
-            await conn.query(`ALTER TABLE preinscripciones ADD COLUMN datos_completos LONGTEXT NULL;`);
-        } catch (e) {
-            // Ya existe la columna, ignorar
-        }
-
-        // Semillas iniciales requeridas
+        // TABLA: docentes (Sistema Jerárquico de Registro y Aprobación)
         await conn.query(`
-            INSERT IGNORE INTO usuarios (id, nombre_completo, nombre_usuario, correo, password_hash, rol, estado) VALUES
-            (1, 'Coordinación de Control de Estudios', 'admin_nueva_america', 'control@feyalegrianuevaamerica.edu.ve', 'hash', 'ADMINISTRADOR', 'ACTIVO'),
-            (2, 'Secretaría Académica', 'secretaria', 'secretaria@feyalegrianuevaamerica.edu.ve', 'hash', 'SECRETARIA', 'ACTIVO');
+            CREATE TABLE IF NOT EXISTS docentes (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                nombres VARCHAR(100) NOT NULL,
+                apellidos VARCHAR(100) NOT NULL,
+                correo VARCHAR(150) NOT NULL UNIQUE,
+                usuario VARCHAR(50) NOT NULL UNIQUE,
+                password_hash VARCHAR(255) NOT NULL,
+                pregunta_seguridad VARCHAR(255) NOT NULL,
+                respuesta_seguridad_hash VARCHAR(255) NOT NULL,
+                is_approved TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0: Pendiente, 1: Aprobado, -1: Rechazado',
+                fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+                fecha_aprobacion DATETIME NULL,
+                aprobado_por VARCHAR(100) NULL,
+                ultimo_acceso DATETIME NULL,
+                INDEX idx_doc_usuario (usuario),
+                INDEX idx_doc_approved (is_approved)
+            ) ENGINE=InnoDB;
         `);
 
+        // TABLA: system_logs (Historial de Auditoría Interna)
+        await conn.query(`
+            CREATE TABLE IF NOT EXISTS system_logs (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                usuario VARCHAR(100) NOT NULL,
+                rol VARCHAR(50) NOT NULL,
+                accion VARCHAR(80) NOT NULL,
+                descripcion TEXT NOT NULL,
+                ip_address VARCHAR(50) NULL,
+                INDEX idx_logs_timestamp (timestamp),
+                INDEX idx_logs_accion (accion)
+            ) ENGINE=InnoDB;
+        `);
+
+        // Semilla del único docente base 'manteca' / 'manteca' aprobado por defecto
+        await conn.query(`
+            INSERT IGNORE INTO docentes (id, nombres, apellidos, correo, usuario, password_hash, pregunta_seguridad, respuesta_seguridad_hash, is_approved, aprobado_por)
+            VALUES (1, 'Profesor', 'Manteca', 'manteca@feyalegrianuevaamerica.edu.ve', 'manteca', 'manteca', '¿Color institucional representativo?', 'rojo', 1, 'superroot');
+        `);
+
+        // Semillas académicas
         await conn.query(`
             INSERT IGNORE INTO periodos_academicos (id, codigo, nombre, estado) VALUES
             (1, '2026-2027', 'Año Escolar 2026 - 2027', 'PREINSCRIPCION_ABIERTA');
@@ -389,7 +596,6 @@ async function inicializarEsquemaMySQL(poolInstance) {
             `, [i, i]);
         }
 
-        // Si la tabla preinscripciones está vacía, cargar registros demo iniciales en MySQL
         const [countRows] = await conn.query(`SELECT COUNT(*) as total FROM preinscripciones;`);
         if (countRows && countRows[0].total === 0) {
             console.log('[MySQL] Insertando registros demo iniciales...');
@@ -398,7 +604,7 @@ async function inicializarEsquemaMySQL(poolInstance) {
             }
         }
 
-        console.log('[MySQL] Tablas y catálogo inicializados correctamente.');
+        console.log('[MySQL] Tablas, esquemas y usuario manteca inicializados correctamente.');
     } catch (err) {
         console.error('[MySQL] Error inicializando esquema:', err.message);
     } finally {
@@ -406,13 +612,11 @@ async function inicializarEsquemaMySQL(poolInstance) {
     }
 }
 
-// Función auxiliar para insertar/actualizar un registro en MySQL
 async function insertarRegistroEnMySQL(conn, reg) {
     const cod = reg.codigo;
     const est = reg.estado || 'EN_REVISION';
     const jsonStr = JSON.stringify(reg);
 
-    // Separar nombres y apellidos
     const alNomPartes = (reg.alumno || '').trim().split(' ');
     const alNombres = alNomPartes.slice(0, Math.ceil(alNomPartes.length / 2)).join(' ') || reg.alumno || 'Aspirante';
     const alApellidos = alNomPartes.slice(Math.ceil(alNomPartes.length / 2)).join(' ') || '';
@@ -427,7 +631,6 @@ async function insertarRegistroEnMySQL(conn, reg) {
     const repDoc = (reg.repreDoc || '').replace(/^[A-Z]+-/, '');
     const repTipo = ((reg.repreDoc || '').split('-')[0] || 'V').toUpperCase();
 
-    // 1. Alumno
     let alumnoId = null;
     const [resAl] = await conn.query(
         `INSERT INTO alumnos (tipo_documento, numero_identificacion, nombres, apellidos, fecha_nacimiento, genero, lugar_nacimiento, direccion_habitacion, tipo_sangre, alergias_condiciones, vive_con)
@@ -436,7 +639,6 @@ async function insertarRegistroEnMySQL(conn, reg) {
     );
     alumnoId = resAl.insertId;
 
-    // 2. Representante
     let repreId = null;
     const [resRep] = await conn.query(
         `INSERT INTO representantes (tipo_documento, numero_identificacion, nombres, apellidos, parentesco, telefono_principal, correo, profesion_ocupacion, direccion_habitacion)
@@ -445,7 +647,6 @@ async function insertarRegistroEnMySQL(conn, reg) {
     );
     repreId = resRep.insertId;
 
-    // 3. Instituto
     let instId = null;
     if (reg.instituto && reg.instituto !== 'Primer Ingreso') {
         const [resInst] = await conn.query(
@@ -456,7 +657,6 @@ async function insertarRegistroEnMySQL(conn, reg) {
         instId = resInst.insertId;
     }
 
-    // 4. Preinscripción
     const gradoId = parseInt(reg.gradoId || '1', 10) || 1;
     const idUser = parseInt(reg.idUser || '1', 10) || 1;
 
@@ -476,7 +676,6 @@ async function insertarRegistroEnMySQL(conn, reg) {
 
     const preId = resPre.insertId || (await conn.query(`SELECT id FROM preinscripciones WHERE codigo_solicitud = ?`, [cod]))[0][0]?.id;
 
-    // 5. Documentos
     if (preId && reg.documentos) {
         await conn.query(`DELETE FROM preinscripcion_documentos WHERE id_pre = ?`, [preId]);
         for (const [docId, docEstado] of Object.entries(reg.documentos)) {
@@ -489,17 +688,565 @@ async function insertarRegistroEnMySQL(conn, reg) {
     }
 }
 
-// Configurar Express
+// ==============================================================================
+// CONFIGURACIÓN DE MIDDLEWARE DE EXPRESS
+// ==============================================================================
 app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+
+// Middleware de autenticación y protección para rutas administrativas sensibles
+function authSuperrootMiddleware(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = (authHeader && authHeader.startsWith('Bearer ')) 
+        ? authHeader.slice(7) 
+        : (req.query.token || req.body?.token);
+
+    if (verificarTokenSuperroot(token)) {
+        req.superroot = true;
+        return next();
+    }
+    return res.status(401).json({
+        success: false,
+        error: 'Acceso no autorizado: Se requieren credenciales de Administrador Maestro (Superroot).'
+    });
+}
+
+// Servir archivos estáticos del directorio raíz
 app.use(express.static(__dirname));
 
 // ==============================================================================
-// RUTAS DE LA API (CRUD COMPLETO EN LÍNEA)
+// RUTAS DE AUTENTICACIÓN Y GESTIÓN SUPERROOT (ADMINISTRADOR MAESTRO)
 // ==============================================================================
 
-// 1. Estado y Salud del Backend
+// 1. Iniciar Sesión como Administrador Maestro (Superroot)
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { usuario, password } = req.body;
+        const u = (usuario || '').trim().toLowerCase();
+        const p = (password || '').trim();
+
+        const isUserMatch = (u === SUPERROOT_USER.toLowerCase() || u === 'mantecosadmin');
+        const isPassMatch = (p === SUPERROOT_PASS);
+
+        if (isUserMatch && isPassMatch) {
+            const token = generarTokenSuperroot();
+            await registrarLog(u, 'SUPERROOT', 'LOGIN_SUPERROOT', 'Acceso autenticado al Panel Maestro Superroot.', req);
+            return res.json({
+                success: true,
+                message: 'Autenticación de Superroot exitosa.',
+                token,
+                role: 'SUPERROOT',
+                usuario: u
+            });
+        }
+
+        await registrarLog(u || 'desconocido', 'ANONIMO', 'FALLO_LOGIN_SUPERROOT', `Intento de acceso inválido con usuario: ${u}`, req);
+        return res.status(401).json({
+            success: false,
+            error: 'Credenciales del Administrador Maestro incorrectas. Verifique usuario y contraseña de alta seguridad.'
+        });
+    } catch (e) {
+        console.error('[POST /api/admin/login]', e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// 2. Verificar Sesión de Superroot
+app.get('/api/admin/verificar-sesion', (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = (authHeader && authHeader.startsWith('Bearer ')) ? authHeader.slice(7) : req.query.token;
+
+    if (verificarTokenSuperroot(token)) {
+        return res.json({ success: true, valid: true });
+    }
+    return res.status(401).json({ success: false, valid: false, error: 'Sesión inválida o expirada.' });
+});
+
+// 3. Listar solicitudes de registro de docentes pendientes (is_approved = 0)
+app.get('/api/admin/docentes/pendientes', authSuperrootMiddleware, async (req, res) => {
+    try {
+        if (isMySQLConnected && pool) {
+            try {
+                const [rows] = await pool.query(`
+                    SELECT id, nombres, apellidos, correo, usuario, pregunta_seguridad, is_approved, fecha_registro
+                    FROM docentes
+                    WHERE is_approved = 0
+                    ORDER BY id DESC
+                `);
+                return res.json({ success: true, data: rows });
+            } catch (err) {
+                console.warn('[MySQL Docentes Pendientes Error]', err.message);
+            }
+        }
+
+        const docentes = leerDocentesArchivo();
+        const pendientes = docentes.filter(d => d.is_approved === 0);
+        res.json({ success: true, data: pendientes });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// 4. Listar todos los docentes registrados
+app.get('/api/admin/docentes', authSuperrootMiddleware, async (req, res) => {
+    try {
+        if (isMySQLConnected && pool) {
+            try {
+                const [rows] = await pool.query(`
+                    SELECT id, nombres, apellidos, correo, usuario, pregunta_seguridad, is_approved, fecha_registro, fecha_aprobacion, aprobado_por
+                    FROM docentes
+                    ORDER BY id DESC
+                `);
+                return res.json({ success: true, data: rows });
+            } catch (err) {
+                console.warn('[MySQL Docentes Error]', err.message);
+            }
+        }
+
+        const docentes = leerDocentesArchivo();
+        const seguros = docentes.map(({ password_hash, respuesta_seguridad_hash, ...rest }) => rest);
+        res.json({ success: true, data: seguros });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// 5. Aprobar solicitud de registro docente
+app.post('/api/admin/docentes/:id/aprobar', authSuperrootMiddleware, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const ahora = new Date().toISOString();
+
+        // 1. Actualizar en archivo
+        const docentes = leerDocentesArchivo();
+        const target = docentes.find(d => d.id === id);
+        if (!target) {
+            return res.status(404).json({ success: false, error: 'Docente no encontrado.' });
+        }
+
+        target.is_approved = 1;
+        target.fecha_aprobacion = ahora;
+        target.aprobado_por = 'superroot';
+        guardarDocentesArchivo(docentes);
+
+        // 2. Actualizar en MySQL
+        if (isMySQLConnected && pool) {
+            try {
+                await pool.query(
+                    `UPDATE docentes 
+                     SET is_approved = 1, fecha_aprobacion = NOW(), aprobado_por = 'superroot'
+                     WHERE id = ?`,
+                    [id]
+                );
+            } catch (err) {
+                console.error('[MySQL Aprobar Docente Error]', err.message);
+            }
+        }
+
+        await registrarLog(
+            'superroot',
+            'SUPERROOT',
+            'APROBACION_DOCENTE',
+            `El Administrador Maestro autorizó la cuenta del docente ${target.nombres} ${target.apellidos} (@${target.usuario}, ${target.correo}).`,
+            req
+        );
+
+        res.json({
+            success: true,
+            message: `Docente ${target.nombres} ${target.apellidos} aprobado exitosamente. Ya puede iniciar sesión.`
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// 6. Rechazar / Eliminar solicitud de registro docente
+app.post('/api/admin/docentes/:id/rechazar', authSuperrootMiddleware, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+
+        let docentes = leerDocentesArchivo();
+        const target = docentes.find(d => d.id === id);
+        if (!target) {
+            return res.status(404).json({ success: false, error: 'Docente no encontrado.' });
+        }
+
+        // Proteger cuenta maestra base
+        if (target.usuario === 'manteca') {
+            return res.status(400).json({ success: false, error: 'No es posible rechazar ni eliminar la cuenta base institucional.' });
+        }
+
+        // Eliminar del archivo
+        docentes = docentes.filter(d => d.id !== id);
+        guardarDocentesArchivo(docentes);
+
+        // Eliminar en MySQL
+        if (isMySQLConnected && pool) {
+            try {
+                await pool.query(`DELETE FROM docentes WHERE id = ?`, [id]);
+            } catch (err) {
+                console.error('[MySQL Rechazar Docente Error]', err.message);
+            }
+        }
+
+        await registrarLog(
+            'superroot',
+            'SUPERROOT',
+            'RECHAZO_DOCENTE',
+            `El Administrador Maestro denegó y removió la solicitud de registro del docente ${target.nombres} ${target.apellidos} (@${target.usuario}).`,
+            req
+        );
+
+        res.json({
+            success: true,
+            message: `Solicitud del docente @${target.usuario} rechazada y removida del sistema.`
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// ==============================================================================
+// RUTAS DE REGISTRO, AUTENTICACIÓN Y RECUPERACIÓN DOCENTE
+// ==============================================================================
+
+// 7. Registro de nuevo docente (solicitud en estado pendiente is_approved = 0)
+app.post('/api/docente/registro', async (req, res) => {
+    try {
+        const { nombres, apellidos, correo, usuario, password, pregunta_seguridad, respuesta_seguridad } = req.body;
+
+        if (!nombres || !apellidos || !correo || !usuario || !password || !pregunta_seguridad || !respuesta_seguridad) {
+            return res.status(400).json({
+                success: false,
+                error: 'Todos los campos son obligatorios para tramitar la solicitud de acceso docente.'
+            });
+        }
+
+        const uLimpio = usuario.trim().toLowerCase();
+        const cLimpio = correo.trim().toLowerCase();
+
+        // Verificar duplicados en archivo local
+        const docentes = leerDocentesArchivo();
+        const yaExisteLocal = docentes.some(d => d.usuario.toLowerCase() === uLimpio || d.correo.toLowerCase() === cLimpio);
+        if (yaExisteLocal) {
+            return res.status(400).json({
+                success: false,
+                error: 'Ya existe un usuario o correo registrado con esos datos. Verifique o intente recuperar su acceso.'
+            });
+        }
+
+        // Verificar duplicados en MySQL
+        if (isMySQLConnected && pool) {
+            try {
+                const [dup] = await pool.query(
+                    `SELECT id FROM docentes WHERE usuario = ? OR correo = ?`,
+                    [uLimpio, cLimpio]
+                );
+                if (dup.length > 0) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'El nombre de usuario o correo institucional ya se encuentra registrado.'
+                    });
+                }
+            } catch (e) {
+                console.warn('[MySQL Dup Check]', e.message);
+            }
+        }
+
+        const nuevoId = Date.now();
+        const passHash = hashPassword(password);
+        const ansHash = hashRespuesta(respuesta_seguridad);
+        const ahora = new Date().toISOString();
+
+        const nuevoDocente = {
+            id: nuevoId,
+            nombres: nombres.trim(),
+            apellidos: apellidos.trim(),
+            correo: cLimpio,
+            usuario: uLimpio,
+            password_hash: passHash,
+            pregunta_seguridad: pregunta_seguridad.trim(),
+            respuesta_seguridad_hash: ansHash,
+            is_approved: 0, // Pendiente de autorización
+            fecha_registro: ahora,
+            fecha_aprobacion: null,
+            aprobado_por: null
+        };
+
+        docentes.push(nuevoDocente);
+        guardarDocentesArchivo(docentes);
+
+        // Guardar en MySQL
+        if (isMySQLConnected && pool) {
+            try {
+                await pool.query(
+                    `INSERT INTO docentes (nombres, apellidos, correo, usuario, password_hash, pregunta_seguridad, respuesta_seguridad_hash, is_approved, fecha_registro)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW())`,
+                    [nuevoDocente.nombres, nuevoDocente.apellidos, nuevoDocente.correo, nuevoDocente.usuario, passHash, nuevoDocente.pregunta_seguridad, ansHash]
+                );
+            } catch (sqlErr) {
+                console.error('[MySQL Guardar Registro Docente]', sqlErr.message);
+            }
+        }
+
+        await registrarLog(
+            uLimpio,
+            'DOCENTE',
+            'REGISTRO_DOCENTE',
+            `Nueva solicitud de acceso docente radicada por ${nombres} ${apellidos} (${cLimpio}). Estado: En espera de aprobación por el Superroot.`,
+            req
+        );
+
+        res.json({
+            success: true,
+            message: 'Solicitud enviada con éxito. Su cuenta se encuentra a la espera de autorización por parte del Administrador.'
+        });
+    } catch (e) {
+        console.error('[POST /api/docente/registro]', e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// 8. Inicio de sesión del personal docente
+app.post('/api/docente/login', async (req, res) => {
+    try {
+        const { usuario, password } = req.body;
+        if (!usuario || !password) {
+            return res.status(400).json({ success: false, error: 'Debe ingresar su usuario y contraseña.' });
+        }
+
+        const uLimpio = usuario.trim().toLowerCase();
+        let docenteEncontrado = null;
+
+        // 1. Buscar en MySQL si está conectado
+        if (isMySQLConnected && pool) {
+            try {
+                const [rows] = await pool.query(
+                    `SELECT id, nombres, apellidos, correo, usuario, password_hash, is_approved FROM docentes WHERE usuario = ? OR correo = ?`,
+                    [uLimpio, uLimpio]
+                );
+                if (rows.length > 0) {
+                    docenteEncontrado = rows[0];
+                }
+            } catch (sqlErr) {
+                console.warn('[MySQL Docente Login Error]', sqlErr.message);
+            }
+        }
+
+        // 2. Si no se encontró en MySQL, buscar en archivo local
+        if (!docenteEncontrado) {
+            const docentes = leerDocentesArchivo();
+            docenteEncontrado = docentes.find(d => d.usuario.toLowerCase() === uLimpio || d.correo.toLowerCase() === uLimpio);
+        }
+
+        if (!docenteEncontrado) {
+            return res.status(401).json({ success: false, error: 'Usuario o contraseña incorrectos. Por favor verifique sus datos.' });
+        }
+
+        // Verificar contraseña
+        const passValida = verifyPassword(password, docenteEncontrado.password_hash);
+        if (!passValida) {
+            await registrarLog(uLimpio, 'DOCENTE', 'FALLO_LOGIN_DOCENTE', `Contraseña errónea para el usuario @${uLimpio}`, req);
+            return res.status(401).json({ success: false, error: 'Usuario o contraseña incorrectos. Por favor verifique sus datos.' });
+        }
+
+        // Validar Estado de Aprobación
+        if (docenteEncontrado.is_approved === 0) {
+            return res.status(403).json({
+                success: false,
+                isPending: true,
+                error: 'Su cuenta se encuentra registrada pero aún está a la espera de autorización por parte del Administrador Maestro.'
+            });
+        }
+
+        if (docenteEncontrado.is_approved === -1) {
+            return res.status(403).json({
+                success: false,
+                isRejected: true,
+                error: 'Su solicitud de acceso docente ha sido denegada por la Coordinación del plantel.'
+            });
+        }
+
+        // Acceso concedido
+        await registrarLog(
+            docenteEncontrado.usuario,
+            'DOCENTE',
+            'LOGIN_DOCENTE',
+            `Inicio de sesión exitoso del docente ${docenteEncontrado.nombres} ${docenteEncontrado.apellidos} (@${docenteEncontrado.usuario}).`,
+            req
+        );
+
+        res.json({
+            success: true,
+            message: 'Inicio de sesión exitoso.',
+            docente: {
+                id: docenteEncontrado.id,
+                nombres: docenteEncontrado.nombres,
+                apellidos: docenteEncontrado.apellidos,
+                usuario: docenteEncontrado.usuario,
+                correo: docenteEncontrado.correo
+            }
+        });
+    } catch (e) {
+        console.error('[POST /api/docente/login]', e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// 9. Consultar pregunta de seguridad para recuperación
+app.post('/api/docente/recuperar/pregunta', async (req, res) => {
+    try {
+        const { identificador } = req.body;
+        if (!identificador) {
+            return res.status(400).json({ success: false, error: 'Ingrese su nombre de usuario o correo institucional.' });
+        }
+
+        const idLimpio = identificador.trim().toLowerCase();
+        let docente = null;
+
+        if (isMySQLConnected && pool) {
+            try {
+                const [rows] = await pool.query(
+                    `SELECT id, usuario, correo, pregunta_seguridad FROM docentes WHERE usuario = ? OR correo = ?`,
+                    [idLimpio, idLimpio]
+                );
+                if (rows.length > 0) docente = rows[0];
+            } catch (e) {
+                console.warn('[MySQL Recuperar Pregunta]', e.message);
+            }
+        }
+
+        if (!docente) {
+            const docentes = leerDocentesArchivo();
+            docente = docentes.find(d => d.usuario.toLowerCase() === idLimpio || d.correo.toLowerCase() === idLimpio);
+        }
+
+        if (!docente) {
+            return res.status(404).json({ success: false, error: 'No se encontró ninguna cuenta docente asociada a estos datos.' });
+        }
+
+        res.json({
+            success: true,
+            usuario: docente.usuario,
+            correo: docente.correo,
+            pregunta: docente.pregunta_seguridad
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// 10. Restablecer contraseña mediante validación de pregunta de seguridad
+app.post('/api/docente/recuperar/reset', async (req, res) => {
+    try {
+        const { identificador, respuesta, nueva_password } = req.body;
+        if (!identificador || !respuesta || !nueva_password) {
+            return res.status(400).json({ success: false, error: 'Todos los campos son requeridos para restablecer la contraseña.' });
+        }
+
+        const idLimpio = identificador.trim().toLowerCase();
+        let docente = null;
+
+        const docentes = leerDocentesArchivo();
+        const indiceLocal = docentes.findIndex(d => d.usuario.toLowerCase() === idLimpio || d.correo.toLowerCase() === idLimpio);
+        if (indiceLocal !== -1) {
+            docente = docentes[indiceLocal];
+        }
+
+        if (isMySQLConnected && pool && !docente) {
+            try {
+                const [rows] = await pool.query(
+                    `SELECT * FROM docentes WHERE usuario = ? OR correo = ?`,
+                    [idLimpio, idLimpio]
+                );
+                if (rows.length > 0) docente = rows[0];
+            } catch (e) {
+                console.warn('[MySQL Fetch Docente Reset]', e.message);
+            }
+        }
+
+        if (!docente) {
+            return res.status(404).json({ success: false, error: 'Cuenta docente no encontrada.' });
+        }
+
+        // Verificar respuesta de seguridad
+        const respuestaCorrecta = verifyRespuesta(respuesta, docente.respuesta_seguridad_hash);
+        if (!respuestaCorrecta) {
+            return res.status(400).json({ success: false, error: 'La respuesta de seguridad es incorrecta. Por favor intente nuevamente.' });
+        }
+
+        // Actualizar contraseña
+        const nuevoHash = hashPassword(nueva_password);
+
+        if (indiceLocal !== -1) {
+            docentes[indiceLocal].password_hash = nuevoHash;
+            guardarDocentesArchivo(docentes);
+        }
+
+        if (isMySQLConnected && pool) {
+            try {
+                await pool.query(
+                    `UPDATE docentes SET password_hash = ? WHERE usuario = ? OR correo = ?`,
+                    [nuevoHash, idLimpio, idLimpio]
+                );
+            } catch (sqlErr) {
+                console.error('[MySQL Update Clave]', sqlErr.message);
+            }
+        }
+
+        await registrarLog(
+            docente.usuario,
+            'DOCENTE',
+            'RECUPERACION_CLAVE',
+            `Contraseña restablecida satisfactoriamente para la cuenta @${docente.usuario} mediante comprobación de pregunta de seguridad.`,
+            req
+        );
+
+        res.json({
+            success: true,
+            message: 'Contraseña actualizada con éxito. Ya puede iniciar sesión con su nueva clave.'
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// ==============================================================================
+// RUTAS DE AUDITORÍA Y REGISTRO DE ACTIVIDAD (LOGS)
+// ==============================================================================
+
+// 11. Obtener historial de logs del sistema
+app.get('/api/logs', async (req, res) => {
+    try {
+        const limite = parseInt(req.query.limit || '100', 10);
+
+        if (isMySQLConnected && pool) {
+            try {
+                const [rows] = await pool.query(`
+                    SELECT id, timestamp, usuario, rol, accion, descripcion, ip_address 
+                    FROM system_logs 
+                    ORDER BY id DESC 
+                    LIMIT ?
+                `, [limite]);
+                return res.json({ success: true, data: rows, source: 'mysql' });
+            } catch (err) {
+                console.warn('[MySQL Logs Error]', err.message);
+            }
+        }
+
+        const logs = leerLogsArchivo().slice(0, limite);
+        res.json({ success: true, data: logs, source: 'cloud_file' });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// ==============================================================================
+// RUTAS DE LA API DE PREINSCRIPCIONES (CRUD COMPLETO EN LÍNEA)
+// ==============================================================================
+
+// 12. Estado y Salud del Backend
 app.get('/api/status', async (req, res) => {
     let total = 0;
     if (isMySQLConnected && pool) {
@@ -523,7 +1270,7 @@ app.get('/api/status', async (req, res) => {
     });
 });
 
-// 2. Obtener todas las preinscripciones almacenadas en la nube
+// 13. Obtener todas las preinscripciones almacenadas en la nube
 app.get('/api/preinscripciones', async (req, res) => {
     try {
         if (isMySQLConnected && pool) {
@@ -547,7 +1294,6 @@ app.get('/api/preinscripciones', async (req, res) => {
                     return null;
                 }).filter(Boolean);
 
-                // Si MySQL devolvió registros, devolverlos y sincronizar archivo
                 if (registros.length > 0 || rows.length === 0) {
                     guardarRegistrosArchivo(registros);
                     return res.json({
@@ -562,7 +1308,6 @@ app.get('/api/preinscripciones', async (req, res) => {
             }
         }
 
-        // Fallback: Archivo JSON Cloud del servidor
         const registros = leerRegistrosArchivo();
         res.json({
             success: true,
@@ -576,12 +1321,10 @@ app.get('/api/preinscripciones', async (req, res) => {
     }
 });
 
-// 3. Registrar o actualizar preinscripción en la nube
+// 14. Registrar o actualizar preinscripción en la nube
 app.post('/api/preinscripciones', async (req, res) => {
     try {
         let registro = req.body;
-
-        // Si viene el objeto directo o dentro de alguna propiedad
         if (req.body.registro) {
             registro = req.body.registro;
         }
@@ -590,7 +1333,6 @@ app.post('/api/preinscripciones', async (req, res) => {
             registro.codigo = `PRE-2026-${String(Date.now()).slice(-4)}`;
         }
 
-        // Guardar primero en el archivo cloud del servidor
         const registrosCloud = leerRegistrosArchivo();
         const docClave = ((registro.alumnoDoc || '').replace(/\s+/g, '')).toUpperCase();
         const indice = registrosCloud.findIndex(r => {
@@ -607,7 +1349,6 @@ app.post('/api/preinscripciones', async (req, res) => {
         }
         guardarRegistrosArchivo(registrosCloud);
 
-        // Guardar en MySQL si está conectado
         if (isMySQLConnected && pool) {
             const conn = await pool.getConnection();
             try {
@@ -622,6 +1363,14 @@ app.post('/api/preinscripciones', async (req, res) => {
             }
         }
 
+        await registrarLog(
+            registro.representante || 'Representante Legal',
+            'REPRESENTANTE',
+            'NUEVA_PREINSCRIPCION',
+            `Preinscripción asentada: Alumno ${registro.alumno} (${registro.alumnoDoc || 'S/N'}), Grado: ${registro.grado || 'Primaria'}, Folio: ${registro.codigo}`,
+            req
+        );
+
         res.json({
             success: true,
             message: 'Preinscripción registrada en la nube satisfactoriamente',
@@ -634,15 +1383,15 @@ app.post('/api/preinscripciones', async (req, res) => {
     }
 });
 
-// 4. LIMPIAR TODOS LOS REGISTROS EN LA NUBE (Requerimiento Crítico)
+// 15. LIMPIAR TODOS LOS REGISTROS EN LA NUBE (Vaciado real en MySQL y Cloud)
 app.delete('/api/preinscripciones', async (req, res) => {
     try {
-        console.log('[VACIAR NUBE] Solicitud para eliminar TODOS los registros recibida.');
+        console.log('[VACIAR NUBE] Solicitud para eliminar TODOS los registros de preinscripción recibida.');
 
         // 1. Limpiar archivo de persistencia cloud
         guardarRegistrosArchivo([]);
 
-        // 2. Limpiar MySQL si está conectado
+        // 2. Limpiar MySQL de forma permanente (TRUNCATE / DELETE)
         if (isMySQLConnected && pool) {
             const conn = await pool.getConnection();
             try {
@@ -650,7 +1399,7 @@ app.delete('/api/preinscripciones', async (req, res) => {
                 await conn.query('DELETE FROM preinscripcion_documentos;');
                 await conn.query('DELETE FROM preinscripciones;');
                 await conn.commit();
-                console.log('[MySQL] Todas las preinscripciones han sido eliminadas.');
+                console.log('[MySQL] Tablas de preinscripciones vaciadas con éxito.');
             } catch (sqlErr) {
                 await conn.rollback();
                 console.error('[MySQL Limpiar Error]', sqlErr.message);
@@ -659,9 +1408,18 @@ app.delete('/api/preinscripciones', async (req, res) => {
             }
         }
 
+        const usuarioEjecutor = req.body?.usuario || req.headers['x-user'] || 'Docente / Admin';
+        await registrarLog(
+            usuarioEjecutor,
+            'DOCENTE',
+            'VACIADO_TABLAS',
+            'Se ejecutó el vaciado total y limpieza permanente de las tablas de preinscripciones en la base de datos MySQL y la nube.',
+            req
+        );
+
         res.json({
             success: true,
-            message: 'Todos los registros han sido eliminados de la nube satisfactoriamente.',
+            message: 'Todos los registros han sido eliminados permanentemente de la base de datos y la nube.',
             count: 0
         });
     } catch (error) {
@@ -670,18 +1428,17 @@ app.delete('/api/preinscripciones', async (req, res) => {
     }
 });
 
-// 5. Eliminar un registro específico por código/folio en la nube
+// 16. Eliminar un registro específico por código/folio en la nube
 app.delete('/api/preinscripciones/:codigo', async (req, res) => {
     try {
         const codigo = req.params.codigo;
         console.log(`[ELIMINAR NUBE] Eliminando folio: ${codigo}`);
 
-        // 1. Filtrar en archivo cloud
         let registros = leerRegistrosArchivo();
+        const target = registros.find(r => r.codigo === codigo);
         registros = registros.filter(r => r.codigo !== codigo);
         guardarRegistrosArchivo(registros);
 
-        // 2. Eliminar en MySQL si está conectado
         if (isMySQLConnected && pool) {
             const conn = await pool.getConnection();
             try {
@@ -701,6 +1458,14 @@ app.delete('/api/preinscripciones/:codigo', async (req, res) => {
             }
         }
 
+        await registrarLog(
+            'Docente / Admin',
+            'DOCENTE',
+            'ELIMINAR_FOLIO',
+            `Expediente con folio ${codigo} (${target?.alumno || 'Aspirante'}) eliminado permanentemente.`,
+            req
+        );
+
         res.json({
             success: true,
             message: `Registro ${codigo} eliminado exitosamente de la nube.`
@@ -711,17 +1476,16 @@ app.delete('/api/preinscripciones/:codigo', async (req, res) => {
     }
 });
 
-// 6. Actualizar estado de una preinscripción en la nube
+// 17. Actualizar estado de una preinscripción en la nube
 app.put('/api/preinscripciones/:codigo/estado', async (req, res) => {
     try {
         const codigo = req.params.codigo;
-        const { estado } = req.body;
+        const { estado, usuario } = req.body;
 
         if (!estado) {
             return res.status(400).json({ success: false, error: 'Estado no especificado' });
         }
 
-        // Actualizar archivo cloud
         const registros = leerRegistrosArchivo();
         const reg = registros.find(r => r.codigo === codigo);
         if (reg) {
@@ -729,7 +1493,6 @@ app.put('/api/preinscripciones/:codigo/estado', async (req, res) => {
             guardarRegistrosArchivo(registros);
         }
 
-        // Actualizar MySQL
         if (isMySQLConnected && pool) {
             const conn = await pool.getConnection();
             try {
@@ -751,6 +1514,14 @@ app.put('/api/preinscripciones/:codigo/estado', async (req, res) => {
             }
         }
 
+        await registrarLog(
+            usuario || 'Docente / Admin',
+            'DOCENTE',
+            'CAMBIO_ESTADO_ALUMNO',
+            `Estado del expediente ${codigo} (${reg?.alumno || 'Alumno'}) actualizado a: ${estado}.`,
+            req
+        );
+
         res.json({
             success: true,
             message: `Estado del folio ${codigo} actualizado a ${estado} en la nube.`
@@ -761,7 +1532,7 @@ app.put('/api/preinscripciones/:codigo/estado', async (req, res) => {
     }
 });
 
-// 7. Actualizar verificación de recaudo en la nube
+// 18. Actualizar verificación de recaudo en la nube
 app.put('/api/preinscripciones/:codigo/recaudo', async (req, res) => {
     try {
         const codigo = req.params.codigo;
@@ -810,7 +1581,7 @@ app.put('/api/preinscripciones/:codigo/recaudo', async (req, res) => {
     }
 });
 
-// 8. Restablecer registros de demostración en la nube
+// 19. Restablecer registros de demostración en la nube
 app.post('/api/preinscripciones/restablecer', async (req, res) => {
     try {
         guardarRegistrosArchivo(REGISTROS_DEMO);
@@ -833,6 +1604,14 @@ app.post('/api/preinscripciones/restablecer', async (req, res) => {
             }
         }
 
+        await registrarLog(
+            'Docente / Admin',
+            'DOCENTE',
+            'RESTABLECER_DEMO',
+            'Se restablecieron los registros de demostración iniciales en el sistema.',
+            req
+        );
+
         res.json({
             success: true,
             message: 'Registros de demostración restablecidos en la nube satisfactoriamente.',
@@ -845,12 +1624,11 @@ app.post('/api/preinscripciones/restablecer', async (req, res) => {
 });
 
 // ==============================================================================
-// INICIO DEL SERVIDOR
+// INICIALIZACIÓN Y ARRANQUE DEL SERVIDOR
 // ==============================================================================
-asegurarDirectorioYArchivo();
+asegurarDirectorioYArchivos();
 inicializarMySQL();
 
-// Intento periódico de reconexión a MySQL si Railway lo inicia más tarde
 setInterval(() => {
     if (!isMySQLConnected) {
         inicializarMySQL();
@@ -862,6 +1640,8 @@ app.listen(PORT, () => {
     console.log(` Servidor Fe y Alegría Nueva América en línea`);
     console.log(` Puerto: ${PORT} | Modo: ${process.env.NODE_ENV || 'production'}`);
     console.log(` Persistencia: Cloud Automática (MySQL / Servidor)`);
+    console.log(` Superroot Activo: mantecosadmin67.html`);
+    console.log(` Docente Inicial: manteca / manteca`);
     console.log(` URL Local: http://localhost:${PORT}`);
     console.log(`====================================================`);
 });

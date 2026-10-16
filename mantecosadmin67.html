@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puesto de Control Maestro (Superroot) | U.E. Fe y Alegría Nueva América</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Panel exclusivo de administración y auditoría de máxima seguridad para el Administrador Maestro (Superroot).">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        :root {
+            --superroot-dark: #0f172a;
+            --superroot-gold: #f59e0b;
+            --superroot-border: #334155;
+        }
+        body {
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            min-height: 100vh;
+        }
+        .superroot-navbar {
+            background: linear-gradient(90deg, #18181b 0%, #1c1917 50%, #450a0a 100%);
+            border-bottom: 2px solid #b91c1c;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .superroot-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .superroot-badge {
+            background: #b91c1c;
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            border: 1px solid #ef4444;
+        }
+        .superroot-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .kpi-card-admin {
+            background: #18181b;
+            border: 1.5px solid #27272a;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: var(--transition);
+        }
+        .kpi-card-admin:hover {
+            border-color: #ef4444;
+            transform: translateY(-2px);
+        }
+        .kpi-icon-box {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .kpi-number {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            line-height: 1.1;
+        }
+        .kpi-label {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+        }
+        .admin-section-card {
+            background: #18181b;
+            border: 1.5px solid #27272a;
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        }
+        .admin-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 1px solid #27272a;
+            padding-bottom: 1rem;
+        }
+        .admin-section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin: 0;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+        .admin-table th {
+            background: #27272a;
+            color: #cbd5e1;
+            padding: 0.85rem 1rem;
+            font-weight: 700;
+            border-bottom: 2px solid #3f3f46;
+            white-space: nowrap;
+        }
+        .admin-table td {
+            padding: 0.95rem 1rem;
+            border-bottom: 1px solid #27272a;
+            color: #e2e8f0;
+            vertical-align: middle;
+        }
+        .admin-table tr:hover {
+            background: rgba(255, 255, 255, 0.025);
+        }
+        .btn-action-admin {
+            padding: 0.4rem 0.85rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: var(--transition);
+        }
+        .btn-approve {
+            background: #166534;
+            color: #dcfce7;
+            border: 1px solid #22c55e;
+        }
+        .btn-approve:hover {
+            background: #15803d;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+        }
+        .btn-reject {
+            background: #991b1b;
+            color: #fee2e2;
+            border: 1px solid #ef4444;
+        }
+        .btn-reject:hover {
+            background: #b91c1c;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+        }
+        .status-pill {
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .status-pending {
+            background: #78350f;
+            color: #fde68a;
+            border: 1px solid #f59e0b;
+        }
+        .status-approved {
+            background: #14532d;
+            color: #86efac;
+            border: 1px solid #22c55e;
+        }
+        .log-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+        /* Modal de Bloqueo de Acceso Inicial */
+        .auth-gate-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #090d16;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .auth-gate-box {
+            background: #18181b;
+            border: 2px solid #dc2626;
+            border-radius: var(--radius-xl);
+            max-width: 440px;
+            width: 100%;
+            padding: 2.25rem;
+            box-shadow: 0 0 50px rgba(220, 38, 38, 0.25);
+            text-align: center;
+        }
+        .nav-tab-admin {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #27272a;
+            padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.92rem;
+            font-weight: 600;
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .tab-btn.active {
+            background: #27272a;
+            color: #ffffff;
+            border-bottom: 2px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRERA DE SEGURIDAD ESTRICTA (GATEWAY SUPERROOT) -->
+    <div id="authGateOverlay" class="auth-gate-overlay">
+        <div class="auth-gate-box">
+            <div style="width: 64px; height: 64px; background: rgba(220, 38, 38, 0.15); color: #ef4444; border: 2px solid #ef4444; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-bottom: 1.25rem;">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h1 style="font-size: 1.35rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: #ffffff; margin-bottom: 0.5rem;">
+                Puesto de Mando Superroot
+            </h1>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.45;">
+                Área de máxima seguridad restringida. Ingrese las credenciales maestras fijas para acceder al panel de control.
+            </p>
+
+            <div id="gateAlertMsg" style="display: none; background: #450a0a; border: 1px solid #ef4444; color: #fecaca; font-size: 0.82rem; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; text-align: left;">
+                <i class="fa-solid fa-triangle-exclamation"></i> <span id="gateAlertText">Credenciales inválidas.</span>
+            </div>
+
+            <form id="formSuperrootGate" novalidate>
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="gateUser" class="form-label" style="color: #cbd5e1; font-size: 0.85rem;">Usuario Maestro *</label>
+                    <input type="text" id="gateUser" class="form-control" placeholder="superroot o mantecosadmin" required autocomplete="username" style="background: #27272a; border-color: #3f3f46; color: #ffffff;" autofocus>
+                </div>
+                <div class="form-group mb-4" style="text-align: left;">
+                    <label for="gatePass" class="form-label" style="color: #cbd5e1; font-size: 0.85rem;">Contraseña de Alta Seguridad *</label>
+                    <input type="password" id="gatePass" class="form-control" placeholder="••••••••••••" required autocomplete="current-password" style="background: #27272a; border-color: #3f3f46; color: #ffffff;">
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="button" class="btn btn-secondary" style="flex: 1; background: #3f3f46; color: #ffffff; border: none;" onclick="bloquearYRedirigir()">
+                        <i class="fa-solid fa-arrow-left"></i> Salir al Inicio
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1.5; background: #dc2626; border-color: #ef4444;" id="btnGateSubmit">
+                        <i class="fa-solid fa-unlock-keyhole"></i> Autenticar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PROTEGIDO DEL PANEL SUPERROOT -->
+    <div id="superrootMainContent" style="display: none;">
+        <!-- Navegación Superior -->
+        <header class="superroot-navbar">
+            <a href="#" class="superroot-brand">
+                <img src="logo_feyalegria.png" alt="Logo" width="40" height="40" style="border-radius: 50%;">
+                <div>
+                    <div style="font-weight: 800; font-family: 'Outfit', sans-serif; font-size: 1.05rem; letter-spacing: -0.01em;">
+                        FE Y ALEGRÍA "NUEVA AMÉRICA"
+                    </div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; display: flex; align-items: center; gap: 0.4rem;">
+                        <span class="superroot-badge">SUPERROOT</span> Control de Acceso y Auditoría
+                    </div>
+                </div>
+            </a>
+
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button type="button" class="btn btn-sm btn-outline-info" onclick="cargarTodoSuperroot()" title="Actualizar datos">
+                    <i class="fa-solid fa-rotate" id="iconRefreshAdmin"></i> Actualizar
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="cerrarSesionSuperroot()" style="border-color: #ef4444; color: #f87171;">
+                    <i class="fa-solid fa-power-off"></i> Cerrar Sesión
+                </button>
+            </div>
+        </header>
+
+        <!-- Contenedor Principal -->
+        <main class="superroot-container">
+            <!-- Tarjetas de Métricas (KPIs) -->
+            <div class="kpi-grid">
+                <div class="kpi-card-admin">
+                    <div class="kpi-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b;">
+                        <i class="fa-solid fa-user-clock"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-number" id="kpiPendientesCount" style="color: #f59e0b;">0</div>
+                        <div class="kpi-label">Solicitudes Pendientes</div>
+                    </div>
+                </div>
+
+                <div class="kpi-card-admin">
+                    <div class="kpi-icon-box" style="background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid #22c55e;">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-number" id="kpiAprobadosCount" style="color: #22c55e;">0</div>
+                        <div class="kpi-label">Docentes Autorizados</div>
+                    </div>
+                </div>
+
+                <div class="kpi-card-admin">
+                    <div class="kpi-icon-box" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid #3b82f6;">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-number" id="kpiPreinscripcionesCount" style="color: #3b82f6;">0</div>
+                        <div class="kpi-label">Expedientes Preinscritos</div>
+                    </div>
+                </div>
+
+                <div class="kpi-card-admin">
+                    <div class="kpi-icon-box" style="background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid #a855f7;">
+                        <i class="fa-solid fa-file-shield"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-number" id="kpiLogsCount" style="color: #a855f7;">0</div>
+                        <div class="kpi-label">Eventos Auditados</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación por Pestañas -->
+            <div class="nav-tab-admin">
+                <button type="button" class="tab-btn active" id="tabBtnPendientes" onclick="mostrarTab('pendientes')">
+                    <i class="fa-solid fa-user-clock"></i> Solicitudes Pendientes <span id="tabBadgePendientes" style="background: #ef4444; color: white; padding: 2px 7px; border-radius: 10px; font-size: 0.72rem; margin-left: 4px;">0</span>
+                </button>
+                <button type="button" class="tab-btn" id="tabBtnDocentes" onclick="mostrarTab('docentes')">
+                    <i class="fa-solid fa-users"></i> Directorio Docente
+                </button>
+                <button type="button" class="tab-btn" id="tabBtnLogs" onclick="mostrarTab('logs')">
+                    <i class="fa-solid fa-list-check"></i> Historial de Auditoría (System Logs)
+                </button>
+            </div>
+
+            <!-- 1. SECCIÓN DE SOLICITUDES PENDIENTES DE DOCENTES -->
+            <section id="viewPendientes" class="admin-section-card">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title">
+                            <i class="fa-solid fa-user-clock" style="color: #f59e0b;"></i> Solicitudes de Registro de Docentes en Espera
+                        </h2>
+                        <p style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
+                            Cuentas registradas que requieren autorización expresa del Administrador Maestro para poder iniciar sesión.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha de Solicitud</th>
+                                <th>Nombre y Apellido</th>
+                                <th>Usuario Solicitado</th>
+                                <th>Correo Institucional</th>
+                                <th>Pregunta de Seguridad</th>
+                                <th style="text-align: center;">Acciones Directas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPendientesBody">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 2. SECCIÓN DE DIRECTORIO DE TODOS LOS DOCENTES -->
+            <section id="viewDocentes" class="admin-section-card" style="display: none;">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title">
+                            <i class="fa-solid fa-users" style="color: #3b82f6;"></i> Directorio Oficial de Docentes y Control de Estudios
+                        </h2>
+                        <p style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
+                            Personal con cuentas registradas y estado de autorización en la base de datos MySQL.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Docente</th>
+                                <th>Usuario</th>
+                                <th>Correo</th>
+                                <th>Estatus</th>
+                                <th>Fecha Registro</th>
+                                <th>Aprobado Por</th>
+                                <th style="text-align: center;">Gestión</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaTodosDocentesBody">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 3. SECCIÓN DE HISTORIAL DE AUDITORÍA (SYSTEM LOGS EN MYSQL) -->
+            <section id="viewLogs" class="admin-section-card" style="display: none;">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title">
+                            <i class="fa-solid fa-file-shield" style="color: #a855f7;"></i> Historial de Auditoría del Sistema (Logs MySQL)
+                        </h2>
+                        <p style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
+                            Registro inmutable de eventos críticos: aprobaciones, rechazos, cambios de estatus de alumnos y vaciado de base de datos.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" id="filtroTextoLogs" placeholder="Buscar en logs..." class="form-control" style="background: #27272a; border-color: #3f3f46; color: #ffffff; font-size: 0.82rem; width: 220px;" oninput="filtrarLogsEnTiempoReal()">
+                        <button type="button" class="btn btn-sm btn-outline-info" onclick="exportarLogsACSV()" title="Exportar logs a CSV">
+                            <i class="fa-solid fa-file-csv"></i> Exportar Logs
+                        </button>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto; max-height: 520px;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Marca de Tiempo (Timestamp)</th>
+                                <th>Usuario / Operador</th>
+                                <th>Rol</th>
+                                <th>Acción Crítica</th>
+                                <th>Descripción Detallada</th>
+                                <th>IP Origen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaLogsBody" class="log-mono">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Script de Seguridad, Validación Estricta y Operaciones -->
+    <script>
+        const AUTH_STORAGE_KEY = 'fya_superroot_token';
+        let logsGlobales = [];
+
+        // FUNCIÓN CRÍTICA: Bloquear y Redirigir a index.html
+        function bloquearYRedirigir() {
+            sessionStorage.removeItem(AUTH_STORAGE_KEY);
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+            window.location.replace('index.html');
+        }
+
+        // Validación inicial estricta de sesión
+        async function validarSesionInicial() {
+            const token = sessionStorage.getItem(AUTH_STORAGE_KEY) || localStorage.getItem(AUTH_STORAGE_KEY);
+            if (!token) {
+                // Mostrar barrera de autenticación
+                document.getElementById('authGateOverlay').style.display = 'flex';
+                document.getElementById('superrootMainContent').style.display = 'none';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/verificar-sesion', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (res.ok && data.success && data.valid) {
+                    // Acceso concedido
+                    document.getElementById('authGateOverlay').style.display = 'none';
+                    document.getElementById('superrootMainContent').style.display = 'block';
+                    cargarTodoSuperroot();
+                } else {
+                    bloquearYRedirigir();
+                }
+            } catch (err) {
+                console.error('[Error Verificación Superroot]', err);
+                bloquearYRedirigir();
+            }
+        }
+
+        // Manejador del Formulario de Autenticación Gateway
+        const gateForm = document.getElementById('formSuperrootGate');
+        const gateAlert = document.getElementById('gateAlertMsg');
+        const gateAlertText = document.getElementById('gateAlertText');
+        const gateBtn = document.getElementById('btnGateSubmit');
+
+        gateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            gateAlert.style.display = 'none';
+
+            const u = document.getElementById('gateUser').value.trim();
+            const p = document.getElementById('gatePass').value.trim();
+
+            if (!u || !p) {
+                gateAlertText.textContent = 'Ingrese usuario y contraseña de Administrador Maestro.';
+                gateAlert.style.display = 'block';
+                return;
+            }
+
+            gateBtn.disabled = true;
+            gateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
+
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario: u, password: p })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success && data.token) {
+                    sessionStorage.setItem(AUTH_STORAGE_KEY, data.token);
+                    document.getElementById('authGateOverlay').style.display = 'none';
+                    document.getElementById('superrootMainContent').style.display = 'block';
+                    cargarTodoSuperroot();
+                } else {
+                    gateAlertText.textContent = data.error || 'Credenciales maestras inválidas.';
+                    gateAlert.style.display = 'block';
+                    gateBtn.disabled = false;
+                    gateBtn.innerHTML = '<i class="fa-solid fa-unlock-keyhole"></i> Autenticar';
+                }
+            } catch (err) {
+                gateAlertText.textContent = 'No se pudo conectar con el servidor backend.';
+                gateAlert.style.display = 'block';
+                gateBtn.disabled = false;
+                gateBtn.innerHTML = '<i class="fa-solid fa-unlock-keyhole"></i> Autenticar';
+            }
+        });
+
+        function cerrarSesionSuperroot() {
+            sessionStorage.removeItem(AUTH_STORAGE_KEY);
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+            window.location.replace('index.html');
+        }
+
+        // ==============================================================================
+        // CARGA DE DATOS Y OPERACIONES DEL PANEL SUPERROOT
+        // ==============================================================================
+        function getAuthHeader() {
+            const token = sessionStorage.getItem(AUTH_STORAGE_KEY) || localStorage.getItem(AUTH_STORAGE_KEY);
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        async function cargarTodoSuperroot() {
+            const icon = document.getElementById('iconRefreshAdmin');
+            if (icon) icon.classList.add('fa-spin');
+
+            try {
+                await Promise.all([
+                    cargarSolicitudesPendientes(),
+                    cargarDirectorioDocentes(),
+                    cargarHistorialLogs(),
+                    cargarContadorPreinscripciones()
+                ]);
+            } catch (e) {
+                console.error('[Error carga Superroot]', e);
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        }
+
+        async function cargarSolicitudesPendientes() {
+            const tbody = document.getElementById('tablaPendientesBody');
+            try {
+                const res = await fetch('/api/admin/docentes/pendientes', { headers: getAuthHeader() });
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error);
+
+                const pendientes = data.data || [];
+                document.getElementById('kpiPendientesCount').textContent = pendientes.length;
+                document.getElementById('tabBadgePendientes').textContent = pendientes.length;
+
+                if (pendientes.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
+                                <i class="fa-solid fa-circle-check" style="font-size: 2rem; color: #22c55e; display: block; margin-bottom: 0.5rem;"></i>
+                                No hay solicitudes de registro de docentes pendientes de aprobación en este momento.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                pendientes.forEach(d => {
+                    const fecha = d.fecha_registro ? new Date(d.fecha_registro).toLocaleString('es-VE') : 'Reciente';
+                    html += `
+                        <tr>
+                            <td style="color: #94a3b8; font-size: 0.82rem;"><i class="fa-regular fa-clock"></i> ${fecha}</td>
+                            <td><strong style="color: #ffffff;">${d.nombres} ${d.apellidos}</strong></td>
+                            <td><code style="color: #f59e0b; font-weight: 700;">@${d.usuario}</code></td>
+                            <td><a href="mailto:${d.correo}" style="color: #93c5fd; text-decoration: underline;">${d.correo}</a></td>
+                            <td style="font-size: 0.8rem; color: #cbd5e1;">${d.pregunta_seguridad || 'Pregunta de seguridad'}</td>
+                            <td style="text-align: center; white-space: nowrap;">
+                                <button type="button" class="btn-action-admin btn-approve" onclick="aprobarDocente(${d.id}, '${d.usuario}')" title="Aprobar solicitud y permitir acceso">
+                                    <i class="fa-solid fa-check"></i> Aprobar
+                                </button>
+                                <button type="button" class="btn-action-admin btn-reject" onclick="rechazarDocente(${d.id}, '${d.usuario}')" title="Rechazar solicitud y removerla">
+                                    <i class="fa-solid fa-xmark"></i> Rechazar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (err) {
+                console.error('[Error Cargar Pendientes]', err);
+                tbody.innerHTML = `<tr><td colspan="6" style="color: #ef4444; text-align: center; padding: 1.5rem;">Error al cargar solicitudes pendientes.</td></tr>`;
+            }
+        }
+
+        async function aprobarDocente(id, usuario) {
+            if (!confirm(`¿Confirmar aprobación del docente @${usuario}? Podrá iniciar sesión inmediatamente en el sistema.`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/admin/docentes/${id}/aprobar`, {
+                    method: 'POST',
+                    headers: getAuthHeader()
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(`¡Docente @${usuario} aprobado con éxito!`);
+                    cargarTodoSuperroot();
+                } else {
+                    alert(`Error: ${data.error || 'No se pudo aprobar al docente.'}`);
+                }
+            } catch (e) {
+                alert('Error al comunicar con el servidor.');
+            }
+        }
+
+        async function rechazarDocente(id, usuario) {
+            if (!confirm(`¿Está seguro de que desea RECHAZAR y eliminar la solicitud del docente @${usuario}?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/admin/docentes/${id}/rechazar`, {
+                    method: 'POST',
+                    headers: getAuthHeader()
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(`Solicitud de @${usuario} rechazada.`);
+                    cargarTodoSuperroot();
+                } else {
+                    alert(`Error: ${data.error || 'No se pudo rechazar la solicitud.'}`);
+                }
+            } catch (e) {
+                alert('Error al comunicar con el servidor.');
+            }
+        }
+
+        async function cargarDirectorioDocentes() {
+            const tbody = document.getElementById('tablaTodosDocentesBody');
+            try {
+                const res = await fetch('/api/admin/docentes', { headers: getAuthHeader() });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                const docentes = data.data || [];
+                const aprobados = docentes.filter(d => d.is_approved === 1);
+                document.getElementById('kpiAprobadosCount').textContent = aprobados.length;
+
+                let html = '';
+                docentes.forEach(d => {
+                    const statusPill = d.is_approved === 1
+                        ? '<span class="status-pill status-approved"><i class="fa-solid fa-check"></i> Aprobado</span>'
+                        : '<span class="status-pill status-pending"><i class="fa-solid fa-clock"></i> Pendiente</span>';
+                    
+                    const fechaReg = d.fecha_registro ? new Date(d.fecha_registro).toLocaleDateString('es-VE') : 'N/D';
+                    const aprobadoPor = d.aprobado_por || 'Superroot';
+
+                    html += `
+                        <tr>
+                            <td>#${d.id}</td>
+                            <td><strong style="color: #ffffff;">${d.nombres} ${d.apellidos}</strong></td>
+                            <td><code>@${d.usuario}</code></td>
+                            <td>${d.correo}</td>
+                            <td>${statusPill}</td>
+                            <td style="color: #94a3b8; font-size: 0.82rem;">${fechaReg}</td>
+                            <td style="color: #cbd5e1; font-size: 0.82rem;">${d.is_approved === 1 ? aprobadoPor : 'En espera'}</td>
+                            <td style="text-align: center;">
+                                ${d.usuario === 'manteca' 
+                                    ? '<span style="font-size: 0.75rem; color: #a1a1aa; font-style: italic;">Cuenta Base</span>' 
+                                    : (d.is_approved === 0 
+                                        ? `<button type="button" class="btn-action-admin btn-approve" onclick="aprobarDocente(${d.id}, '${d.usuario}')"><i class="fa-solid fa-check"></i> Aprobar</button>` 
+                                        : `<button type="button" class="btn-action-admin btn-reject" onclick="rechazarDocente(${d.id}, '${d.usuario}')"><i class="fa-solid fa-trash-can"></i> Revocar</button>`
+                                      )
+                                }
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (err) {
+                console.error('[Error Cargar Docentes]', err);
+            }
+        }
+
+        async function cargarHistorialLogs() {
+            const tbody = document.getElementById('tablaLogsBody');
+            try {
+                const res = await fetch('/api/logs?limit=150', { headers: getAuthHeader() });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                logsGlobales = data.data || [];
+                document.getElementById('kpiLogsCount').textContent = logsGlobales.length;
+                renderizarTablaLogs(logsGlobales);
+            } catch (err) {
+                console.error('[Error Cargar Logs]', err);
+            }
+        }
+
+        function renderizarTablaLogs(logs) {
+            const tbody = document.getElementById('tablaLogsBody');
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 2rem;">No hay registros de auditoría disponibles.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            logs.forEach(l => {
+                const fecha = l.timestamp ? new Date(l.timestamp).toLocaleString('es-VE') : 'N/D';
+                const accionColor = {
+                    'APROBACION_DOCENTE': '#22c55e',
+                    'RECHAZO_DOCENTE': '#ef4444',
+                    'REGISTRO_DOCENTE': '#f59e0b',
+                    'VACIADO_TABLAS': '#dc2626',
+                    'CAMBIO_ESTADO_ALUMNO': '#3b82f6',
+                    'NUEVA_PREINSCRIPCION': '#10b981',
+                    'RECUPERACION_CLAVE': '#a855f7',
+                    'LOGIN_SUPERROOT': '#ec4899',
+                    'LOGIN_DOCENTE': '#6366f1'
+                }[l.accion] || '#e2e8f0';
+
+                html += `
+                    <tr>
+                        <td style="color: #94a3b8; font-size: 0.78rem;">${fecha}</td>
+                        <td><strong style="color: #ffffff;">${l.usuario}</strong></td>
+                        <td><span style="font-size: 0.75rem; background: #27272a; padding: 2px 6px; border-radius: 4px; border: 1px solid #3f3f46;">${l.rol}</span></td>
+                        <td><span style="color: ${accionColor}; font-weight: 700; font-size: 0.8rem;">${l.accion}</span></td>
+                        <td style="color: #cbd5e1; font-size: 0.82rem;">${l.descripcion}</td>
+                        <td style="color: #64748b; font-size: 0.75rem;">${l.ip_address || '127.0.0.1'}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function filtrarLogsEnTiempoReal() {
+            const txt = (document.getElementById('filtroTextoLogs')?.value || '').toLowerCase();
+            if (!txt) {
+                renderizarTablaLogs(logsGlobales);
+                return;
+            }
+            const filtrados = logsGlobales.filter(l => 
+                (l.usuario && l.usuario.toLowerCase().includes(txt)) ||
+                (l.accion && l.accion.toLowerCase().includes(txt)) ||
+                (l.descripcion && l.descripcion.toLowerCase().includes(txt)) ||
+                (l.rol && l.rol.toLowerCase().includes(txt))
+            );
+            renderizarTablaLogs(filtrados);
+        }
+
+        function exportarLogsACSV() {
+            if (logsGlobales.length === 0) {
+                alert('No hay eventos de auditoría para exportar.');
+                return;
+            }
+
+            const headers = ['Timestamp', 'Usuario', 'Rol', 'Accion', 'Descripcion', 'IP'];
+            const rows = logsGlobales.map(l => [
+                `"${l.timestamp || ''}"`,
+                `"${(l.usuario || '').replace(/"/g, '""')}"`,
+                `"${l.rol || ''}"`,
+                `"${l.accion || ''}"`,
+                `"${(l.descripcion || '').replace(/"/g, '""')}"`,
+                `"${l.ip_address || ''}"`
+            ]);
+
+            const csv = '\uFEFF' + [headers.join(';'), ...rows.map(e => e.join(';'))].join('\r\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Auditoria_System_Logs_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        async function cargarContadorPreinscripciones() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                if (data && data.totalRegistros !== undefined) {
+                    document.getElementById('kpiPreinscripcionesCount').textContent = data.totalRegistros;
+                }
+            } catch (e) {
+                console.warn('[Error Contador Pre]', e);
+            }
+        }
+
+        function mostrarTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('viewPendientes').style.display = 'none';
+            document.getElementById('viewDocentes').style.display = 'none';
+            document.getElementById('viewLogs').style.display = 'none';
+
+            if (tabName === 'pendientes') {
+                document.getElementById('tabBtnPendientes').classList.add('active');
+                document.getElementById('viewPendientes').style.display = 'block';
+            } else if (tabName === 'docentes') {
+                document.getElementById('tabBtnDocentes').classList.add('active');
+                document.getElementById('viewDocentes').style.display = 'block';
+            } else if (tabName === 'logs') {
+                document.getElementById('tabBtnLogs').classList.add('active');
+                document.getElementById('viewLogs').style.display = 'block';
+            }
+        }
+
+        // Ejecutar validación de seguridad de inmediato al cargar la página
+        validarSesionInicial();
+    </script>
+</body>
+</html>

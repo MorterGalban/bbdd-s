@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1792184176604,
+    "timestamp": "2026-10-16T20:56:16.604Z",
+    "usuario": "Docente / Admin",
+    "rol": "DOCENTE",
+    "accion": "RESTABLECER_DEMO",
+    "descripcion": "Se restablecieron los registros de demostración iniciales en el sistema.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184176594,
+    "timestamp": "2026-10-16T20:56:16.594Z",
+    "usuario": "manteca",
+    "rol": "DOCENTE",
+    "accion": "VACIADO_TABLAS",
+    "descripcion": "Se ejecutó el vaciado total y limpieza permanente de las tablas de preinscripciones en la base de datos MySQL y la nube.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184176584,
+    "timestamp": "2026-10-16T20:56:16.584Z",
+    "usuario": "prof.gonzalez.6550",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente María Teresa González Parra (@prof.gonzalez.6550).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184176580,
+    "timestamp": "2026-10-16T20:56:16.580Z",
+    "usuario": "prof.gonzalez.6550",
+    "rol": "DOCENTE",
+    "accion": "RECUPERACION_CLAVE",
+    "descripcion": "Contraseña restablecida satisfactoriamente para la cuenta @prof.gonzalez.6550 mediante comprobación de pregunta de seguridad.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184176569,
+    "timestamp": "2026-10-16T20:56:16.569Z",
+    "usuario": "prof.gonzalez.6550",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente María Teresa González Parra (@prof.gonzalez.6550).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184176565,
+    "timestamp": "2026-10-16T20:56:16.565Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "APROBACION_DOCENTE",
+    "descripcion": "El Administrador Maestro autorizó la cuenta del docente María Teresa González Parra (@prof.gonzalez.6550, prof.gonzalez.6550@feyalegrianuevaamerica.edu.ve).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184176553,
+    "timestamp": "2026-10-16T20:56:16.553Z",
+    "usuario": "prof.gonzalez.6550",
+    "rol": "DOCENTE",
+    "accion": "REGISTRO_DOCENTE",
+    "descripcion": "Nueva solicitud de acceso docente radicada por María Teresa González Parra (prof.gonzalez.6550@feyalegrianuevaamerica.edu.ve). Estado: En espera de aprobación por el Superroot.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184176544,
+    "timestamp": "2026-10-16T20:56:16.544Z",
+    "usuario": "manteca",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente Profesor Manteca (@manteca).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184176533,
+    "timestamp": "2026-10-16T20:56:16.533Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "LOGIN_SUPERROOT",
+    "descripcion": "Acceso autenticado al Panel Maestro Superroot.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184176519,
+    "timestamp": "2026-10-16T20:56:16.519Z",
+    "usuario": "superroot",
+    "rol": "ANONIMO",
+    "accion": "FALLO_LOGIN_SUPERROOT",
+    "descripcion": "Intento de acceso inválido con usuario: superroot",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184132546,
+    "timestamp": "2026-10-16T20:55:32.546Z",
+    "usuario": "Docente / Admin",
+    "rol": "DOCENTE",
+    "accion": "VACIADO_TABLAS",
+    "descripcion": "Se ejecutó el vaciado total y limpieza permanente de las tablas de preinscripciones en la base de datos MySQL y la nube.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184132538,
+    "timestamp": "2026-10-16T20:55:32.538Z",
+    "usuario": "prof.gonzalez.2456",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente María Teresa González Parra (@prof.gonzalez.2456).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184132534,
+    "timestamp": "2026-10-16T20:55:32.534Z",
+    "usuario": "prof.gonzalez.2456",
+    "rol": "DOCENTE",
+    "accion": "RECUPERACION_CLAVE",
+    "descripcion": "Contraseña restablecida satisfactoriamente para la cuenta @prof.gonzalez.2456 mediante comprobación de pregunta de seguridad.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184132524,
+    "timestamp": "2026-10-16T20:55:32.524Z",
+    "usuario": "prof.gonzalez.2456",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente María Teresa González Parra (@prof.gonzalez.2456).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184132520,
+    "timestamp": "2026-10-16T20:55:32.520Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "APROBACION_DOCENTE",
+    "descripcion": "El Administrador Maestro autorizó la cuenta del docente María Teresa González Parra (@prof.gonzalez.2456, prof.gonzalez.2456@feyalegrianuevaamerica.edu.ve).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184132460,
+    "timestamp": "2026-10-16T20:55:32.460Z",
+    "usuario": "prof.gonzalez.2456",
+    "rol": "DOCENTE",
+    "accion": "REGISTRO_DOCENTE",
+    "descripcion": "Nueva solicitud de acceso docente radicada por María Teresa González Parra (prof.gonzalez.2456@feyalegrianuevaamerica.edu.ve). Estado: En espera de aprobación por el Superroot.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184132451,
+    "timestamp": "2026-10-16T20:55:32.451Z",
+    "usuario": "manteca",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente Profesor Manteca (@manteca).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184132437,
+    "timestamp": "2026-10-16T20:55:32.437Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "LOGIN_SUPERROOT",
+    "descripcion": "Acceso autenticado al Panel Maestro Superroot.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792184132370,
+    "timestamp": "2026-10-16T20:55:32.370Z",
+    "usuario": "superroot",
+    "rol": "ANONIMO",
+    "accion": "FALLO_LOGIN_SUPERROOT",
+    "descripcion": "Intento de acceso inválido con usuario: superroot",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1,
+    "timestamp": "2026-10-16T12:00:00.000Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "INICIALIZACION_SISTEMA",
+    "descripcion": "Sistema de Control y Preinscripción 2026-2027 inicializado. Usuario docente inicial 'manteca' configurado.",
+    "ip_address": "127.0.0.1"
+  }
+]

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Registro Docente | U.E. Fe y Alegría Nueva América</title>
+    <meta name="description" content="Formulario oficial de solicitud de acceso para personal docente y control de estudios de la U.E. Fe y Alegría Nueva América.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .register-page-wrapper {
+            min-height: calc(100vh - 120px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1rem;
+            background: radial-gradient(circle at 50% 20%, rgba(217, 4, 41, 0.08) 0%, transparent 60%);
+        }
+        .register-card {
+            max-width: 580px;
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+        .register-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--gradient-fya);
+        }
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .register-badge-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--fya-red-bg);
+            color: var(--fya-red);
+            border: 2px solid var(--fya-red-border);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+        }
+        .register-card-title {
+            font-size: 1.45rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-primary);
+            margin-bottom: 0.35rem;
+        }
+        .register-card-subtitle {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 640px) {
+            .form-row-2 {
+                grid-template-columns: 1fr;
+            }
+            .register-card {
+                padding: 1.75rem 1.25rem;
+            }
+        }
+        .alert-box {
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            line-height: 1.45;
+        }
+        .alert-success {
+            background: #dcfce7;
+            border: 1.5px solid #86efac;
+            color: #166534;
+        }
+        .alert-warning {
+            background: #fef3c7;
+            border: 1.5px solid #fde68a;
+            color: #92400e;
+        }
+        .alert-error {
+            background: #fef2f2;
+            border: 1.5px solid #fecaca;
+            color: #b91c1c;
+        }
+        .input-group-password {
+            position: relative;
+        }
+        .btn-toggle-eye {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+        }
+        .register-footer {
+            margin-top: 1.75rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Aviso Superior -->
+    <div class="top-notice-bar">
+        <i class="fa-solid fa-school"></i> U.E. FE Y ALEGRÍA "NUEVA AMÉRICA" • <strong>Portal de Registro Docente • Periodo 2026 - 2027</strong>
+    </div>
+
+    <!-- Navegación -->
+    <header class="navbar" id="registerHeader">
+        <div class="nav-container">
+            <a href="index.html" class="brand">
+                <img src="logo_feyalegria.png" alt="Logo Fe y Alegría Nueva América" class="brand-img-logo" width="50" height="50">
+                <div class="brand-info">
+                    <span class="brand-title">FE Y ALEGRÍA</span>
+                    <span class="brand-subtitle">U.E. Nueva América • Registro Docente</span>
+                </div>
+            </a>
+
+            <div class="nav-actions">
+                <button type="button" class="btn-theme-toggle" id="btnToggleTheme" aria-label="Cambiar tema claro / oscuro" title="Cambiar tema claro / oscuro">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <a href="docente-login.html" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a Login
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="register-page-wrapper">
+        <div class="register-card">
+            <div class="register-header">
+                <div class="register-badge-icon">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <h1 class="register-card-title">Solicitud de Acceso Docente</h1>
+                <p class="register-card-subtitle">
+                    Complete el formulario para solicitar su usuario institucional. Su cuenta será evaluada y autorizada por el <strong>Administrador Maestro (Superroot)</strong> antes de conceder acceso al sistema.
+                </p>
+            </div>
+
+            <!-- Alerta Dinámica de Éxito o Error -->
+            <div id="registerAlertBox" style="display: none;" class="alert-box" role="alert">
+                <i id="registerAlertIcon" class="fa-solid fa-circle-check" style="font-size: 1.25rem; margin-top: 2px;"></i>
+                <div id="registerAlertContent"></div>
+            </div>
+
+            <!-- Formulario de Registro -->
+            <form id="formDocenteRegistro" novalidate>
+                <div class="form-row-2 mb-3">
+                    <div class="form-group" style="text-align: left;">
+                        <label for="regNombres" class="form-label">Nombres *</label>
+                        <input type="text" id="regNombres" name="regNombres" class="form-control" placeholder="Ej: María Alejandra" required autocomplete="given-name">
+                    </div>
+                    <div class="form-group" style="text-align: left;">
+                        <label for="regApellidos" class="form-label">Apellidos *</label>
+                        <input type="text" id="regApellidos" name="regApellidos" class="form-control" placeholder="Ej: Urdaneta Blanco" required autocomplete="family-name">
+                    </div>
+                </div>
+
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="regCorreo" class="form-label">Correo Electrónico Institucional *</label>
+                    <div style="position: relative;">
+                        <input type="email" id="regCorreo" name="regCorreo" class="form-control" placeholder="docente@feyalegrianuevaamerica.edu.ve o personal" required autocomplete="email">
+                    </div>
+                    <small style="color: var(--text-muted); font-size: 0.78rem;">Se utilizará para notificaciones oficiales y recuperación de credenciales.</small>
+                </div>
+
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="regUsuario" class="form-label">Nombre de Usuario Deseado *</label>
+                    <input type="text" id="regUsuario" name="regUsuario" class="form-control" placeholder="Ej: prof.urdaneta o murdaneta" required autocomplete="username">
+                    <small style="color: var(--text-muted); font-size: 0.78rem;">Solo letras, números y puntos (sin espacios).</small>
+                </div>
+
+                <div class="form-row-2 mb-3">
+                    <div class="form-group" style="text-align: left;">
+                        <label for="regPassword" class="form-label">Contraseña de Seguridad *</label>
+                        <div class="input-group-password">
+                            <input type="password" id="regPassword" name="regPassword" class="form-control" placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
+                            <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('regPassword', this)" aria-label="Mostrar contraseña">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group" style="text-align: left;">
+                        <label for="regPasswordConfirm" class="form-label">Confirmar Contraseña *</label>
+                        <div class="input-group-password">
+                            <input type="password" id="regPasswordConfirm" name="regPasswordConfirm" class="form-control" placeholder="Repita su clave" required autocomplete="new-password">
+                            <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('regPasswordConfirm', this)" aria-label="Mostrar contraseña">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta de Seguridad para Recuperación -->
+                <div class="form-group mb-3" style="text-align: left;">
+                    <label for="regPreguntaSeguridad" class="form-label">Pregunta de Seguridad (Para Recuperación) *</label>
+                    <select id="regPreguntaSeguridad" name="regPreguntaSeguridad" class="form-control" required>
+                        <option value="">-- Seleccione una pregunta de seguridad --</option>
+                        <option value="¿Cuál es el nombre de su primera escuela primaria?">¿Cuál es el nombre de su primera escuela primaria?</option>
+                        <option value="¿En qué ciudad nació su madre?">¿En qué ciudad nació su madre?</option>
+                        <option value="¿Cuál es el nombre de su primera mascota?">¿Cuál es el nombre de su primera mascota?</option>
+                        <option value="¿Cuál es su color institucional favorito?">¿Cuál es su color institucional favorito?</option>
+                        <option value="¿Cuál es el segundo apellido de su abuela materna?">¿Cuál es el segundo apellido de su abuela materna?</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-4" style="text-align: left;">
+                    <label for="regRespuestaSeguridad" class="form-label">Respuesta Secreta a la Pregunta *</label>
+                    <input type="text" id="regRespuestaSeguridad" name="regRespuestaSeguridad" class="form-control" placeholder="Escriba su respuesta exacta (no distingue mayúsculas)" required>
+                    <small style="color: var(--text-muted); font-size: 0.78rem;">Recuerde bien esta respuesta; la requerirá para restablecer su contraseña si la olvida.</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;" id="btnEnviarSolicitudDocente">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar Solicitud de Registro
+                </button>
+            </form>
+
+            <div class="register-footer">
+                <a href="docente-login.html" style="color: var(--fya-red); text-decoration: none; font-weight: 600;">
+                    <i class="fa-solid fa-right-to-bracket"></i> ¿Ya tienes cuenta autorizada? Inicia Sesión
+                </a>
+                <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">
+                    <i class="fa-solid fa-house"></i> Ir a Inicio
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Tema Claro / Oscuro
+        const temaGuardado = localStorage.getItem('fya_theme') || 'light';
+        const btnToggleTheme = document.getElementById('btnToggleTheme');
+
+        function aplicarTema(tema) {
+            if (tema === 'dark') {
+                document.body.classList.add('dark-mode');
+                if (btnToggleTheme) btnToggleTheme.innerHTML = '<i class="fa-solid fa-sun" style="color: #facc15;"></i>';
+            } else {
+                document.body.classList.remove('dark-mode');
+                if (btnToggleTheme) btnToggleTheme.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
+        }
+        aplicarTema(temaGuardado);
+
+        if (btnToggleTheme) {
+            btnToggleTheme.addEventListener('click', () => {
+                const esOscuro = document.body.classList.contains('dark-mode');
+                const nuevoTema = esOscuro ? 'light' : 'dark';
+                localStorage.setItem('fya_theme', nuevoTema);
+                aplicarTema(nuevoTema);
+            });
+        }
+
+        // Toggle visor de contraseñas
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+            } else {
+                input.type = 'password';
+                if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+            }
+        }
+
+        // Manejador del Formulario
+        const form = document.getElementById('formDocenteRegistro');
+        const alertBox = document.getElementById('registerAlertBox');
+        const alertContent = document.getElementById('registerAlertContent');
+        const alertIcon = document.getElementById('registerAlertIcon');
+        const btnSubmit = document.getElementById('btnEnviarSolicitudDocente');
+
+        function mostrarAlerta(tipo, mensaje) {
+            alertBox.className = `alert-box alert-${tipo}`;
+            if (tipo === 'success') {
+                alertIcon.className = 'fa-solid fa-circle-check';
+            } else if (tipo === 'warning') {
+                alertIcon.className = 'fa-solid fa-triangle-exclamation';
+            } else {
+                alertIcon.className = 'fa-solid fa-circle-xmark';
+            }
+            alertContent.innerHTML = mensaje;
+            alertBox.style.display = 'flex';
+            alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            alertBox.style.display = 'none';
+
+            const nombres = document.getElementById('regNombres').value.trim();
+            const apellidos = document.getElementById('regApellidos').value.trim();
+            const correo = document.getElementById('regCorreo').value.trim();
+            const usuario = document.getElementById('regUsuario').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            const pregunta = document.getElementById('regPreguntaSeguridad').value.trim();
+            const respuesta = document.getElementById('regRespuestaSeguridad').value.trim();
+
+            // Validaciones locales
+            if (!nombres || !apellidos || !correo || !usuario || !password || !pregunta || !respuesta) {
+                mostrarAlerta('error', '<strong>Campos incompletos:</strong> Por favor complete todos los campos obligatorios del formulario.');
+                return;
+            }
+
+            if (password.length < 6) {
+                mostrarAlerta('error', '<strong>Contraseña débil:</strong> La contraseña debe contener al menos 6 caracteres.');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                mostrarAlerta('error', '<strong>Error de coincidencia:</strong> Las contraseñas ingresadas no coinciden.');
+                return;
+            }
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando Solicitud...';
+
+            try {
+                const res = await fetch('/api/docente/registro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombres,
+                        apellidos,
+                        correo,
+                        usuario,
+                        password,
+                        pregunta_seguridad: pregunta,
+                        respuesta_seguridad: respuesta
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    mostrarAlerta('success', `
+                        <div>
+                            <strong>¡Solicitud enviada con éxito!</strong><br>
+                            Su cuenta se encuentra a la espera de autorización por parte del Administrador.<br>
+                            <small style="display:inline-block; margin-top: 6px;">Una vez aprobada por el Superroot en el Panel Maestro, podrá ingresar con su usuario <code>${usuario}</code> en el <a href="docente-login.html" style="font-weight:700; text-decoration:underline;">Portal de Login Docente</a>.</small>
+                        </div>
+                    `);
+                    form.reset();
+                    // Ocultar botón temporalmente para evitar doble envío
+                    btnSubmit.style.display = 'none';
+                } else {
+                    mostrarAlerta('error', `<strong>Error al procesar:</strong> ${data.error || 'No se pudo registrar la solicitud.'}`);
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar Solicitud de Registro';
+                }
+            } catch (err) {
+                console.error('[Error Registro Docente]', err);
+                mostrarAlerta('error', '<strong>Error de comunicación:</strong> No se pudo conectar con el servidor. Verifique su conexión.');
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar Solicitud de Registro';
+            }
+        });
+    </script>
+</body>
+</html>

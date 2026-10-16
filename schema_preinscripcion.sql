@@ -301,3 +301,48 @@ INSERT INTO documentos (codigo, nombre, es_obligatorio) VALUES
 ('FOTOS_CARNET', '4 Fotografías del estudiante tipo carnet (Fondo blanco)', TRUE),
 ('CARTA_RESIDENCIA', 'Constancia de Residencia de la comunidad', TRUE),
 ('TARJETA_VACUNAS', 'Tarjeta o Certificado de Vacunación vigente', FALSE);
+
+-- ==============================================================================
+-- 11. TABLA: docentes (Registro Jerárquico con Aprobación del Superroot)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS docentes (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    correo VARCHAR(150) NOT NULL UNIQUE,
+    usuario VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    pregunta_seguridad VARCHAR(255) NOT NULL,
+    respuesta_seguridad_hash VARCHAR(255) NOT NULL,
+    is_approved TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0: Pendiente, 1: Aprobado, -1: Rechazado',
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_aprobacion DATETIME NULL,
+    aprobado_por VARCHAR(100) NULL,
+    ultimo_acceso DATETIME NULL,
+    INDEX idx_doc_usuario (usuario),
+    INDEX idx_doc_approved (is_approved)
+) ENGINE=InnoDB;
+
+-- ==============================================================================
+-- 12. TABLA: system_logs (Historial de Auditoría de Operaciones Críticas)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS system_logs (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    usuario VARCHAR(100) NOT NULL,
+    rol VARCHAR(50) NOT NULL,
+    accion VARCHAR(80) NOT NULL,
+    descripcion TEXT NOT NULL,
+    ip_address VARCHAR(50) NULL,
+    INDEX idx_logs_timestamp (timestamp),
+    INDEX idx_logs_accion (accion)
+) ENGINE=InnoDB;
+
+-- Semilla del Docente Inicial Autorizado ('manteca' / 'manteca')
+INSERT IGNORE INTO docentes (id, nombres, apellidos, correo, usuario, password_hash, pregunta_seguridad, respuesta_seguridad_hash, is_approved, aprobado_por)
+VALUES (1, 'Profesor', 'Manteca', 'manteca@feyalegrianuevaamerica.edu.ve', 'manteca', 'manteca', '¿Color institucional representativo?', 'rojo', 1, 'superroot');
+
+-- Semilla de Auditoría Inicial
+INSERT IGNORE INTO system_logs (id, usuario, rol, accion, descripcion, ip_address)
+VALUES (1, 'superroot', 'SUPERROOT', 'INICIALIZACION_SISTEMA', 'Base de datos inicializada con esquema relacional y usuario base manteca.', '127.0.0.1');
+
