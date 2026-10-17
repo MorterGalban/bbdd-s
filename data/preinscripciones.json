@@ -32,9 +32,9 @@
             "2": "APROBADO",
             "3": "CONSIGNADO",
             "4": "CONSIGNADO",
-            "5": "NO_CONSIGNADO"
+            "5": "CONSIGNADO"
         },
-        "recaudosCount": "4/5",
+        "recaudosCount": "5/5",
         "fecha": "08/10/2026"
     },
     {

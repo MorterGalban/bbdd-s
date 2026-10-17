@@ -3437,18 +3437,18 @@ body:not(.mode-docente) #totalRegistrosBadge {
     pointer-events: none !important;
 }
 
-body.mode-docente #adminAuditoriaSection {
-    display: grid !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    overflow: visible !important;
+body.mode-docente #adminAuditoriaSection,
+#adminAuditoriaSection {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
 }
 
 body.mode-docente .admin-only-section {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    display: none !important;
 }
 
 body.mode-docente #docenteSidebarSection {
@@ -3698,5 +3698,91 @@ body.mode-docente #docenteSidebarSection {
     color: #f87171;
 }
 
+/* ==============================================================================
+   CAMPOS CONDICIONALES DINÁMICOS (CONVIVE CON / PARENTESCO)
+   ============================================================================== */
+.conditional-field-wrapper {
+    animation: conditionalFieldSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-origin: top center;
+    background: rgba(220, 38, 38, 0.03);
+    border-left: 3px solid var(--fya-red);
+    padding: 0.75rem 1rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
 
+.dark-mode .conditional-field-wrapper {
+    background: rgba(239, 68, 68, 0.08);
+    border-left-color: #ef4444;
+}
 
+@keyframes conditionalFieldSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scaleY(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
+
+/* ==============================================================================
+   MÁQUINA DE ESTADOS Y BLOQUEO AUTOMÁTICO EN PANEL DOCENTE
+   ============================================================================== */
+.status-locked-wrapper,
+.status-unlocked-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 175px;
+}
+
+.badge-lock-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #991b1b;
+    background: #fee2e2;
+    padding: 0.18rem 0.55rem;
+    border-radius: 4px;
+    border: 1px solid #fca5a5;
+    letter-spacing: 0.04em;
+    width: fit-content;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.badge-unlocked-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #166534;
+    background: #dcfce7;
+    padding: 0.18rem 0.55rem;
+    border-radius: 4px;
+    border: 1px solid #86efac;
+    letter-spacing: 0.04em;
+    width: fit-content;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.select-locked-status {
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
+    border: 1.5px dashed #f87171 !important;
+    cursor: not-allowed !important;
+    font-weight: 700 !important;
+    opacity: 0.88 !important;
+    position: relative;
+}
+
+.select-locked-status:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+}

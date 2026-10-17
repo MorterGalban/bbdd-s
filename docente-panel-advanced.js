@@ -6,32 +6,45 @@
  * 1. Filtros cruzados en tiempo real (Búsqueda + Grado + Estatus de Recaudos + Estatus Solicitud + Fecha)
  * 2. Exportación dinámica a Excel/CSV del subconjunto exacto filtrado en pantalla
  * 3. Vaciado total permanente con DELETE/TRUNCATE real en MySQL y Cloud
- * 4. Modal de Historial de Auditoría (System Logs) para el personal docente
+ * 4. Control seguro con sesiones temporales para el personal docente
  */
 
 (function () {
     'use strict';
 
-    let logsDocenteCache = [];
-
     // ==============================================================================
     // 1. FILTRADO CRUZADO EN TIEMPO REAL
     // ==============================================================================
-    function aplicarFiltrosAvanzadosDocente() {
-        if (!window.AppState || !Array.isArray(window.AppState.registros)) {
-            return;
-        }
+    function obtenerEstadoGlobal() {
+        if (typeof window !== 'undefined' && window.AppState) return window.AppState;
+        if (typeof AppState !== 'undefined') return AppState;
+        return null;
+    }
 
+    function aplicarFiltrosAvanzadosDocente() {
+        const state = obtenerEstadoGlobal();
         const tbody = document.getElementById('tablaDocenteRegistrosBody');
         if (!tbody) return;
 
+        if (!state || !Array.isArray(state.registros)) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.8rem; color: var(--fya-red); display: block; margin-bottom: 0.5rem;"></i>
+                        Sincronizando información de preinscripciones...
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
         const texto = (document.getElementById('filtroDocenteBusqueda')?.value || '').trim().toLowerCase();
-        const grado = document.getElementById('filtroDocenteGrado')?.value || window.AppState.filtroGradoActivo || '';
+        const grado = document.getElementById('filtroDocenteGrado')?.value || state.filtroGradoActivo || '';
         const recaudosFiltro = document.getElementById('filtroDocenteRecaudos')?.value || '';
         const estado = document.getElementById('filtroDocenteEstado')?.value || '';
         const fechaFiltro = document.getElementById('filtroDocenteFecha')?.value || ''; // Formato: YYYY-MM-DD
 
-        const filtrados = window.AppState.registros.filter(r => {
+        const filtrados = state.registros.filter(r => {
             if (!r) return false;
 
             // 1. Búsqueda por texto (Alumno, cédula, representante, cédula representante, colegio)
@@ -43,31 +56,42 @@
                 (r.repreDoc && r.repreDoc.toLowerCase().includes(texto)) ||
                 (r.instituto && r.instituto.toLowerCase().includes(texto));
 
-            // 2. Grado Solicitado
-            const matchGrado = !grado || (r.grado && r.grado.includes(grado));
+            // 2. Grado Solicitado (soporte robusto para '1er Grado', '1° Grado', ID '1', etc.)
+            let matchGrado = true;
+            if (grado) {
+                const gNum = grado.match(/\d/)?.[0];
+                const rNum = (r.gradoId ? String(r.gradoId) : '') || (r.grado ? r.grado.match(/\d/)?.[0] : '');
+                matchGrado = (r.grado && r.grado.toLowerCase().includes(grado.toLowerCase())) || (Boolean(gNum) && Boolean(rNum) && gNum === rNum);
+            }
 
             // 3. Estatus de Solicitud (EN_REVISION, APROBADA, etc.)
             const matchEstado = !estado || (r.estado === estado);
 
-            // 4. Estatus de Recaudos (Aprobado/Completo 5/5, En Revisión 4/5, Incompleto < 4)
+            // 4. Estatus de Recaudos (Aprobado/Completo 5/5, En Revisión 5/5, Incompleto < 5)
             let matchRecaudos = true;
             if (recaudosFiltro) {
-                const countStr = r.recaudosCount || '4/5';
-                const entregados = parseInt(countStr.split('/')[0] || '0', 10);
+                let entregados = 0;
+                if (r.documentos) {
+                    for (let i = 1; i <= 5; i++) {
+                        const d = r.documentos[String(i)] || (r.archivos && r.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
+                        if (d === 'APROBADO' || d === 'CONSIGNADO') entregados++;
+                    }
+                } else if (r.recaudosCount) {
+                    entregados = parseInt(r.recaudosCount.split('/')[0] || '0', 10);
+                }
+
                 if (recaudosFiltro === 'COMPLETO') {
                     matchRecaudos = (entregados >= 5);
                 } else if (recaudosFiltro === 'REVISION') {
-                    matchRecaudos = (entregados === 4);
+                    matchRecaudos = (entregados >= 5 && r.estado === 'EN_REVISION');
                 } else if (recaudosFiltro === 'INCOMPLETO') {
-                    matchRecaudos = (entregados < 4 || r.estado === 'DOCUMENTOS_INCOMPLETOS');
+                    matchRecaudos = (entregados < 5 || r.estado === 'DOCUMENTOS_INCOMPLETOS');
                 }
             }
 
             // 5. Fecha de Registro
             let matchFecha = true;
             if (fechaFiltro) {
-                // fechaFiltro viene en YYYY-MM-DD (ej: 2026-10-08)
-                // r.fecha puede venir en '08/10/2026' o ISO '2026-10-08...'
                 const rFecha = String(r.fecha || '');
                 if (rFecha.includes('/')) {
                     const partes = rFecha.split('/');
@@ -86,10 +110,10 @@
         });
 
         // Guardar subconjunto exacto visible en memoria global para exportación dinámica
-        window.AppState.registrosFiltrados = filtrados;
+        state.registrosFiltrados = filtrados;
 
         // Renderizado del cuerpo de la tabla
-        if (!window.AppState.registros || window.AppState.registros.length === 0) {
+        if (!state.registros || state.registros.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="8" style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
@@ -124,6 +148,27 @@
 
         let html = '';
         filtrados.forEach(r => {
+            // Contar recaudos y evaluar máquina de estados automática
+            let entregados = 0;
+            if (r.documentos) {
+                for (let i = 1; i <= 5; i++) {
+                    const docVal = r.documentos[String(i)] || (r.archivos && r.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
+                    if (docVal === 'APROBADO' || docVal === 'CONSIGNADO') entregados++;
+                }
+            } else if (r.recaudosCount) {
+                entregados = parseInt(r.recaudosCount.split('/')[0] || '0', 10);
+            }
+            r.recaudosCount = `${entregados}/5`;
+
+            // Máquina de estados: si faltan recaudos (< 5), se bloquea automáticamente en DOCUMENTOS_INCOMPLETOS.
+            // Si tiene 100% (5/5) y estaba en DOCUMENTOS_INCOMPLETOS, pasa a EN_REVISION (habilitando el control docente).
+            const estaIncompleto = (entregados < 5);
+            if (estaIncompleto) {
+                r.estado = 'DOCUMENTOS_INCOMPLETOS';
+            } else if (r.estado === 'DOCUMENTOS_INCOMPLETOS' || !r.estado) {
+                r.estado = 'EN_REVISION';
+            }
+
             const badgeColor = {
                 'APROBADA': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
                 'EN_REVISION': 'background: #fef3c7; color: #b45309; border: 1px solid #fde68a;',
@@ -132,7 +177,27 @@
                 'LISTA_DE_ESPERA': 'background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe;'
             }[r.estado] || 'background: #f1f5f9; color: #475569;';
 
-            const recaudosBadge = r.recaudosCount || '4/5';
+            const recaudosBadge = r.recaudosCount;
+
+            const selectorEstadoHtml = estaIncompleto ? `
+                <div class="status-locked-wrapper" title="Bloqueo automático del sistema: Faltan recaudos obligatorios (${entregados}/5 consignados). El expediente está bloqueado hasta consignar el 100% de recaudos.">
+                    <span class="badge-lock-indicator"><i class="fa-solid fa-lock"></i> BLOQUEADO</span>
+                    <select class="form-control select-locked-status" disabled title="Bloqueado por sistema: Faltan recaudos por consignar (${entregados}/5). Debe consignar el 100% para habilitar revisión y aprobación docente.">
+                        <option value="DOCUMENTOS_INCOMPLETOS" selected>DOCS. INCOMPLETOS</option>
+                    </select>
+                </div>
+            ` : `
+                <div class="status-unlocked-wrapper" title="Expediente con 100% de recaudos consignados (5/5). Control docente habilitado para revisión y aprobación en taquilla.">
+                    <span class="badge-unlocked-indicator"><i class="fa-solid fa-lock-open"></i> HABILITADO</span>
+                    <select class="form-control" style="font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.5rem; ${badgeColor}" onchange="cambiarEstadoPreinscripcion('${r.codigo}', this.value)">
+                        <option value="EN_REVISION" ${r.estado === 'EN_REVISION' ? 'selected' : ''}>EN REVISIÓN</option>
+                        <option value="APROBADA" ${r.estado === 'APROBADA' ? 'selected' : ''}>APROBADA / EN REGLA</option>
+                        <option value="DOCUMENTOS_INCOMPLETOS" ${r.estado === 'DOCUMENTOS_INCOMPLETOS' ? 'selected' : ''}>DOCS. INCOMPLETOS</option>
+                        <option value="PENDIENTE" ${r.estado === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
+                        <option value="LISTA_DE_ESPERA" ${r.estado === 'LISTA_DE_ESPERA' ? 'selected' : ''}>LISTA DE ESPERA</option>
+                    </select>
+                </div>
+            `;
 
             html += `
                 <tr>
@@ -160,13 +225,7 @@
                         </button>
                     </td>
                     <td>
-                        <select class="form-control" style="font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.5rem; ${badgeColor}" onchange="cambiarEstadoPreinscripcion('${r.codigo}', this.value)">
-                            <option value="EN_REVISION" ${r.estado === 'EN_REVISION' ? 'selected' : ''}>EN REVISIÓN</option>
-                            <option value="APROBADA" ${r.estado === 'APROBADA' ? 'selected' : ''}>APROBADA</option>
-                            <option value="DOCUMENTOS_INCOMPLETOS" ${r.estado === 'DOCUMENTOS_INCOMPLETOS' ? 'selected' : ''}>DOCS. INCOMPLETOS</option>
-                            <option value="PENDIENTE" ${r.estado === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
-                            <option value="LISTA_DE_ESPERA" ${r.estado === 'LISTA_DE_ESPERA' ? 'selected' : ''}>LISTA DE ESPERA</option>
-                        </select>
+                        ${selectorEstadoHtml}
                     </td>
                     <td style="text-align: center;">
                         <div class="table-action-btn-group">
@@ -196,9 +255,10 @@
     // ==============================================================================
     window.exportarRegistrosAExcel = function () {
         // Garantizar que se exporte exactamente el subconjunto de datos filtrados visible en pantalla
-        const registrosAExportar = (window.AppState && window.AppState.registrosFiltrados) 
-            ? window.AppState.registrosFiltrados 
-            : (window.AppState?.registros || []);
+        const state = obtenerEstadoGlobal();
+        const registrosAExportar = (state && state.registrosFiltrados) 
+            ? state.registrosFiltrados 
+            : (state?.registros || []);
 
         if (registrosAExportar.length === 0) {
             if (typeof mostrarToast === 'function') {
@@ -277,8 +337,9 @@
         if (selEstado) selEstado.value = '';
         if (inpFecha) inpFecha.value = '';
 
-        if (window.AppState) {
-            window.AppState.filtroGradoActivo = '';
+        const state = obtenerEstadoGlobal();
+        if (state) {
+            state.filtroGradoActivo = '';
         }
 
         document.querySelectorAll('.grade-pill-btn').forEach(btn => btn.classList.remove('active'));
@@ -293,12 +354,13 @@
     const originalEjecutarEliminarRegistro = window.ejecutarEliminarRegistro;
 
     window.ejecutarEliminarRegistro = async function () {
-        if (!window.AppState || !window.AppState.registroAEliminar) {
+        const state = obtenerEstadoGlobal();
+        if (!state || !state.registroAEliminar) {
             if (typeof cerrarModal === 'function') cerrarModal('modalConfirmarEliminarBackdrop');
             return;
         }
 
-        const esLimpiarTodos = (window.AppState.registroAEliminar === '__ALL__');
+        const esLimpiarTodos = (state.registroAEliminar === '__ALL__');
 
         if (esLimpiarTodos) {
             if (typeof cerrarModal === 'function') cerrarModal('modalConfirmarEliminarBackdrop');
@@ -307,15 +369,25 @@
             }
 
             try {
-                const usuarioActual = localStorage.getItem('fya_docente_user') || 'manteca';
-                const res = await fetch('/api/preinscripciones/purge', {
+                const usuarioActual = sessionStorage.getItem('fya_docente_user') || localStorage.getItem('fya_docente_user') || 'manteca';
+                let res = await fetch('/api/preinscripciones/purge', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                         'x-user': usuarioActual
-                    },
-                    body: JSON.stringify({ usuario: usuarioActual })
-                });
+                    }
+                }).catch(() => null);
+
+                if (!res || !res.ok) {
+                    res = await fetch('/api/preinscripciones/purge', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-user': usuarioActual
+                        },
+                        body: JSON.stringify({ usuario: usuarioActual })
+                    });
+                }
 
                 const data = await res.json();
                 if (!res.ok || !data.success) {
@@ -323,12 +395,13 @@
                 }
 
                 // Limpieza en memoria y localStorage
-                window.AppState.registros = [];
-                window.AppState.registrosFiltrados = [];
+                state.registros = [];
+                state.registrosFiltrados = [];
                 localStorage.setItem('fya_preinscripciones_db', JSON.stringify([]));
 
                 if (typeof recalcularCorrelativo === 'function') recalcularCorrelativo();
                 if (typeof actualizarKpisDocente === 'function') actualizarKpisDocente();
+                if (typeof filtrarYRenderizarHistorial === 'function') filtrarYRenderizarHistorial();
                 aplicarFiltrosAvanzadosDocente();
 
                 if (typeof mostrarToast === 'function') {
@@ -344,120 +417,15 @@
             // Mantener comportamiento normal para eliminar un solo folio
             if (typeof originalEjecutarEliminarRegistro === 'function') {
                 await originalEjecutarEliminarRegistro();
-                aplicarFiltrosAvanzadosDocente();
             }
+            aplicarFiltrosAvanzadosDocente();
         }
     };
 
     // ==============================================================================
-    // 5. HISTORIAL DE AUDITORÍA Y LOGS EN MYSQL (VISTA DOCENTE)
+    // 5. RESTRICCIÓN DE AUDITORÍA: RESERVADA EXCLUSIVAMENTE PARA SUPERROOT
     // ==============================================================================
-    window.abrirModalAuditoriaDocente = function () {
-        const modal = document.getElementById('modalAuditoriaDocenteBackdrop');
-        if (modal) {
-            modal.style.display = 'flex';
-            modal.classList.add('active');
-            cargarLogsDocente();
-        }
-    };
-
-    window.cerrarModalAuditoriaDocente = function () {
-        const modal = document.getElementById('modalAuditoriaDocenteBackdrop');
-        if (modal) {
-            modal.style.display = 'none';
-            modal.classList.remove('active');
-        }
-    };
-
-    window.cargarLogsDocente = async function () {
-        const tbody = document.getElementById('tablaAuditoriaDocenteBody');
-        const icon = document.getElementById('iconSyncLogsDocente');
-        if (icon) icon.classList.add('fa-spin');
-
-        if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando eventos desde MySQL...</td></tr>`;
-        }
-
-        try {
-            const res = await fetch('/api/logs?limit=80');
-            const data = await res.json();
-
-            if (res.ok && data.success && Array.isArray(data.data)) {
-                logsDocenteCache = data.data;
-                renderizarTablaLogsDocente(logsDocenteCache);
-            } else {
-                if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #dc2626; padding: 1.5rem;">Error al consultar logs de auditoría.</td></tr>`;
-            }
-        } catch (e) {
-            if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #dc2626; padding: 1.5rem;">Error de conexión con la base de datos.</td></tr>`;
-        } finally {
-            if (icon) icon.classList.remove('fa-spin');
-        }
-    };
-
-    function renderizarTablaLogsDocente(logs) {
-        const tbody = document.getElementById('tablaAuditoriaDocenteBody');
-        if (!tbody) return;
-
-        if (logs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay eventos de auditoría registrados aún.</td></tr>`;
-            return;
-        }
-
-        let html = '';
-        logs.forEach(l => {
-            const fecha = l.timestamp ? new Date(l.timestamp).toLocaleString('es-VE') : 'N/D';
-            const accionBadge = {
-                'APROBACION_DOCENTE': 'color: #15803d; font-weight: 700;',
-                'RECHAZO_DOCENTE': 'color: #b91c1c; font-weight: 700;',
-                'VACIADO_TABLAS': 'color: #dc2626; font-weight: 800;',
-                'CAMBIO_ESTADO_ALUMNO': 'color: #0284c7; font-weight: 700;',
-                'NUEVA_PREINSCRIPCION': 'color: #16a34a; font-weight: 700;',
-                'RECUPERACION_CLAVE': 'color: #7c3aed; font-weight: 700;'
-            }[l.accion] || 'color: var(--text-primary); font-weight: 600;';
-
-            html += `
-                <tr>
-                    <td style="white-space: nowrap; font-family: monospace; font-size: 0.78rem;">${fecha}</td>
-                    <td><strong style="color: var(--text-primary);">${l.usuario || 'Sistema'}</strong></td>
-                    <td><span class="badge-tag" style="font-size: 0.72rem; padding: 2px 6px;">${l.rol || 'DOCENTE'}</span></td>
-                    <td style="${accionBadge}">${l.accion || 'OPERACION'}</td>
-                    <td style="color: var(--text-secondary); line-height: 1.4;">${l.descripcion || ''}</td>
-                </tr>
-            `;
-        });
-
-        tbody.innerHTML = html;
-    }
-
-    window.exportarLogsDocenteCSV = function () {
-        if (!logsDocenteCache || logsDocenteCache.length === 0) {
-            if (typeof mostrarToast === 'function') {
-                mostrarToast('Sin Datos', 'No hay registros de auditoría para exportar.', 'error');
-            }
-            return;
-        }
-
-        const headers = ['Fecha y Hora', 'Usuario', 'Rol', 'Acción', 'Descripción'];
-        const rows = logsDocenteCache.map(l => [
-            `"${l.timestamp || ''}"`,
-            `"${(l.usuario || '').replace(/"/g, '""')}"`,
-            `"${l.rol || ''}"`,
-            `"${l.accion || ''}"`,
-            `"${(l.descripcion || '').replace(/"/g, '""')}"`
-        ]);
-
-        const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map(e => e.join(';'))].join('\r\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Auditoria_Docente_MySQL_${new Date().toISOString().slice(0, 10)}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    };
+    // Por directriz de seguridad jerárquica, el docente no visualiza los logs del sistema.
 
     // ==============================================================================
     // 6. INICIALIZACIÓN DE LISTENERS

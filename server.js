@@ -65,8 +65,8 @@ const REGISTROS_DEMO = [
         periodo: '2026-2027',
         operador: 'Control de Estudios (Admin)',
         idUser: '1',
-        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO', '5': 'NO_CONSIGNADO' },
-        recaudosCount: '4/5',
+        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO', '5': 'CONSIGNADO' },
+        recaudosCount: '5/5',
         fecha: '08/10/2026'
     },
     {
@@ -707,7 +707,18 @@ async function insertarRegistroEnMySQL(conn, reg) {
     let alumnoId = null;
     const [resAl] = await conn.query(
         `INSERT INTO alumnos (tipo_documento, numero_identificacion, nombres, apellidos, fecha_nacimiento, genero, lugar_nacimiento, direccion_habitacion, tipo_sangre, alergias_condiciones, vive_con)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+            nombres = VALUES(nombres),
+            apellidos = VALUES(apellidos),
+            fecha_nacimiento = VALUES(fecha_nacimiento),
+            genero = VALUES(genero),
+            lugar_nacimiento = VALUES(lugar_nacimiento),
+            direccion_habitacion = VALUES(direccion_habitacion),
+            tipo_sangre = VALUES(tipo_sangre),
+            alergias_condiciones = VALUES(alergias_condiciones),
+            vive_con = VALUES(vive_con),
+            id = LAST_INSERT_ID(id)`,
         [alTipo, alDoc, alNombres, alApellidos, reg.alumnoFechaNac || null, reg.alumnoGenero || 'MASCULINO', reg.alumnoLugarNac || '', reg.alumnoDireccion || '', reg.alumnoSangre || 'O+', reg.alumnoAlergias || '', reg.alumnoViveCon || 'Ambos Padres']
     );
     alumnoId = resAl.insertId;
@@ -715,7 +726,16 @@ async function insertarRegistroEnMySQL(conn, reg) {
     let repreId = null;
     const [resRep] = await conn.query(
         `INSERT INTO representantes (tipo_documento, numero_identificacion, nombres, apellidos, parentesco, telefono_principal, correo, profesion_ocupacion, direccion_habitacion)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+            nombres = VALUES(nombres),
+            apellidos = VALUES(apellidos),
+            parentesco = VALUES(parentesco),
+            telefono_principal = VALUES(telefono_principal),
+            correo = VALUES(correo),
+            profesion_ocupacion = VALUES(profesion_ocupacion),
+            direccion_habitacion = VALUES(direccion_habitacion),
+            id = LAST_INSERT_ID(id)`,
         [repTipo, repDoc, repNombres, repApellidos, reg.repreParentesco || 'MADRE', reg.repreTelefono || '', reg.repreCorreo || '', reg.repreOcupacion || '', reg.repreDireccion || '']
     );
     repreId = resRep.insertId;
@@ -1351,7 +1371,23 @@ app.get('/api/proceso-admision/estado', async (req, res) => {
                 }
             }
 
-            const est = (p.estado || '').toUpperCase();
+            let entregados = 0;
+            if (p.documentos) {
+                for (let i = 1; i <= 5; i++) {
+                    const e = p.documentos[String(i)] || (p.archivos && p.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
+                    if (e === 'APROBADO' || e === 'CONSIGNADO') entregados++;
+                }
+            } else if (p.recaudosCount) {
+                entregados = parseInt(p.recaudosCount.split('/')[0] || '0', 10);
+            }
+
+            let est = (p.estado || '').toUpperCase();
+            if (entregados < 5) {
+                est = 'DOCUMENTOS_INCOMPLETOS';
+            } else if (est === 'DOCUMENTOS_INCOMPLETOS' || !est) {
+                est = 'EN_REVISION';
+            }
+
             if (est === 'APROBADA') desgloseEstados.aprobadas++;
             else if (est === 'EN_REVISION') desgloseEstados.en_revision++;
             else desgloseEstados.incompletas++;
@@ -1865,8 +1901,8 @@ app.post('/api/docente/recuperar/reset', async (req, res) => {
 // RUTAS DE AUDITORÍA Y REGISTRO DE ACTIVIDAD (LOGS)
 // ==============================================================================
 
-// 11. Obtener historial de logs del sistema
-app.get('/api/logs', async (req, res) => {
+// 11. Obtener historial de logs del sistema (RESTRINGIDO ESTRICTAMENTE AL SUPERROOT)
+app.get('/api/logs', authSuperrootMiddleware, async (req, res) => {
     try {
         const limite = parseInt(req.query.limit || '100', 10);
 
@@ -2165,50 +2201,74 @@ app.delete('/api/preinscripciones', async (req, res) => {
     }
 });
 
-// 16. Eliminar un registro específico por código/folio en la nube
+// 16. Función y endpoints para eliminar un registro específico por código/folio en la nube
+async function eliminarFolioNube(codigo, req) {
+    const codNormalizado = String(codigo || '').trim();
+    console.log(`[ELIMINAR NUBE] Eliminando folio: ${codNormalizado}`);
+
+    let registros = leerRegistrosArchivo();
+    const target = registros.find(r => (r.codigo || '').trim().toUpperCase() === codNormalizado.toUpperCase());
+    registros = registros.filter(r => (r.codigo || '').trim().toUpperCase() !== codNormalizado.toUpperCase());
+    guardarRegistrosArchivo(registros);
+
+    if (isMySQLConnected && pool) {
+        const conn = await pool.getConnection();
+        try {
+            await conn.beginTransaction();
+            const [rows] = await conn.query('SELECT id, id_alumno, id_repre FROM preinscripciones WHERE UPPER(TRIM(codigo_solicitud)) = UPPER(?)', [codNormalizado]);
+            if (rows.length > 0) {
+                const preId = rows[0].id;
+                const alId = rows[0].id_alumno;
+                const repId = rows[0].id_repre;
+                await conn.query('DELETE FROM preinscripcion_documentos WHERE id_pre = ?', [preId]);
+                await conn.query('DELETE FROM preinscripciones WHERE id = ?', [preId]);
+                if (alId) {
+                    await conn.query('DELETE FROM alumnos WHERE id = ?', [alId]).catch(() => {});
+                }
+                if (repId) {
+                    await conn.query('DELETE FROM representantes WHERE id = ?', [repId]).catch(() => {});
+                }
+            }
+            await conn.commit();
+        } catch (sqlErr) {
+            await conn.rollback();
+            console.error('[MySQL Eliminar Folio Error]', sqlErr.message);
+        } finally {
+            conn.release();
+        }
+    }
+
+    const usuarioEjecutor = req.headers['x-user'] || req.body?.usuario || 'Docente / Admin';
+    await registrarLog(
+        usuarioEjecutor,
+        'DOCENTE',
+        'ELIMINAR_FOLIO',
+        `Expediente con folio ${codigo} (${target?.alumno || 'Aspirante'}) eliminado permanentemente.`,
+        req
+    );
+
+    return {
+        success: true,
+        message: `Registro ${codigo} eliminado exitosamente de la nube.`
+    };
+}
+
 app.delete('/api/preinscripciones/:codigo', async (req, res) => {
     try {
-        const codigo = req.params.codigo;
-        console.log(`[ELIMINAR NUBE] Eliminando folio: ${codigo}`);
-
-        let registros = leerRegistrosArchivo();
-        const target = registros.find(r => r.codigo === codigo);
-        registros = registros.filter(r => r.codigo !== codigo);
-        guardarRegistrosArchivo(registros);
-
-        if (isMySQLConnected && pool) {
-            const conn = await pool.getConnection();
-            try {
-                await conn.beginTransaction();
-                const [rows] = await conn.query('SELECT id FROM preinscripciones WHERE codigo_solicitud = ?', [codigo]);
-                if (rows.length > 0) {
-                    const preId = rows[0].id;
-                    await conn.query('DELETE FROM preinscripcion_documentos WHERE id_pre = ?', [preId]);
-                    await conn.query('DELETE FROM preinscripciones WHERE id = ?', [preId]);
-                }
-                await conn.commit();
-            } catch (sqlErr) {
-                await conn.rollback();
-                console.error('[MySQL Eliminar Folio Error]', sqlErr.message);
-            } finally {
-                conn.release();
-            }
-        }
-
-        await registrarLog(
-            'Docente / Admin',
-            'DOCENTE',
-            'ELIMINAR_FOLIO',
-            `Expediente con folio ${codigo} (${target?.alumno || 'Aspirante'}) eliminado permanentemente.`,
-            req
-        );
-
-        res.json({
-            success: true,
-            message: `Registro ${codigo} eliminado exitosamente de la nube.`
-        });
+        const resultado = await eliminarFolioNube(req.params.codigo, req);
+        res.json(resultado);
     } catch (error) {
         console.error('[DELETE /api/preinscripciones/:codigo]', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/preinscripciones/:codigo/delete', async (req, res) => {
+    try {
+        const resultado = await eliminarFolioNube(req.params.codigo, req);
+        res.json(resultado);
+    } catch (error) {
+        console.error('[POST /api/preinscripciones/:codigo/delete]', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -2287,8 +2347,14 @@ app.put('/api/preinscripciones/:codigo/recaudo', async (req, res) => {
                 if (e === 'APROBADO' || e === 'CONSIGNADO') entregados++;
             }
             reg.recaudosCount = `${entregados}/5`;
-            if (entregados === 5 && reg.estado === 'DOCUMENTOS_INCOMPLETOS') {
-                reg.estado = 'APROBADA';
+
+            const estadoAnterior = reg.estado;
+            if (entregados === 5) {
+                if (reg.estado === 'DOCUMENTOS_INCOMPLETOS' || !reg.estado) {
+                    reg.estado = 'EN_REVISION';
+                }
+            } else {
+                reg.estado = 'DOCUMENTOS_INCOMPLETOS';
             }
 
             guardarRegistrosArchivo(registros);
@@ -2306,6 +2372,20 @@ app.put('/api/preinscripciones/:codigo/recaudo', async (req, res) => {
                     conn.release();
                 }
             }
+
+            const detalleLog = (entregados === 5 && estadoAnterior === 'DOCUMENTOS_INCOMPLETOS')
+                ? `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo}. 100% consignado (5/5): Expediente DESBLOQUEADO y pasado a EN_REVISION.`
+                : (entregados < 5 && estadoAnterior !== 'DOCUMENTOS_INCOMPLETOS'
+                    ? `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo}. Incompleto (${entregados}/5): Expediente BLOQUEADO AUTOMÁTICAMENTE a DOCUMENTOS_INCOMPLETOS.`
+                    : `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo} (${entregados}/5 recaudos). Estado: ${reg.estado}.`);
+
+            await registrarLog(
+                req.body.usuario || 'Docente / Control de Estudios',
+                'DOCENTE',
+                'VERIFICACION_RECAUDO',
+                detalleLog,
+                req
+            );
         }
 
         res.json({

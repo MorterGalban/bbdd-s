@@ -303,9 +303,9 @@
                     </select>
                     <select id="filtroDocenteRecaudos" name="filtroDocenteRecaudos" class="form-control" style="width: auto; min-width: 175px;">
                         <option value="">Todos los Recaudos</option>
-                        <option value="COMPLETO">Aprobado / Completo (5/5)</option>
-                        <option value="REVISION">En Revisión (4/5)</option>
-                        <option value="INCOMPLETO">Incompleto (&lt; 4 recaudos)</option>
+                        <option value="COMPLETO">100% Completo (5/5)</option>
+                        <option value="REVISION">En Revisión (5/5)</option>
+                        <option value="INCOMPLETO">Incompleto (&lt; 5 recaudos)</option>
                     </select>
                     <select id="filtroDocenteEstado" name="filtroDocenteEstado" class="form-control" style="width: auto; min-width: 150px;">
                         <option value="">Todos los Estados</option>
@@ -320,9 +320,6 @@
                 <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                     <button type="button" class="btn btn-outline-success btn-sm" id="btnExportarExcelDocente" title="Exportar preinscripciones filtradas a Excel o CSV">
                         <i class="fa-solid fa-file-excel"></i> Exportar a Excel (CSV)
-                    </button>
-                    <button type="button" class="btn btn-outline-info btn-sm" id="btnVerAuditoriaDocente" onclick="abrirModalAuditoriaDocente()" title="Ver historial de auditoría y registros de actividad del sistema">
-                        <i class="fa-solid fa-list-check"></i> Auditoría
                     </button>
                     <button type="button" class="btn btn-outline-info btn-sm" id="btnSincronizarNube" title="Sincronizar ahora con la nube de Railway" onclick="cargarRegistrosDesdeNube()">
                         <i class="fa-solid fa-arrows-rotate" id="iconSyncNube"></i> Sincronizar
@@ -539,6 +536,12 @@
                                 <option value="OTRO">Otro Familiar</option>
                             </select>
                         </div>
+                        <div class="form-group col-12 conditional-field-wrapper" id="groupAlumnoViveConOtro" style="display: none;">
+                            <label for="alumnoViveConOtro" class="form-label">Especifique con qué familiar convive *</label>
+                            <input type="text" id="alumnoViveConOtro" class="form-control"
+                                placeholder="Especifique con qué familiar convive (ej. Abuela materna, Tío)">
+                            <span class="form-error-msg">Por favor especifique con qué familiar convive</span>
+                        </div>
 
                         <div class="form-group col-12">
                             <label for="alumnoDireccion" class="form-label">Dirección Exacta de Habitación *</label>
@@ -601,6 +604,12 @@
                                 <option value="TIO_A">Tío / Tía</option>
                                 <option value="OTRO">Otro</option>
                             </select>
+                        </div>
+                        <div class="form-group col-12 conditional-field-wrapper" id="groupRepreParentescoOtro" style="display: none;">
+                            <label for="repreParentescoOtro" class="form-label">Indique el parentesco exacto *</label>
+                            <input type="text" id="repreParentescoOtro" class="form-control"
+                                placeholder="Indique el parentesco exacto con el alumno">
+                            <span class="form-error-msg">Por favor indique el parentesco exacto con el alumno</span>
                         </div>
 
                         <div class="form-group col-6">
@@ -1039,48 +1048,21 @@
                         </div>
                     </div>
 
-                    <!-- Apartado Administrativo y de Auditoría MySQL (id_user) -->
-                    <!-- NOTA: Visible únicamente en Modo Docente. Si el usuario ingresa como Representante, este apartado se oculta automáticamente. -->
-                    <div id="adminAuditoriaSection" class="form-grid mt-4 admin-only-section" style="border-top: 2px dashed var(--fya-red-border); padding: 1.25rem; background: var(--fya-red-bg); border-radius: var(--radius-md); margin-top: 1.5rem;">
-                        <div class="form-group col-12" style="margin-bottom: 0.5rem;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
-                                <span class="badge-tag" style="background: var(--fya-red); color: white; border: none; font-size: 0.82rem;">
-                                    <i class="fa-solid fa-lock"></i> Sección Exclusiva para Docentes y Control de Estudios
-                                </span>
-                                <span style="font-size: 0.8rem; color: var(--fya-red-dark); font-weight: 600;">
-                                    Auditoría de Registro Interno (Modelo ER MySQL)
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="form-group col-4">
-                            <label for="selectUsuarioAuditor" class="form-label">Operador / Usuario (id_user) *</label>
-                            <select id="selectUsuarioAuditor" name="selectUsuarioAuditor" class="form-control" required>
-                                <option value="1" selected>Control de Estudios (Admin)</option>
-                                <option value="2">Secretaría Académica</option>
-                            </select>
-                            <span class="form-hint">Clave foránea hacia <code>usuarios.id</code>.</span>
-                        </div>
-                        <div class="form-group col-4">
-                            <label for="selectEstadoPre" class="form-label">Estado de la Solicitud *</label>
-                            <select id="selectEstadoPre" name="selectEstadoPre" class="form-control" required>
-                                <option value="EN_REVISION" selected>EN REVISIÓN</option>
-                                <option value="PENDIENTE">PENDIENTE</option>
-                                <option value="DOCUMENTOS_INCOMPLETOS">DOCUMENTOS INCOMPLETOS</option>
-                                <option value="APROBADA">APROBADA</option>
-                                <option value="LISTA_DE_ESPERA">LISTA DE ESPERA</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-4">
-                            <label for="inputCodigoPre" class="form-label">N° de Folio / Solicitud</label>
-                            <input type="text" id="inputCodigoPre" name="inputCodigoPre" class="form-control font-weight-bold"
-                                value="PRE-2026-0001" readonly style="background: #ffffff; font-family: monospace;">
-                        </div>
-                        <div class="form-group col-12">
-                            <label for="observacionesPre" class="form-label">Observaciones y Notas de la Solicitud</label>
-                            <textarea id="observacionesPre" name="observacionesPre" class="form-control" rows="2"
-                                placeholder="Notas internas sobre el proceso de entrevista, acuerdos con el representante o condiciones particulares..."></textarea>
-                        </div>
+                    <!-- Apartado Administrativo (Campos internos de auditoría, ocultos del flujo visual) -->
+                    <div id="adminAuditoriaSection" class="form-grid mt-4 admin-only-section" style="display: none !important; visibility: hidden !important;">
+                        <select id="selectUsuarioAuditor" name="selectUsuarioAuditor" style="display: none;">
+                            <option value="1" selected>Control de Estudios (Admin)</option>
+                            <option value="2">Secretaría Académica</option>
+                        </select>
+                        <select id="selectEstadoPre" name="selectEstadoPre" style="display: none;">
+                            <option value="EN_REVISION" selected>EN REVISIÓN</option>
+                            <option value="PENDIENTE">PENDIENTE</option>
+                            <option value="DOCUMENTOS_INCOMPLETOS">DOCUMENTOS INCOMPLETOS</option>
+                            <option value="APROBADA">APROBADA</option>
+                            <option value="LISTA_DE_ESPERA">LISTA DE ESPERA</option>
+                        </select>
+                        <input type="hidden" id="inputCodigoPre" name="inputCodigoPre" value="PRE-2026-0001">
+                        <textarea id="observacionesPre" name="observacionesPre" style="display: none;"></textarea>
                     </div><!-- fin adminAuditoriaSection -->
 
                     <div class="step-actions" style="margin-top: 2rem;">
@@ -1608,57 +1590,7 @@
         </div>
     </div>
 
-    <!-- ============================================================== -->
-    <!-- MODAL: HISTORIAL DE AUDITORÍA Y LOGS EN MYSQL (PANEL DOCENTE) -->
-    <!-- ============================================================== -->
-    <div class="modal-backdrop" id="modalAuditoriaDocenteBackdrop">
-        <div class="modal-dialog" style="max-width: 900px;">
-            <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #18181b 0%, #27272a 100%);">
-                    <h3 class="modal-title" style="color: white; font-size: 1.15rem;">
-                        <i class="fa-solid fa-file-shield" style="color: #38bdf8;"></i> Historial de Auditoría y Registro de Actividad (MySQL)
-                    </h3>
-                    <button type="button" class="btn-close" id="btnCerrarModalAuditoria" onclick="cerrarModalAuditoriaDocente()">&times;</button>
-                </div>
-                <div class="modal-body" style="padding: 1.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
-                            Registro cronológico de eventos críticos del sistema escolar (aprobaciones, cambios de estatus y vaciado).
-                        </p>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button type="button" class="btn btn-outline-info btn-sm" onclick="cargarLogsDocente()">
-                                <i class="fa-solid fa-arrows-rotate" id="iconSyncLogsDocente"></i> Actualizar
-                            </button>
-                            <button type="button" class="btn btn-outline-success btn-sm" onclick="exportarLogsDocenteCSV()">
-                                <i class="fa-solid fa-file-excel"></i> Exportar Logs
-                            </button>
-                        </div>
-                    </div>
-                    <div style="overflow-x: auto; max-height: 440px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
-                        <table class="docente-table" style="font-size: 0.82rem;">
-                            <thead>
-                                <tr>
-                                    <th>Fecha y Hora</th>
-                                    <th>Usuario</th>
-                                    <th>Rol</th>
-                                    <th>Acción</th>
-                                    <th>Descripción de la Operación</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaAuditoriaDocenteBody">
-                                <!-- Inyectado dinámicamente -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer" style="padding: 0.85rem 1.5rem; background: var(--bg-page); border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="cerrarModalAuditoriaDocente()">
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Toast de Notificaciones -->
     <div class="toast" id="toastNotification">

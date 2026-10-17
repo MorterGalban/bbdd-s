@@ -29,6 +29,9 @@ const AppState = {
     isSyncing: false
 };
 
+// Exponer explícitamente en el objeto global window para módulos satélite
+window.AppState = AppState;
+
 document.addEventListener('DOMContentLoaded', async () => {
     determinarRolInicial();
     initTheme();
@@ -174,33 +177,42 @@ function determinarRolInicial() {
     const urlParams = new URLSearchParams(window.location.search);
     const rolParam = urlParams.get('rol');
 
+    // Limpieza preventiva de almacenamiento persistente antiguo para garantizar seguridad estricta
+    localStorage.removeItem('fya_docente_auth');
+    localStorage.removeItem('fya_docente_user');
+    localStorage.removeItem('fya_docente_nombre');
+    localStorage.removeItem('fya_rol');
+
     if (rolParam === 'docente') {
-        const auth = localStorage.getItem('fya_docente_auth') === 'true';
+        // SEGURIDAD: La sesión docente vive únicamente en sessionStorage (se destruye al cerrar ventana/pestaña)
+        const auth = sessionStorage.getItem('fya_docente_auth') === 'true';
         if (auth) {
             AppState.rol = 'docente';
             AppState.docenteAutenticado = true;
         } else {
-            // Si intenta entrar como docente sin clave, redirigir a docente-login.html
+            // Si intenta entrar como docente sin clave en esta sesión de ventana, redirigir a docente-login.html
+            sessionStorage.removeItem('fya_docente_auth');
+            sessionStorage.removeItem('fya_rol');
             window.location.href = 'docente-login.html';
             return;
         }
     } else if (rolParam === 'representante') {
         AppState.rol = 'representante';
         AppState.docenteAutenticado = false;
-        localStorage.setItem('fya_rol', 'representante');
-        localStorage.setItem('fya_docente_auth', 'false');
+        sessionStorage.setItem('fya_rol', 'representante');
+        sessionStorage.setItem('fya_docente_auth', 'false');
     } else {
-        // Por defecto: Modo Representante sin registros previos ni contraseñas
-        const savedRol = localStorage.getItem('fya_rol');
-        const savedAuth = localStorage.getItem('fya_docente_auth') === 'true';
+        // Por defecto: Verificar si existe sesión activa en la pestaña actual
+        const savedRol = sessionStorage.getItem('fya_rol');
+        const savedAuth = sessionStorage.getItem('fya_docente_auth') === 'true';
         if (savedRol === 'docente' && savedAuth) {
             AppState.rol = 'docente';
             AppState.docenteAutenticado = true;
         } else {
             AppState.rol = 'representante';
             AppState.docenteAutenticado = false;
-            localStorage.setItem('fya_rol', 'representante');
-            localStorage.setItem('fya_docente_auth', 'false');
+            sessionStorage.setItem('fya_rol', 'representante');
+            sessionStorage.setItem('fya_docente_auth', 'false');
         }
     }
 }
@@ -243,7 +255,8 @@ function aplicarModoPerfil(rol) {
         if (docenteSidebarSection) docenteSidebarSection.style.display = 'flex';
         if (btnVerHistorial) btnVerHistorial.style.display = 'inline-flex';
         if (btnVerPanelDocente) btnVerPanelDocente.style.display = 'inline-flex';
-        if (adminAuditoriaSection) adminAuditoriaSection.style.display = 'grid';
+        // Auditoría/System logs se oculta siempre por seguridad y claridad visual
+        if (adminAuditoriaSection) adminAuditoriaSection.style.setProperty('display', 'none', 'important');
 
         mostrarPanelDocente();
     } else {
@@ -338,7 +351,7 @@ function mostrarFormularioEnModoDocente() {
     }
     if (preContainerForm) preContainerForm.style.display = 'block';
     if (bannerDocenteForm) bannerDocenteForm.style.display = 'flex';
-    if (adminAuditoriaSection) adminAuditoriaSection.style.display = 'grid';
+    if (adminAuditoriaSection) adminAuditoriaSection.style.setProperty('display', 'none', 'important');
 
     irAlPaso(1);
     cerrarMobileSidebar();
@@ -346,8 +359,14 @@ function mostrarFormularioEnModoDocente() {
 }
 
 function cerrarSesionDocente() {
-    localStorage.setItem('fya_rol', 'representante');
-    localStorage.setItem('fya_docente_auth', 'false');
+    sessionStorage.removeItem('fya_docente_auth');
+    sessionStorage.removeItem('fya_rol');
+    sessionStorage.removeItem('fya_docente_user');
+    sessionStorage.removeItem('fya_docente_nombre');
+    localStorage.removeItem('fya_docente_auth');
+    localStorage.removeItem('fya_rol');
+    localStorage.removeItem('fya_docente_user');
+    localStorage.removeItem('fya_docente_nombre');
     window.location.href = 'index.html';
 }
 
@@ -550,6 +569,87 @@ function initMascarasValidacion() {
             actualizarEstadoBotonImprimir();
         });
     });
+
+    // Conectar eventos dinámicos condicionales (Paso 1 y Paso 2)
+    const selViveInit = document.getElementById('alumnoViveCon');
+    if (selViveInit) {
+        selViveInit.addEventListener('change', () => {
+            toggleAlumnoViveConOtro();
+            sincronizarDatosPlanilla();
+            ejecutarAutoguardado();
+        });
+    }
+
+    const inpViveOtro = document.getElementById('alumnoViveConOtro');
+    if (inpViveOtro) {
+        inpViveOtro.addEventListener('input', () => {
+            sincronizarDatosPlanilla();
+            ejecutarAutoguardado();
+        });
+    }
+
+    const selParInit = document.getElementById('repreParentesco');
+    if (selParInit) {
+        selParInit.addEventListener('change', () => {
+            toggleRepreParentescoOtro();
+            sincronizarDatosPlanilla();
+            ejecutarAutoguardado();
+        });
+    }
+
+    const inpParOtro = document.getElementById('repreParentescoOtro');
+    if (inpParOtro) {
+        inpParOtro.addEventListener('input', () => {
+            sincronizarDatosPlanilla();
+            ejecutarAutoguardado();
+        });
+    }
+
+    // Inicializar visibilidad condicional
+    toggleAlumnoViveConOtro();
+    toggleRepreParentescoOtro();
+}
+
+function toggleAlumnoViveConOtro() {
+    const sel = document.getElementById('alumnoViveCon');
+    const grp = document.getElementById('groupAlumnoViveConOtro');
+    const inp = document.getElementById('alumnoViveConOtro');
+    if (!sel || !grp) return;
+
+    if (sel.value === 'OTRO') {
+        grp.style.display = 'block';
+        if (inp) {
+            inp.required = true;
+        }
+    } else {
+        grp.style.display = 'none';
+        if (inp) {
+            inp.required = false;
+            inp.value = '';
+            inp.classList.remove('input-invalid');
+        }
+    }
+}
+
+function toggleRepreParentescoOtro() {
+    const sel = document.getElementById('repreParentesco');
+    const grp = document.getElementById('groupRepreParentescoOtro');
+    const inp = document.getElementById('repreParentescoOtro');
+    if (!sel || !grp) return;
+
+    if (sel.value === 'OTRO') {
+        grp.style.display = 'block';
+        if (inp) {
+            inp.required = true;
+        }
+    } else {
+        grp.style.display = 'none';
+        if (inp) {
+            inp.required = false;
+            inp.value = '';
+            inp.classList.remove('input-invalid');
+        }
+    }
 }
 
 function validarTelefonoVenezolano(input) {
@@ -806,12 +906,14 @@ function ejecutarAutoguardado() {
         alumnoTipoSangre: document.getElementById('alumnoTipoSangre')?.value,
         alumnoLugarNac: document.getElementById('alumnoLugarNac')?.value,
         alumnoViveCon: document.getElementById('alumnoViveCon')?.value,
+        alumnoViveConOtro: document.getElementById('alumnoViveConOtro')?.value,
         alumnoDireccion: document.getElementById('alumnoDireccion')?.value,
         alumnoAlergias: document.getElementById('alumnoAlergias')?.value,
 
         repreTipoDoc: document.getElementById('repreTipoDoc')?.value,
         repreNumDoc: document.getElementById('repreNumDoc')?.value,
         repreParentesco: document.getElementById('repreParentesco')?.value,
+        repreParentescoOtro: document.getElementById('repreParentescoOtro')?.value,
         repreNombres: document.getElementById('repreNombres')?.value,
         repreApellidos: document.getElementById('repreApellidos')?.value,
         repreTelefono: document.getElementById('repreTelefono')?.value,
@@ -864,6 +966,8 @@ function restaurarBorrador() {
 
         actualizarResumenGrado();
         actualizarEstadoBotonImprimir();
+        toggleAlumnoViveConOtro();
+        toggleRepreParentescoOtro();
         mostrarToast('Borrador Restaurado', 'Se recuperaron automáticamente los datos ingresados previamente.', 'info');
     } catch (e) {
         console.warn('Error al restaurar borrador:', e);
@@ -1226,7 +1330,11 @@ function sincronizarDatosPlanilla() {
     const lugNac = (document.getElementById('alumnoLugarNac')?.value || '').trim() || 'San Francisco, Edo. Zulia';
 
     const selectVive = document.getElementById('alumnoViveCon');
-    const viveTexto = selectVive?.options[selectVive.selectedIndex]?.text || (selectVive?.value || 'AMBOS_PADRES').replace(/_/g, ' ');
+    let viveTexto = selectVive?.options[selectVive.selectedIndex]?.text || (selectVive?.value || 'AMBOS_PADRES').replace(/_/g, ' ');
+    if (selectVive?.value === 'OTRO') {
+        const otroVive = (document.getElementById('alumnoViveConOtro')?.value || '').trim();
+        viveTexto = otroVive ? `Otros familiares: ${otroVive}` : 'Otros familiares';
+    }
 
     const dirHab = (document.getElementById('alumnoDireccion')?.value || '').trim() || 'Barrio 24 de Julio, San Francisco, Edo. Zulia';
     const alergias = (document.getElementById('alumnoAlergias')?.value || '').trim() || 'Ninguna conocida';
@@ -1262,7 +1370,11 @@ function sincronizarDatosPlanilla() {
     const repDoc = repNumDoc ? `${repTipoDoc}-${repNumDoc}` : `${repTipoDoc}-19888777`;
 
     const selectPar = document.getElementById('repreParentesco');
-    const parTexto = selectPar?.options[selectPar.selectedIndex]?.text || selectPar?.value || 'MADRE';
+    let parTexto = selectPar?.options[selectPar.selectedIndex]?.text || selectPar?.value || 'MADRE';
+    if (selectPar?.value === 'OTRO') {
+        const otroPar = (document.getElementById('repreParentescoOtro')?.value || '').trim();
+        parTexto = otroPar || 'Otro';
+    }
 
     const repTel = (document.getElementById('repreTelefono')?.value || '').trim() || '0414-9876543';
     const repCor = (document.getElementById('repreCorreo')?.value || '').trim() || 'carmen.blanco@correo.com';
@@ -1504,11 +1616,18 @@ window.previsualizarArchivoCargado = function(docId) {
    11. RENDERIZADO DEL PANEL DOCENTE & TABLA DE PREINSCRITOS
    ============================================================================== */
 function renderizarPanelDocente() {
-    filtrarYRenderizarPanelDocente();
+    if (typeof window.filtrarYRenderizarPanelDocente === 'function' && window.filtrarYRenderizarPanelDocente !== filtrarYRenderizarPanelDocente) {
+        window.filtrarYRenderizarPanelDocente();
+    } else {
+        filtrarYRenderizarPanelDocente();
+    }
     actualizarKpisDocente();
 }
 
 function filtrarYRenderizarPanelDocente() {
+    if (typeof window.filtrarYRenderizarPanelDocente === 'function' && window.filtrarYRenderizarPanelDocente !== filtrarYRenderizarPanelDocente) {
+        return window.filtrarYRenderizarPanelDocente();
+    }
     const tbody = document.getElementById('tablaDocenteRegistrosBody');
     if (!tbody) return;
 
@@ -1561,6 +1680,24 @@ function filtrarYRenderizarPanelDocente() {
 
     let html = '';
     filtrados.forEach(r => {
+        let entregados = 0;
+        if (r.documentos) {
+            for (let i = 1; i <= 5; i++) {
+                const docVal = r.documentos[String(i)] || (r.archivos && r.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
+                if (docVal === 'APROBADO' || docVal === 'CONSIGNADO') entregados++;
+            }
+        } else if (r.recaudosCount) {
+            entregados = parseInt(r.recaudosCount.split('/')[0] || '0', 10);
+        }
+        r.recaudosCount = `${entregados}/5`;
+
+        const estaIncompleto = (entregados < 5);
+        if (estaIncompleto) {
+            r.estado = 'DOCUMENTOS_INCOMPLETOS';
+        } else if (r.estado === 'DOCUMENTOS_INCOMPLETOS' || !r.estado) {
+            r.estado = 'EN_REVISION';
+        }
+
         const badgeColor = {
             'APROBADA': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
             'EN_REVISION': 'background: #fef3c7; color: #b45309; border: 1px solid #fde68a;',
@@ -1569,7 +1706,27 @@ function filtrarYRenderizarPanelDocente() {
             'LISTA_DE_ESPERA': 'background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe;'
         }[r.estado] || 'background: #f1f5f9; color: #475569;';
 
-        const recaudosBadge = r.recaudosCount || '4/5';
+        const recaudosBadge = r.recaudosCount;
+
+        const selectorEstadoHtml = estaIncompleto ? `
+            <div class="status-locked-wrapper" title="Bloqueo automático del sistema: Faltan recaudos obligatorios (${entregados}/5 consignados). El expediente está bloqueado hasta consignar el 100% de recaudos.">
+                <span class="badge-lock-indicator"><i class="fa-solid fa-lock"></i> BLOQUEADO</span>
+                <select class="form-control select-locked-status" disabled title="Bloqueado por sistema: Faltan recaudos por consignar (${entregados}/5). Debe consignar el 100% para habilitar revisión y aprobación docente.">
+                    <option value="DOCUMENTOS_INCOMPLETOS" selected>DOCS. INCOMPLETOS</option>
+                </select>
+            </div>
+        ` : `
+            <div class="status-unlocked-wrapper" title="Expediente con 100% de recaudos consignados (5/5). Control docente habilitado para revisión y aprobación en taquilla.">
+                <span class="badge-unlocked-indicator"><i class="fa-solid fa-lock-open"></i> HABILITADO</span>
+                <select class="form-control" style="font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.5rem; ${badgeColor}" onchange="cambiarEstadoPreinscripcion('${r.codigo}', this.value)">
+                    <option value="EN_REVISION" ${r.estado === 'EN_REVISION' ? 'selected' : ''}>EN REVISIÓN</option>
+                    <option value="APROBADA" ${r.estado === 'APROBADA' ? 'selected' : ''}>APROBADA / EN REGLA</option>
+                    <option value="DOCUMENTOS_INCOMPLETOS" ${r.estado === 'DOCUMENTOS_INCOMPLETOS' ? 'selected' : ''}>DOCS. INCOMPLETOS</option>
+                    <option value="PENDIENTE" ${r.estado === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
+                    <option value="LISTA_DE_ESPERA" ${r.estado === 'LISTA_DE_ESPERA' ? 'selected' : ''}>LISTA DE ESPERA</option>
+                </select>
+            </div>
+        `;
 
         // Acciones: Planilla, Recaudos y Eliminar (Ver SQL y Cambiar Perfil removidos definitivamente)
         html += `
@@ -1598,13 +1755,7 @@ function filtrarYRenderizarPanelDocente() {
                     </button>
                 </td>
                 <td>
-                    <select class="form-control" style="font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.5rem; ${badgeColor}" onchange="cambiarEstadoPreinscripcion('${r.codigo}', this.value)">
-                        <option value="EN_REVISION" ${r.estado === 'EN_REVISION' ? 'selected' : ''}>EN REVISIÓN</option>
-                        <option value="APROBADA" ${r.estado === 'APROBADA' ? 'selected' : ''}>APROBADA</option>
-                        <option value="DOCUMENTOS_INCOMPLETOS" ${r.estado === 'DOCUMENTOS_INCOMPLETOS' ? 'selected' : ''}>DOCS. INCOMPLETOS</option>
-                        <option value="PENDIENTE" ${r.estado === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
-                        <option value="LISTA_DE_ESPERA" ${r.estado === 'LISTA_DE_ESPERA' ? 'selected' : ''}>LISTA DE ESPERA</option>
-                    </select>
+                    ${selectorEstadoHtml}
                 </td>
                 <td style="text-align: center;">
                     <div class="table-action-btn-group">
@@ -1636,6 +1787,24 @@ function actualizarKpisDocente() {
     const gradoCount = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0 };
 
     registros.forEach(r => {
+        let entregados = 0;
+        if (r.documentos) {
+            for (let i = 1; i <= 5; i++) {
+                const e = r.documentos[String(i)] || (r.archivos && r.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
+                if (e === 'APROBADO' || e === 'CONSIGNADO') entregados++;
+            }
+        } else if (r.recaudosCount) {
+            entregados = parseInt(r.recaudosCount.split('/')[0] || '0', 10);
+        }
+        r.recaudosCount = `${entregados}/5`;
+
+        // Regla estricta automatizada:
+        if (entregados < 5) {
+            r.estado = 'DOCUMENTOS_INCOMPLETOS';
+        } else if (r.estado === 'DOCUMENTOS_INCOMPLETOS' || !r.estado) {
+            r.estado = 'EN_REVISION';
+        }
+
         if (r.estado === 'APROBADA') aprobadas++;
         else if (r.estado === 'EN_REVISION') enRevision++;
         else if (r.estado === 'DOCUMENTOS_INCOMPLETOS') incompletos++;
@@ -1684,22 +1853,43 @@ window.filtrarDocentePorGradoPill = function(gradoNombre) {
 
 window.cambiarEstadoPreinscripcion = async function(codigo, nuevoEstado) {
     const reg = (AppState.registros || []).find(r => r.codigo === codigo);
-    if (reg) {
-        reg.estado = nuevoEstado;
-        localStorage.setItem('fya_preinscripciones_db', JSON.stringify(AppState.registros));
-        actualizarKpisDocente();
-        mostrarToast('Estado Actualizado', `Solicitud ${codigo} actualizada a ${nuevoEstado}.`);
+    if (!reg) return;
 
-        // Sincronizar cambio en la nube
-        try {
-            await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/estado`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ estado: nuevoEstado })
-            });
-        } catch (e) {
-            console.warn('[Cloud Sync Estado Warning]', e.message);
+    let entregados = 0;
+    if (reg.documentos) {
+        for (let i = 1; i <= 5; i++) {
+            const docVal = reg.documentos[String(i)] || (reg.archivos && reg.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
+            if (docVal === 'APROBADO' || docVal === 'CONSIGNADO') entregados++;
         }
+    } else if (reg.recaudosCount) {
+        entregados = parseInt(reg.recaudosCount.split('/')[0] || '0', 10);
+    }
+
+    if (entregados < 5 && nuevoEstado === 'APROBADA') {
+        mostrarToast('Aprobación Bloqueada', 'El expediente tiene recaudos incompletos. Debe validar el 100% de los recaudos (5/5) antes de aprobar.', 'error');
+        filtrarYRenderizarPanelDocente();
+        return;
+    }
+
+    reg.estado = nuevoEstado;
+    localStorage.setItem('fya_preinscripciones_db', JSON.stringify(AppState.registros));
+    actualizarKpisDocente();
+    filtrarYRenderizarPanelDocente();
+    mostrarToast('Estado Actualizado', `Solicitud ${codigo} actualizada a ${nuevoEstado}.`);
+
+    // Sincronizar cambio en la nube
+    try {
+        const usuarioSesion = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('fya_docente_auth'))
+            ? JSON.parse(sessionStorage.getItem('fya_docente_auth')).usuario
+            : 'Docente / Control de Estudios';
+
+        await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/estado`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: nuevoEstado, usuario: usuarioSesion })
+        });
+    } catch (e) {
+        console.warn('[Cloud Sync Estado Warning]', e.message);
     }
 };
 
@@ -1781,10 +1971,20 @@ window.ejecutarEliminarRegistro = async function() {
             recalcularCorrelativo();
             mostrarToast('Nube Limpiada', 'Todos los registros han sido eliminados de la nube satisfactoriamente.', 'success');
         } else {
-            const res = await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}`, {
+            let res = await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' }
-            });
+            }).catch(() => null);
+
+            if (!res || !res.ok) {
+                // Fallback robusto con POST para firewalls y proxies que interceptan DELETE
+                res = await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codigo })
+                });
+            }
+
             const json = await res.json();
             if (!res.ok || !json.success) throw new Error(json.error || 'Error en el servidor');
 
@@ -1971,12 +2171,10 @@ async function manejarEnvioPreinscripcion(e) {
     const gradoNom = selectG?.options[selectG.selectedIndex]?.text || '1er Grado de Educación Primaria';
     const gradoVal = selectG?.value || '1';
 
-    let est = 'EN_REVISION';
     let opNombre = 'Control de Estudios';
     let idUser = '1';
 
     if (AppState.rol === 'docente') {
-        est = document.getElementById('selectEstadoPre')?.value || 'EN_REVISION';
         const selOp = document.getElementById('selectUsuarioAuditor');
         opNombre = selOp ? selOp.options[selOp.selectedIndex].text : 'Control de Estudios (Admin)';
         idUser = selOp ? selOp.value : '1';
@@ -1994,6 +2192,33 @@ async function manejarEnvioPreinscripcion(e) {
         }
     });
 
+    // Máquina de estados automatizada:
+    // Si faltan recaudos (< 5/5) se fija obligatoriamente DOCUMENTOS_INCOMPLETOS.
+    // Si tiene el 100% de recaudos consignados (5/5), pasa a EN_REVISION (o el seleccionado por el docente si ya revisó en taquilla).
+    let est = 'EN_REVISION';
+    if (recaudosEntregados < 5) {
+        est = 'DOCUMENTOS_INCOMPLETOS';
+    } else {
+        if (AppState.rol === 'docente') {
+            const docenteEst = document.getElementById('selectEstadoPre')?.value;
+            est = (docenteEst === 'APROBADA') ? 'APROBADA' : 'EN_REVISION';
+        } else {
+            est = 'EN_REVISION';
+        }
+    }
+
+    let viveConVal = document.getElementById('alumnoViveCon')?.value || 'AMBOS_PADRES';
+    if (viveConVal === 'OTRO') {
+        const otroViveTxt = (document.getElementById('alumnoViveConOtro')?.value || '').trim();
+        viveConVal = otroViveTxt ? `Otros familiares: ${otroViveTxt}` : 'Otros familiares';
+    }
+
+    let repreParVal = document.getElementById('repreParentesco')?.value || 'MADRE';
+    if (repreParVal === 'OTRO') {
+        const otroParTxt = (document.getElementById('repreParentescoOtro')?.value || '').trim();
+        repreParVal = otroParTxt || 'Otro';
+    }
+
     const registro = {
         codigo: codSol,
         alumno: alNom,
@@ -2002,12 +2227,12 @@ async function manejarEnvioPreinscripcion(e) {
         alumnoGenero: document.getElementById('alumnoGenero')?.value,
         alumnoSangre: document.getElementById('alumnoTipoSangre')?.value,
         alumnoLugarNac: document.getElementById('alumnoLugarNac')?.value || 'San Francisco, Edo. Zulia',
-        alumnoViveCon: document.getElementById('alumnoViveCon')?.value,
+        alumnoViveCon: viveConVal,
         alumnoDireccion: document.getElementById('alumnoDireccion')?.value,
         alumnoAlergias: document.getElementById('alumnoAlergias')?.value,
         representante: repNom,
         repreDoc: `${document.getElementById('repreTipoDoc')?.value}-${document.getElementById('repreNumDoc')?.value}`,
-        repreParentesco: document.getElementById('repreParentesco')?.value,
+        repreParentesco: repreParVal,
         repreTelefono: document.getElementById('repreTelefono')?.value,
         repreCorreo: document.getElementById('repreCorreo')?.value,
         repreOcupacion: document.getElementById('repreOcupacion')?.value,
@@ -2176,8 +2401,8 @@ function cargarRegistroSemillaSiVacio() {
                 periodo: '2026-2027',
                 operador: 'Control de Estudios (Admin)',
                 idUser: '1',
-                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO', '5': 'NO_CONSIGNADO' },
-                recaudosCount: '4/5',
+                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO', '5': 'CONSIGNADO' },
+                recaudosCount: '5/5',
                 fecha: '08/10/2026'
             },
             {
@@ -2292,6 +2517,7 @@ function cargarAspiranteEjemplo() {
     document.getElementById('alumnoTipoSangre').value = 'O+';
     document.getElementById('alumnoLugarNac').value = 'San Francisco, Edo. Zulia';
     document.getElementById('alumnoViveCon').value = 'AMBOS_PADRES';
+    toggleAlumnoViveConOtro();
     document.getElementById('alumnoDireccion').value = 'Barrio 24 de Julio, Av. 49B entre Calles 176 y 177, San Francisco, Edo. Zulia';
     document.getElementById('alumnoAlergias').value = 'Ninguna conocida / Sin alergias';
 
@@ -2299,6 +2525,7 @@ function cargarAspiranteEjemplo() {
     document.getElementById('repreTipoDoc').value = 'V';
     document.getElementById('repreNumDoc').value = '19888777';
     document.getElementById('repreParentesco').value = 'MADRE';
+    toggleRepreParentescoOtro();
     document.getElementById('repreNombres').value = 'Carmen Elena';
     document.getElementById('repreApellidos').value = 'Blanco de Gómez';
     document.getElementById('repreTelefono').value = '0414-6309876';
@@ -2397,7 +2624,15 @@ function initEventListeners() {
     const btnConfirmarEliminar = document.getElementById('btnConfirmarEliminarAccion');
     if (btnCerrarModalEliminar) btnCerrarModalEliminar.addEventListener('click', () => cerrarModal('modalConfirmarEliminarBackdrop'));
     if (btnCancelarEliminar) btnCancelarEliminar.addEventListener('click', () => cerrarModal('modalConfirmarEliminarBackdrop'));
-    if (btnConfirmarEliminar) btnConfirmarEliminar.addEventListener('click', ejecutarEliminarRegistro);
+    if (btnConfirmarEliminar) {
+        btnConfirmarEliminar.addEventListener('click', () => {
+            if (typeof window.ejecutarEliminarRegistro === 'function') {
+                window.ejecutarEliminarRegistro();
+            } else {
+                ejecutarEliminarRegistro();
+            }
+        });
+    }
 
     // Modal Verificar Recaudos
     const btnCerrarVerificarModal = document.getElementById('btnCerrarVerificarRecaudosModal');
@@ -2474,14 +2709,19 @@ function initEventListeners() {
 
     const btnResetFiltros = document.getElementById('btnResetDocenteFiltros');
     if (btnResetFiltros) {
-        btnResetFiltros.addEventListener('click', () => {
-            const inBus = document.getElementById('filtroDocenteBusqueda');
-            const sGrado = document.getElementById('filtroDocenteGrado');
-            const sEst = document.getElementById('filtroDocenteEstado');
-            if (inBus) inBus.value = '';
-            if (sGrado) sGrado.value = '';
-            if (sEst) sEst.value = '';
-            filtrarDocentePorGradoPill('');
+        btnResetFiltros.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (typeof window.resetearTodosLosFiltrosDocente === 'function') {
+                window.resetearTodosLosFiltrosDocente();
+            } else {
+                const inBus = document.getElementById('filtroDocenteBusqueda');
+                const sGrado = document.getElementById('filtroDocenteGrado');
+                const sEst = document.getElementById('filtroDocenteEstado');
+                if (inBus) inBus.value = '';
+                if (sGrado) sGrado.value = '';
+                if (sEst) sEst.value = '';
+                filtrarDocentePorGradoPill('');
+            }
         });
     }
 
@@ -2639,8 +2879,19 @@ window.verificarRecaudoDocente = async function(codigo, docId, nuevoEstado) {
     }
     reg.recaudosCount = `${entregados}/5`;
 
-    if (entregados === 5 && reg.estado === 'DOCUMENTOS_INCOMPLETOS') {
-        reg.estado = 'APROBADA';
+    const estadoAnterior = reg.estado;
+    let cambioBloqueo = false;
+
+    if (entregados === 5) {
+        if (reg.estado === 'DOCUMENTOS_INCOMPLETOS' || !reg.estado) {
+            reg.estado = 'EN_REVISION';
+            cambioBloqueo = true;
+        }
+    } else {
+        if (reg.estado !== 'DOCUMENTOS_INCOMPLETOS') {
+            cambioBloqueo = true;
+        }
+        reg.estado = 'DOCUMENTOS_INCOMPLETOS';
     }
 
     localStorage.setItem('fya_preinscripciones_db', JSON.stringify(AppState.registros));
@@ -2648,14 +2899,32 @@ window.verificarRecaudoDocente = async function(codigo, docId, nuevoEstado) {
     filtrarYRenderizarPanelDocente();
     abrirVerificarRecaudos(codigo);
 
-    mostrarToast('Recaudo Verificado', `Documento ${docId} marcado como ${nuevoEstado}.`);
+    if (cambioBloqueo) {
+        if (entregados === 5) {
+            mostrarToast('Expediente Desbloqueado', '100% de recaudos consignados (5/5). El expediente pasó a EN REVISIÓN y se desbloqueó la opción de aprobación docente.', 'success');
+        } else {
+            mostrarToast('Bloqueo Automático', `Recaudos incompletos (${entregados}/5). El expediente ha sido bloqueado automáticamente por el sistema.`, 'warning');
+        }
+    } else {
+        mostrarToast('Recaudo Verificado', `Documento ${docId} marcado como ${nuevoEstado}.`);
+    }
 
-    // Sincronizar recaudo en la nube
+    // Sincronizar recaudo en la nube con logging en system_logs
     try {
+        const usuarioSesion = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('fya_docente_auth'))
+            ? JSON.parse(sessionStorage.getItem('fya_docente_auth')).usuario
+            : 'Docente / Control de Estudios';
+
         await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/recaudo`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ docId, nuevoEstado })
+            body: JSON.stringify({
+                docId,
+                nuevoEstado,
+                usuario: usuarioSesion,
+                recaudosCount: reg.recaudosCount,
+                estadoFinal: reg.estado
+            })
         });
     } catch (err) {
         console.warn('[Cloud Sync Recaudo Warning]', err.message);

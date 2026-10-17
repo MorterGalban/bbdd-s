@@ -299,15 +299,18 @@
             border: 1.5px solid #27272a;
             border-radius: var(--radius-lg);
             padding: 1.35rem;
-            transition: var(--transition);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.35);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
+            overflow: hidden;
         }
         .capacity-card:hover {
             border-color: #3b82f6;
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.25);
         }
         .capacity-progress-bg {
             width: 100%;
@@ -321,7 +324,130 @@
         .capacity-progress-fill {
             height: 100%;
             border-radius: 6px;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease;
+        }
+
+        /* Slider de Cupos Interactivo Moderno */
+        .cupo-slider-box {
+            background: #090d16;
+            border: 1px solid #27272a;
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1rem;
+            margin-top: 0.75rem;
+            transition: all 0.25s ease;
+        }
+        .cupo-slider-box:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+        }
+        .cupo-slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .cupo-live-badge {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            color: #60a5fa;
+            font-weight: 800;
+            font-size: 0.82rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-family: monospace;
+        }
+        .cupo-slider-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin: 0.5rem 0;
+        }
+        .btn-stepper {
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            color: #ffffff;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .btn-stepper:hover {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            transform: scale(1.08);
+        }
+        .btn-stepper:active {
+            transform: scale(0.95);
+        }
+        .cupo-range-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #27272a;
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .cupo-range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        .cupo-range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #60a5fa;
+        }
+        .cupo-range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+            border: none;
+        }
+        .cupo-slider-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.6rem;
+        }
+        .btn-save-cupo {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border: 1px solid #3b82f6;
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.35rem 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .btn-save-cupo:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
+            transform: translateY(-1px);
+        }
+        .btn-save-cupo.saved {
+            background: #15803d !important;
+            border-color: #22c55e !important;
         }
         /* Breakdown Stats Card */
         .breakdown-card {
@@ -389,6 +515,85 @@
         .log-mono {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
+        }
+        /* Toast Notifications Ultra-Modernos para Superroot */
+        .admin-toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+        .admin-toast {
+            background: rgba(24, 24, 27, 0.95);
+            border: 1.5px solid #3f3f46;
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+            min-width: 320px;
+            max-width: 440px;
+            backdrop-filter: blur(8px);
+            pointer-events: auto;
+            animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s ease;
+        }
+        .admin-toast.toast-success {
+            border-color: #22c55e;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.25);
+        }
+        .admin-toast.toast-danger,
+        .admin-toast.toast-error {
+            border-color: #ef4444;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.25);
+        }
+        .admin-toast.toast-warning {
+            border-color: #f59e0b;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.25);
+        }
+        .admin-toast.toast-info {
+            border-color: #38bdf8;
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
+        }
+        .admin-toast-icon {
+            font-size: 1.25rem;
+            margin-top: 2px;
+        }
+        .toast-success .admin-toast-icon { color: #22c55e; }
+        .toast-danger .admin-toast-icon,
+        .toast-error .admin-toast-icon { color: #ef4444; }
+        .toast-warning .admin-toast-icon { color: #f59e0b; }
+        .toast-info .admin-toast-icon { color: #38bdf8; }
+
+        .admin-toast-content {
+            flex: 1;
+        }
+        .admin-toast-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            color: #ffffff;
+        }
+        .admin-toast-message {
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            line-height: 1.4;
+        }
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
         /* Modal de Bloqueo de Acceso Inicial */
         .auth-gate-overlay {
@@ -885,6 +1090,32 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIRMACIÓN ELEGANTE (SIN POPUPS NATIVOS DEL NAVEGADOR) -->
+    <div class="modal-admin-overlay" id="modalConfirmarAccionAdmin" style="display: none;">
+        <div class="modal-admin-box" id="boxConfirmarAccionAdmin" style="max-width: 480px; text-align: center; border-color: #3b82f6;">
+            <div id="modalConfirmIconBox" style="width: 60px; height: 60px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); border: 2px solid #3b82f6; color: #3b82f6; display: inline-flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-bottom: 1rem;">
+                <i class="fa-solid fa-user-check" id="modalConfirmIcon"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem;" id="modalConfirmTitulo">
+                Confirmar Acción
+            </h3>
+            <p style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 1.5rem;" id="modalConfirmMensaje">
+                ¿Está seguro de realizar esta operación?
+            </p>
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="button" class="btn btn-secondary" id="btnModalConfirmCancelar" style="flex: 1; background: #3f3f46; color: #ffffff; border: none; padding: 0.65rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="button" class="btn" id="btnModalConfirmAceptar" style="flex: 1.3; background: #2563eb; color: #ffffff; border: none; padding: 0.65rem 1rem; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                    <i class="fa-solid fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor de Toasts para Superroot -->
+    <div class="admin-toast-container" id="adminToastContainer"></div>
+
     <!-- Script de Seguridad, Validación Estricta y Operaciones -->
     <script>
         const AUTH_STORAGE_KEY = 'fya_superroot_token';
@@ -993,6 +1224,111 @@
             };
         }
 
+        // ==============================================================================
+        // SISTEMA DE NOTIFICACIONES Y MODALES PERSONALIZADOS (SIN POPUPS NATIVOS)
+        // ==============================================================================
+        function mostrarToastAdmin(titulo, mensaje, tipo = 'info') {
+            const container = document.getElementById('adminToastContainer');
+            if (!container) return;
+
+            const iconMap = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-xmark',
+                danger: 'fa-triangle-exclamation',
+                warning: 'fa-triangle-exclamation',
+                info: 'fa-circle-info'
+            };
+
+            const icon = iconMap[tipo] || 'fa-bell';
+            const toast = document.createElement('div');
+            toast.className = `admin-toast toast-${tipo}`;
+            toast.innerHTML = `
+                <div class="admin-toast-icon"><i class="fa-solid ${icon}"></i></div>
+                <div class="admin-toast-content">
+                    <div class="admin-toast-title">${titulo}</div>
+                    <div class="admin-toast-message">${mensaje}</div>
+                </div>
+                <button type="button" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.9rem;" onclick="this.parentElement.remove()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(15px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        let resolverConfirmacion = null;
+
+        function confirmarAccionModal({ titulo, mensaje, icono = 'fa-circle-question', tipo = 'primary', btnTexto = 'Confirmar' }) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('modalConfirmarAccionAdmin');
+                const box = document.getElementById('boxConfirmarAccionAdmin');
+                const iconBox = document.getElementById('modalConfirmIconBox');
+                const iconEl = document.getElementById('modalConfirmIcon');
+                const titEl = document.getElementById('modalConfirmTitulo');
+                const msgEl = document.getElementById('modalConfirmMensaje');
+                const btnAceptar = document.getElementById('btnModalConfirmAceptar');
+                const btnCancelar = document.getElementById('btnModalConfirmCancelar');
+
+                if (!modal) {
+                    resolve(false);
+                    return;
+                }
+
+                titEl.textContent = titulo;
+                msgEl.innerHTML = mensaje;
+                iconEl.className = `fa-solid ${icono}`;
+
+                if (tipo === 'danger' || tipo === 'error') {
+                    box.style.borderColor = '#ef4444';
+                    iconBox.style.background = 'rgba(239, 68, 68, 0.15)';
+                    iconBox.style.borderColor = '#ef4444';
+                    iconBox.style.color = '#ef4444';
+                    btnAceptar.style.background = '#dc2626';
+                    btnAceptar.innerHTML = `<i class="fa-solid fa-trash-can"></i> ${btnTexto}`;
+                } else if (tipo === 'warning') {
+                    box.style.borderColor = '#f59e0b';
+                    iconBox.style.background = 'rgba(245, 158, 11, 0.15)';
+                    iconBox.style.borderColor = '#f59e0b';
+                    iconBox.style.color = '#f59e0b';
+                    btnAceptar.style.background = '#d97706';
+                    btnAceptar.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${btnTexto}`;
+                } else if (tipo === 'success') {
+                    box.style.borderColor = '#22c55e';
+                    iconBox.style.background = 'rgba(34, 197, 94, 0.15)';
+                    iconBox.style.borderColor = '#22c55e';
+                    iconBox.style.color = '#22c55e';
+                    btnAceptar.style.background = '#16a34a';
+                    btnAceptar.innerHTML = `<i class="fa-solid fa-check"></i> ${btnTexto}`;
+                } else {
+                    box.style.borderColor = '#3b82f6';
+                    iconBox.style.background = 'rgba(59, 130, 246, 0.15)';
+                    iconBox.style.borderColor = '#3b82f6';
+                    iconBox.style.color = '#3b82f6';
+                    btnAceptar.style.background = '#2563eb';
+                    btnAceptar.innerHTML = `<i class="fa-solid fa-check"></i> ${btnTexto}`;
+                }
+
+                modal.style.display = 'flex';
+
+                resolverConfirmacion = (res) => {
+                    modal.style.display = 'none';
+                    resolve(res);
+                };
+
+                btnAceptar.onclick = () => resolverConfirmacion(true);
+                btnCancelar.onclick = () => resolverConfirmacion(false);
+                modal.onclick = (e) => {
+                    if (e.target === modal) resolverConfirmacion(false);
+                };
+            });
+        }
+
         async function cargarTodoSuperroot() {
             const icon = document.getElementById('iconRefreshAdmin');
             if (icon) icon.classList.add('fa-spin');
@@ -1066,9 +1402,15 @@
         }
 
         async function aprobarDocente(id, usuario) {
-            if (!confirm(`¿Confirmar aprobación del docente @${usuario}? Podrá iniciar sesión inmediatamente en el sistema.`)) {
-                return;
-            }
+            const seguro = await confirmarAccionModal({
+                titulo: '¿Aprobar Cuenta Docente?',
+                mensaje: `¿Desea autorizar la cuenta del docente <strong>@${usuario}</strong>?<br><small style="color: #94a3b8; display: block; margin-top: 6px;">El docente podrá iniciar sesión de inmediato en el sistema.</small>`,
+                icono: 'fa-user-check',
+                tipo: 'success',
+                btnTexto: 'Sí, Aprobar Docente'
+            });
+
+            if (!seguro) return;
 
             try {
                 const res = await fetch(`/api/admin/docentes/${encodeURIComponent(id)}/aprobar`, {
@@ -1081,20 +1423,26 @@
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    alert(`¡Docente @${usuario} aprobado con éxito!`);
+                    mostrarToastAdmin('¡Docente Aprobado!', `La cuenta de @${usuario} fue autorizada exitosamente. Ya puede iniciar sesión.`, 'success');
                     cargarTodoSuperroot();
                 } else {
-                    alert(`Error: ${data.error || 'No se pudo aprobar al docente.'}`);
+                    mostrarToastAdmin('Error al Aprobar', data.error || 'No se pudo aprobar al docente.', 'error');
                 }
             } catch (e) {
-                alert('Error al comunicar con el servidor.');
+                mostrarToastAdmin('Error de Conexión', 'No se pudo comunicar con el servidor backend.', 'error');
             }
         }
 
         async function rechazarDocente(id, usuario) {
-            if (!confirm(`¿Está seguro de que desea RECHAZAR y eliminar la solicitud del docente @${usuario}?`)) {
-                return;
-            }
+            const seguro = await confirmarAccionModal({
+                titulo: '¿Rechazar y Eliminar Solicitud?',
+                mensaje: `¿Está seguro de que desea RECHAZAR la solicitud del docente <strong>@${usuario}</strong>?<br><small style="color: #fca5a5; display: block; margin-top: 6px;">Esta acción eliminará definitivamente la solicitud del sistema.</small>`,
+                icono: 'fa-user-xmark',
+                tipo: 'danger',
+                btnTexto: 'Sí, Rechazar y Eliminar'
+            });
+
+            if (!seguro) return;
 
             try {
                 const res = await fetch(`/api/admin/docentes/${encodeURIComponent(id)}/rechazar`, {
@@ -1107,13 +1455,13 @@
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    alert(`Solicitud de @${usuario} rechazada.`);
+                    mostrarToastAdmin('Solicitud Rechazada', `La solicitud de @${usuario} fue rechazada y eliminada.`, 'warning');
                     cargarTodoSuperroot();
                 } else {
-                    alert(`Error: ${data.error || 'No se pudo rechazar la solicitud.'}`);
+                    mostrarToastAdmin('Error al Rechazar', data.error || 'No se pudo rechazar la solicitud.', 'error');
                 }
             } catch (e) {
-                alert('Error al comunicar con el servidor.');
+                mostrarToastAdmin('Error de Conexión', 'No se pudo comunicar con el servidor backend.', 'error');
             }
         }
 
@@ -1274,10 +1622,18 @@
         async function toggleSuspenderDocente(id, usuario, nuevoEstado) {
             const accionTxt = nuevoEstado === 2 ? 'SUSPENDER' : 'REACTIVAR';
             const advertencia = nuevoEstado === 2
-                ? `¿Confirma que desea SUSPENDER al docente @${usuario}? No podrá acceder al sistema pero se conservará todo su historial.`
-                : `¿Confirma que desea REACTIVAR al docente @${usuario}? Podrá volver a iniciar sesión de inmediato.`;
+                ? `¿Confirma que desea SUSPENDER el acceso al docente <strong>@${usuario}</strong>?<br><small style="color: #fca5a5; display: block; margin-top: 6px;">No podrá acceder al sistema pero se conservará su historial intacto.</small>`
+                : `¿Confirma que desea REACTIVAR la cuenta del docente <strong>@${usuario}</strong>?<br><small style="color: #86efac; display: block; margin-top: 6px;">Podrá volver a iniciar sesión de inmediato con su contraseña.</small>`;
 
-            if (!confirm(advertencia)) return;
+            const seguro = await confirmarAccionModal({
+                titulo: nuevoEstado === 2 ? '¿Suspender Cuenta Docente?' : '¿Reactivar Cuenta Docente?',
+                mensaje: advertencia,
+                icono: nuevoEstado === 2 ? 'fa-user-slash' : 'fa-user-check',
+                tipo: nuevoEstado === 2 ? 'warning' : 'success',
+                btnTexto: nuevoEstado === 2 ? 'Sí, Suspender' : 'Sí, Reactivar'
+            });
+
+            if (!seguro) return;
 
             try {
                 const res = await fetch(`/api/admin/docentes/${encodeURIComponent(id)}/suspender`, {
@@ -1291,13 +1647,13 @@
 
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    alert(`¡Acceso del docente @${usuario} actualizado (${accionTxt}) satisfactoriamente!`);
+                    mostrarToastAdmin('Estado de Cuenta Actualizado', `El docente @${usuario} fue ${nuevoEstado === 2 ? 'suspendido' : 'reactivado'} con éxito.`, 'success');
                     cargarTodoSuperroot();
                 } else {
-                    alert(`Error: ${data.error || 'No se pudo actualizar el estado del docente.'}`);
+                    mostrarToastAdmin('Error al Actualizar', data.error || 'No se pudo actualizar el estado del docente.', 'error');
                 }
             } catch (err) {
-                alert('Error al comunicar con el servidor.');
+                mostrarToastAdmin('Error de Conexión', 'No se pudo comunicar con el servidor.', 'error');
             }
         }
 
@@ -1383,7 +1739,7 @@
                 const data = await res.json();
                 if (res.ok && data.success) {
                     cerrarModalResetClave();
-                    alert(`¡Contraseña para el docente @${usuario} actualizada con éxito! La clave se encuentra encriptada en la base de datos.`);
+                    mostrarToastAdmin('Contraseña Actualizada', `Nueva clave asignada al docente @${usuario} (encriptada en MySQL).`, 'success');
                     cargarHistorialLogs();
                 } else {
                     errBox.textContent = data.error || 'Error al actualizar contraseña.';
@@ -1399,8 +1755,16 @@
         }
 
         async function eliminarDocenteDefinitivo(id, usuario) {
-            const advertencia = `⚠️ ¡ADVERTENCIA CRÍTICA!\n\n¿Está totalmente seguro de ELIMINAR DEFINITIVAMENTE la cuenta del docente @${usuario} de la base de datos MySQL?\n\nEsta acción es irreversible y removerá la cuenta por completo.`;
-            if (!confirm(advertencia)) return;
+            const advertencia = `¿Está totalmente seguro de ELIMINAR DEFINITIVAMENTE la cuenta del docente <strong>@${usuario}</strong> de MySQL?<br><small style="color: #fca5a5; display: block; margin-top: 6px;">⚠️ Esta acción es irreversible y removerá la cuenta y sus accesos por completo.</small>`;
+            const seguro = await confirmarAccionModal({
+                titulo: '¿Eliminar Cuenta Definitivamente?',
+                mensaje: advertencia,
+                icono: 'fa-trash-can',
+                tipo: 'danger',
+                btnTexto: 'Sí, Eliminar de Raíz'
+            });
+
+            if (!seguro) return;
 
             try {
                 const res = await fetch(`/api/admin/docentes/${encodeURIComponent(id)}`, {
@@ -1414,13 +1778,13 @@
 
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    alert(`¡Cuenta docente @${usuario} eliminada definitivamente de la base de datos MySQL!`);
+                    mostrarToastAdmin('Cuenta Docente Eliminada', `La cuenta @${usuario} fue eliminada permanentemente de MySQL.`, 'warning');
                     cargarTodoSuperroot();
                 } else {
-                    alert(`Error: ${data.error || 'No se pudo eliminar la cuenta docente.'}`);
+                    mostrarToastAdmin('Error al Eliminar', data.error || 'No se pudo eliminar la cuenta docente.', 'error');
                 }
             } catch (err) {
-                alert('Error al comunicar con el servidor.');
+                mostrarToastAdmin('Error de Conexión', 'No se pudo comunicar con el servidor.', 'error');
             }
         }
 
@@ -1469,17 +1833,17 @@
                     const disponibles = Math.max(0, limite - ocupados);
 
                     let barColor = '#22c55e';
-                    let statusLabel = `<span style="color: #86efac; font-size: 0.78rem;"><i class="fa-solid fa-circle-check"></i> Disponible (${disponibles} cupos libres)</span>`;
+                    let statusLabel = `<span style="color: #86efac; font-size: 0.78rem;"><i class="fa-solid fa-circle-check"></i> Disponible (${disponibles} libres)</span>`;
                     if (porcentaje >= 90) {
                         barColor = '#ef4444';
-                        statusLabel = `<span style="color: #fca5a5; font-size: 0.78rem;"><i class="fa-solid fa-triangle-exclamation"></i> Crítico / Casi Lleno</span>`;
+                        statusLabel = `<span style="color: #fca5a5; font-size: 0.78rem;"><i class="fa-solid fa-triangle-exclamation"></i> Casi Lleno</span>`;
                     } else if (porcentaje >= 70) {
                         barColor = '#f59e0b';
                         statusLabel = `<span style="color: #fde68a; font-size: 0.78rem;"><i class="fa-solid fa-chart-line"></i> Alta demanda (${disponibles} libres)</span>`;
                     }
 
                     html += `
-                        <div class="capacity-card">
+                        <div class="capacity-card" id="cardCupo_${gid}">
                             <div>
                                 <div class="capacity-card-header">
                                     <div>
@@ -1488,25 +1852,50 @@
                                         </h4>
                                         <div style="font-size: 0.75rem; color: #94a3b8;">Nivel Primario Oficial</div>
                                     </div>
-                                    <span style="font-size: 1.15rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: ${barColor};">
+                                    <span id="badgePorcentaje_${gid}" style="font-size: 1.15rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: ${barColor};">
                                         ${porcentaje}%
                                     </span>
                                 </div>
 
                                 <div class="capacity-progress-bg">
-                                    <div class="capacity-progress-fill" style="width: ${porcentaje}%; background: ${barColor};"></div>
+                                    <div id="barProgreso_${gid}" class="capacity-progress-fill" style="width: ${porcentaje}%; background: ${barColor};"></div>
                                 </div>
 
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; font-size: 0.84rem;">
-                                    <span style="color: #cbd5e1;">Ocupados: <strong style="color: #ffffff;">${ocupados}</strong> / ${limite}</span>
-                                    <span>${statusLabel}</span>
+                                    <span style="color: #cbd5e1;">Ocupados: <strong style="color: #ffffff;">${ocupados}</strong> / <span id="labelLimiteActual_${gid}">${limite}</span></span>
+                                    <span id="statusLabel_${gid}">${statusLabel}</span>
                                 </div>
                             </div>
 
-                            <div style="border-top: 1px solid #27272a; padding-top: 0.85rem; display: flex; justify-content: flex-end;">
-                                <button type="button" class="btn btn-sm btn-outline-info" onclick="ajustarCupoGrado(${i}, ${limite})" style="font-size: 0.78rem;">
-                                    <i class="fa-solid fa-pen-to-square"></i> Ajustar Capacidad
-                                </button>
+                            <!-- CONTROL INTERACTIVO DE CUPOS (BARRA DESLIZANTE + STEPPERS) -->
+                            <div class="cupo-slider-box">
+                                <div class="cupo-slider-header">
+                                    <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">
+                                        <i class="fa-solid fa-sliders" style="color: #38bdf8; margin-right: 3px;"></i> Capacidad Máxima:
+                                    </span>
+                                    <span class="cupo-live-badge" id="badgeCupoLive_${gid}">${limite} cupos</span>
+                                </div>
+
+                                <div class="cupo-slider-controls">
+                                    <button type="button" class="btn-stepper" onclick="cambiarPasoCupo(${i}, -1)" title="Reducir 1 cupo">
+                                        <i class="fa-solid fa-minus"></i>
+                                    </button>
+                                    <input type="range" min="5" max="150" step="1" value="${limite}" class="cupo-range-slider" id="sliderCupo_${gid}" 
+                                        data-ocupados="${ocupados}"
+                                        data-gid="${gid}"
+                                        data-original="${limite}"
+                                        oninput="actualizarSliderEnVivo(${i}, this.value, ${ocupados})">
+                                    <button type="button" class="btn-stepper" onclick="cambiarPasoCupo(${i}, 1)" title="Aumentar 1 cupo">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+
+                                <div class="cupo-slider-footer">
+                                    <span style="font-size: 0.72rem; color: #64748b;">Mín: 5 | Estándar: 35 | Máx: 150</span>
+                                    <button type="button" class="btn-save-cupo" id="btnGuardarCupo_${gid}" onclick="guardarCupoDesdeSlider(${i})">
+                                        <i class="fa-solid fa-floppy-disk"></i> Guardar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1518,13 +1907,143 @@
             }
         }
 
+        function actualizarSliderEnVivo(gradoId, nuevoLimite, ocupados) {
+            const gid = String(gradoId);
+            const num = parseInt(nuevoLimite, 10);
+            if (isNaN(num) || num <= 0) return;
+
+            const badgeLive = document.getElementById(`badgeCupoLive_${gid}`);
+            if (badgeLive) badgeLive.textContent = `${num} cupos`;
+
+            const labelLim = document.getElementById(`labelLimiteActual_${gid}`);
+            if (labelLim) labelLim.textContent = num;
+
+            const porcentaje = Math.min(100, Math.round((ocupados / num) * 100));
+            const disponibles = Math.max(0, num - ocupados);
+
+            let barColor = '#22c55e';
+            let statusLabel = `<span style="color: #86efac; font-size: 0.78rem;"><i class="fa-solid fa-circle-check"></i> Disponible (${disponibles} libres)</span>`;
+            if (porcentaje >= 90) {
+                barColor = '#ef4444';
+                statusLabel = `<span style="color: #fca5a5; font-size: 0.78rem;"><i class="fa-solid fa-triangle-exclamation"></i> Casi Lleno</span>`;
+            } else if (porcentaje >= 70) {
+                barColor = '#f59e0b';
+                statusLabel = `<span style="color: #fde68a; font-size: 0.78rem;"><i class="fa-solid fa-chart-line"></i> Alta demanda (${disponibles} libres)</span>`;
+            }
+
+            const badgePct = document.getElementById(`badgePorcentaje_${gid}`);
+            if (badgePct) {
+                badgePct.textContent = `${porcentaje}%`;
+                badgePct.style.color = barColor;
+            }
+
+            const barProg = document.getElementById(`barProgreso_${gid}`);
+            if (barProg) {
+                barProg.style.width = `${porcentaje}%`;
+                barProg.style.background = barColor;
+            }
+
+            const stLabel = document.getElementById(`statusLabel_${gid}`);
+            if (stLabel) stLabel.innerHTML = statusLabel;
+
+            const btnSave = document.getElementById(`btnGuardarCupo_${gid}`);
+            const slider = document.getElementById(`sliderCupo_${gid}`);
+            const original = slider ? parseInt(slider.getAttribute('data-original') || '0', 10) : num;
+            if (btnSave) {
+                if (num !== original) {
+                    btnSave.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                    btnSave.style.borderColor = '#34d399';
+                    btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Aplicar';
+                } else {
+                    btnSave.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+                    btnSave.style.borderColor = '#3b82f6';
+                    btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar';
+                }
+            }
+        }
+
+        function cambiarPasoCupo(gradoId, delta) {
+            const gid = String(gradoId);
+            const slider = document.getElementById(`sliderCupo_${gid}`);
+            if (!slider) return;
+
+            let val = parseInt(slider.value, 10) + delta;
+            val = Math.max(5, Math.min(150, val));
+            slider.value = val;
+            const ocupados = parseInt(slider.getAttribute('data-ocupados') || '0', 10);
+            actualizarSliderEnVivo(gradoId, val, ocupados);
+        }
+
+        async function guardarCupoDesdeSlider(gradoId) {
+            const gid = String(gradoId);
+            const slider = document.getElementById(`sliderCupo_${gid}`);
+            if (!slider) return;
+
+            const nuevoLimite = parseInt(slider.value, 10);
+            const btnSave = document.getElementById(`btnGuardarCupo_${gid}`);
+
+            if (btnSave) {
+                btnSave.disabled = true;
+                btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            }
+
+            try {
+                const res = await fetch('/api/admin/proceso-admision/cupos', {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeader(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ gradoId, nuevoLimite })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    slider.setAttribute('data-original', String(nuevoLimite));
+                    if (btnSave) {
+                        btnSave.classList.add('saved');
+                        btnSave.innerHTML = '<i class="fa-solid fa-check"></i> ¡Guardado!';
+                        setTimeout(() => {
+                            btnSave.classList.remove('saved');
+                            btnSave.disabled = false;
+                            btnSave.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+                            btnSave.style.borderColor = '#3b82f6';
+                            btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar';
+                        }, 2000);
+                    }
+                    mostrarToastAdmin('Capacidad Guardada', `Límite de ${gid}° Grado actualizado a ${nuevoLimite} cupos en el sistema.`, 'success');
+                    cargarHistorialLogs();
+                } else {
+                    mostrarToastAdmin('Error en Cupos', data.error || 'No se pudo actualizar la capacidad.', 'error');
+                    if (btnSave) {
+                        btnSave.disabled = false;
+                        btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Reintentar';
+                    }
+                }
+            } catch (err) {
+                mostrarToastAdmin('Error de Conexión', 'No se pudo comunicar con el servidor backend.', 'error');
+                if (btnSave) {
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Reintentar';
+                }
+            }
+        }
+
         async function toggleEstadoProcesoAdmision(procesoAbierto) {
             const accionTxt = procesoAbierto ? 'ABRIR' : 'CERRAR Y BLOQUEAR';
             const advertencia = procesoAbierto
-                ? '¿Desea ABRIR el proceso general de preinscripciones escolares 2026-2027 para representantes?'
-                : '¿Desea CERRAR Y BLOQUEAR el proceso de preinscripción? Los representantes no podrán asentar nuevas solicitudes.';
+                ? '¿Desea <strong>ABRIR</strong> el proceso general de preinscripciones escolares 2026-2027 para representantes?'
+                : '¿Desea <strong>CERRAR Y BLOQUEAR</strong> el proceso de preinscripción?<br><small style="color: #fca5a5; display: block; margin-top: 6px;">Los representantes no podrán enviar nuevas solicitudes mientras permanezca cerrado.</small>';
 
-            if (!confirm(advertencia)) {
+            const seguro = await confirmarAccionModal({
+                titulo: procesoAbierto ? '¿Abrir Proceso de Admisiones?' : '¿Cerrar y Bloquear Proceso?',
+                mensaje: advertencia,
+                icono: procesoAbierto ? 'fa-lock-open' : 'fa-lock',
+                tipo: procesoAbierto ? 'success' : 'danger',
+                btnTexto: procesoAbierto ? 'Sí, Abrir Proceso' : 'Sí, Bloquear Proceso'
+            });
+
+            if (!seguro) {
                 // Revertir switch
                 document.getElementById('switchProcesoAdmision').checked = !procesoAbierto;
                 return;
@@ -1542,49 +2061,26 @@
 
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    alert(data.message || 'Estado del proceso actualizado exitosamente.');
+                    mostrarToastAdmin('Proceso de Admisión', data.message || 'Estado del proceso actualizado exitosamente.', 'success');
                     cargarControlCuposYAdmision();
                     cargarHistorialLogs();
                 } else {
-                    alert(`Error: ${data.error || 'No se pudo alternar el proceso.'}`);
+                    mostrarToastAdmin('Error al Actualizar', data.error || 'No se pudo alternar el proceso.', 'error');
                     cargarControlCuposYAdmision();
                 }
             } catch (err) {
-                alert('Error al comunicar con el servidor.');
+                mostrarToastAdmin('Error de Conexión', 'No se pudo comunicar con el servidor backend.', 'error');
                 cargarControlCuposYAdmision();
             }
         }
 
         async function ajustarCupoGrado(gradoId, cupoActual) {
-            const nuevo = prompt(`Ingrese la nueva capacidad máxima de cupos para el ${gradoId}° Grado de Primaria:`, cupoActual);
-            if (nuevo === null) return;
-
-            const num = parseInt(nuevo.trim(), 10);
-            if (isNaN(num) || num <= 0 || num > 500) {
-                alert('Debe ingresar un número entero válido entre 1 y 500.');
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/admin/proceso-admision/cupos', {
-                    method: 'POST',
-                    headers: {
-                        ...getAuthHeader(),
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ gradoId, nuevoLimite: num })
-                });
-
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    alert(data.message || 'Capacidad de cupos actualizada exitosamente.');
-                    cargarControlCuposYAdmision();
-                    cargarHistorialLogs();
-                } else {
-                    alert(`Error: ${data.error || 'No se pudo actualizar la capacidad.'}`);
-                }
-            } catch (err) {
-                alert('Error al comunicar con el servidor.');
+            // Retrocompatibilidad con slider
+            const gid = String(gradoId);
+            const slider = document.getElementById(`sliderCupo_${gid}`);
+            if (slider) {
+                slider.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                slider.focus();
             }
         }
 
@@ -1636,8 +2132,9 @@
                 URL.revokeObjectURL(url);
 
                 cargarHistorialLogs();
+                mostrarToastAdmin('Respaldo Descargado', 'El archivo JSON de respaldo se descargó exitosamente.', 'success');
             } catch (err) {
-                alert(`Error: ${err.message}`);
+                mostrarToastAdmin('Error al Descargar', err.message, 'error');
             }
         }
 
@@ -1657,8 +2154,9 @@
                 URL.revokeObjectURL(url);
 
                 cargarHistorialLogs();
+                mostrarToastAdmin('Respaldo Descargado', 'El reporte CSV se descargó exitosamente.', 'success');
             } catch (err) {
-                alert(`Error: ${err.message}`);
+                mostrarToastAdmin('Error al Descargar', err.message, 'error');
             }
         }
 
@@ -1716,13 +2214,13 @@
                     localStorage.setItem('fya_preinscripciones_db', JSON.stringify([]));
 
                     cerrarModalConfirmarPurga();
-                    alert('¡Purga profunda de raíz completada con éxito!\n\nTodas las tablas de preinscripciones en MySQL han sido reseteadas a 0 registros con contadores AUTO_INCREMENT en 1.\nLas cuentas de docentes han sido preservadas.');
+                    mostrarToastAdmin('Purga Profunda Completada', 'Tablas de preinscripciones en MySQL reseteadas a 0 registros (cuentas de docentes preservadas).', 'success');
                     cargarTodoSuperroot();
                 } else {
-                    alert(`Error en la purga: ${data.error || 'No se pudo completar la operación en MySQL.'}`);
+                    mostrarToastAdmin('Error en la Purga', data.error || 'No se pudo completar la operación en MySQL.', 'error');
                 }
             } catch (err) {
-                alert('Error al comunicar con el servidor backend durante la purga.');
+                mostrarToastAdmin('Error de Conexión', 'No se pudo comunicar con el servidor backend durante la purga.', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Ejecutar Purga Real';
@@ -1806,7 +2304,7 @@
 
         function exportarLogsACSV() {
             if (logsGlobales.length === 0) {
-                alert('No hay eventos de auditoría para exportar.');
+                mostrarToastAdmin('Sin Registros', 'No hay eventos de auditoría para exportar.', 'warning');
                 return;
             }
 

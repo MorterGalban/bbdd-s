@@ -485,11 +485,17 @@
                 const data = await res.json();
 
                 if (res.ok && data.success) {
-                    // Éxito: Guardar sesión
-                    localStorage.setItem('fya_rol', 'docente');
-                    localStorage.setItem('fya_docente_auth', 'true');
-                    localStorage.setItem('fya_docente_user', data.docente?.usuario || u);
-                    localStorage.setItem('fya_docente_nombre', `${data.docente?.nombres || ''} ${data.docente?.apellidos || ''}`.trim() || 'Docente Autorizado');
+                    // Éxito: Guardar sesión únicamente en sessionStorage (se borra al cerrar ventana/pestaña)
+                    sessionStorage.setItem('fya_rol', 'docente');
+                    sessionStorage.setItem('fya_docente_auth', 'true');
+                    sessionStorage.setItem('fya_docente_user', data.docente?.usuario || u);
+                    sessionStorage.setItem('fya_docente_nombre', `${data.docente?.nombres || ''} ${data.docente?.apellidos || ''}`.trim() || 'Docente Autorizado');
+
+                    // Limpieza preventiva de localStorage para no dejar credenciales persistentes en el disco
+                    localStorage.removeItem('fya_docente_auth');
+                    localStorage.removeItem('fya_docente_user');
+                    localStorage.removeItem('fya_docente_nombre');
+                    localStorage.removeItem('fya_rol');
 
                     mostrarAlertaLogin('success', '¡Autenticación exitosa! Ingresando al panel...');
                     setTimeout(() => {
@@ -519,10 +525,16 @@
                 console.warn('[Fetch Login Fallback]', err.message);
                 // Fallback de contingencia si el servidor node está fuera de línea momentáneamente
                 if (u === 'manteca' && p === 'manteca') {
-                    localStorage.setItem('fya_rol', 'docente');
-                    localStorage.setItem('fya_docente_auth', 'true');
-                    localStorage.setItem('fya_docente_user', 'manteca');
-                    localStorage.setItem('fya_docente_nombre', 'Profesor Manteca');
+                    sessionStorage.setItem('fya_rol', 'docente');
+                    sessionStorage.setItem('fya_docente_auth', 'true');
+                    sessionStorage.setItem('fya_docente_user', 'manteca');
+                    sessionStorage.setItem('fya_docente_nombre', 'Profesor Manteca');
+
+                    localStorage.removeItem('fya_docente_auth');
+                    localStorage.removeItem('fya_docente_user');
+                    localStorage.removeItem('fya_docente_nombre');
+                    localStorage.removeItem('fya_rol');
+
                     window.location.href = 'preinscripcion.html?rol=docente';
                 } else {
                     mostrarAlertaLogin('error', 'Usuario o contraseña incorrectos, o servidor en reinicio. Verifique sus datos.');
