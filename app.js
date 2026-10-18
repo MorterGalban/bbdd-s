@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     actualizarResumenGrado();
     actualizarBadges();
     initMascarasValidacion();
+    initCedulaEscolarGenerator();
     initWizardBloques();
     initAutoguardado();
     initUploadRecaudos();
@@ -533,13 +534,15 @@ function initMascarasValidacion() {
     // Máscara Cédula Escolar o Documento del Alumno
     if (cedAlumno) {
         cedAlumno.addEventListener('input', (e) => {
+            const chkGen = document.getElementById('chkGenerarCedulaEscolar');
+            if (chkGen && chkGen.checked) return; // Permitir estructura alfanumérica de Cédula Escolar (ej: V120CE19888777)
             const tipo = document.getElementById('alumnoTipoDoc')?.value || 'CE';
             if (tipo === 'V' || tipo === 'E' || tipo === 'CE') {
                 e.target.value = e.target.value.replace(/\D/g, '');
                 if (tipo !== 'CE' && e.target.value.length > 9) {
                     e.target.value = e.target.value.substring(0, 9);
-                } else if (tipo === 'CE' && e.target.value.length > 12) {
-                    e.target.value = e.target.value.substring(0, 12);
+                } else if (tipo === 'CE' && e.target.value.length > 16) {
+                    e.target.value = e.target.value.substring(0, 16);
                 }
             }
             actualizarEstadoBotonImprimir();
@@ -712,6 +715,119 @@ function actualizarEstadoBotonImprimir() {
 }
 
 /* ==============================================================================
+   4.1. GENERADOR AUTOMÁTICO DE CÉDULA ESCOLAR (PASO 1)
+   ============================================================================== */
+function initCedulaEscolarGenerator() {
+    const chk = document.getElementById('chkGenerarCedulaEscolar');
+    const panel = document.getElementById('panelGeneradorCedulaEscolar');
+    const inputCedula = document.getElementById('alumnoNumDoc');
+    const tipoDoc = document.getElementById('alumnoTipoDoc');
+    const ceNac = document.getElementById('ceNacionalidad');
+    const ceParto = document.getElementById('ceTipoParto');
+    const ceCedRep = document.getElementById('ceCedulaRepresentante');
+    const repreCed = document.getElementById('repreNumDoc');
+    const fechaNac = document.getElementById('alumnoFechaNac');
+
+    if (!chk || !inputCedula) return;
+
+    function recalcularYEnsamblarCedula() {
+        if (!chk.checked) return;
+
+        const nac = (ceNac?.value || 'V').trim().toUpperCase();
+        const parto = (ceParto?.value || '1').trim();
+
+        // 3er y 4to carácter: dos últimos dígitos del año de nacimiento
+        let dosDigitosAno = '20';
+        if (fechaNac && fechaNac.value) {
+            const fechaStr = fechaNac.value.trim();
+            const partes = fechaStr.split('-');
+            if (partes.length >= 1 && partes[0].length === 4) {
+                dosDigitosAno = partes[0].slice(-2);
+            } else {
+                const anyoNum = new Date(fechaStr).getFullYear();
+                if (!isNaN(anyoNum)) {
+                    dosDigitosAno = String(anyoNum).slice(-2);
+                }
+            }
+        }
+
+        // 8 dígitos de cédula del representante aplicando padStart(8, "0")
+        const rawRepCed = (ceCedRep?.value || repreCed?.value || '').replace(/\D/g, '');
+        const cedulaRepPadded = rawRepCed ? rawRepCed.padStart(8, '0') : '00000000';
+
+        // Estructura normativa: Nacionalidad (V/E) + Parto (1/2/3) + Año Nacimiento (2 dígitos) + CE + Cédula Repre (8 dígitos)
+        const cedulaGenerada = `${nac}${parto}${dosDigitosAno}CE${cedulaRepPadded}`;
+
+        inputCedula.value = cedulaGenerada;
+        if (tipoDoc) tipoDoc.value = 'CE';
+
+        const badge = document.getElementById('ceBadgeVisual');
+        if (badge) badge.textContent = cedulaGenerada;
+
+        inputCedula.classList.remove('input-invalid');
+        sincronizarDatosPlanilla();
+    }
+
+    chk.addEventListener('change', () => {
+        if (chk.checked) {
+            inputCedula.setAttribute('readonly', 'readonly');
+            inputCedula.classList.add('input-readonly');
+            if (tipoDoc) tipoDoc.value = 'CE';
+            if (panel) panel.style.display = 'block';
+
+            // Sincronizar cédula de representante si ya fue digitada en Paso 2
+            if (repreCed && repreCed.value && ceCedRep && !ceCedRep.value) {
+                ceCedRep.value = repreCed.value.replace(/\D/g, '');
+            } else if (ceCedRep && ceCedRep.value && repreCed && !repreCed.value) {
+                repreCed.value = ceCedRep.value.replace(/\D/g, '');
+            }
+
+            recalcularYEnsamblarCedula();
+        } else {
+            inputCedula.removeAttribute('readonly');
+            inputCedula.classList.remove('input-readonly');
+            if (panel) panel.style.display = 'none';
+            sincronizarDatosPlanilla();
+        }
+    });
+
+    // Sincronización bidireccional en tiempo real entre ceCedulaRepresentante y repreNumDoc
+    if (ceCedRep) {
+        ceCedRep.addEventListener('input', () => {
+            const soloDigitos = ceCedRep.value.replace(/\D/g, '');
+            ceCedRep.value = soloDigitos;
+            if (repreCed) {
+                repreCed.value = soloDigitos;
+                repreCed.classList.remove('input-invalid');
+            }
+            recalcularYEnsamblarCedula();
+        });
+    }
+
+    if (repreCed) {
+        repreCed.addEventListener('input', () => {
+            const soloDigitos = repreCed.value.replace(/\D/g, '');
+            if (ceCedRep && ceCedRep.value !== soloDigitos) {
+                ceCedRep.value = soloDigitos;
+            }
+            if (chk.checked) {
+                recalcularYEnsamblarCedula();
+            }
+        });
+    }
+
+    if (ceNac) ceNac.addEventListener('change', recalcularYEnsamblarCedula);
+    if (ceParto) ceParto.addEventListener('change', recalcularYEnsamblarCedula);
+    if (fechaNac) {
+        fechaNac.addEventListener('input', recalcularYEnsamblarCedula);
+        fechaNac.addEventListener('change', recalcularYEnsamblarCedula);
+    }
+
+    window.generarCedulaEscolar = recalcularYEnsamblarCedula;
+}
+
+
+/* ==============================================================================
    5. ASISTENTE GUIADO POR CINCO PASOS CONSECUTIVOS & BARRA DE PROGRESO
    ============================================================================== */
 function initWizardBloques() {
@@ -805,6 +921,30 @@ function avanzarPasoConValidacion(pasoDestino) {
 }
 
 function validarPaso(numPaso) {
+    if (numPaso === 5) {
+        return validarCuatroFotosObligatorias(true);
+    }
+
+    if (numPaso === 1) {
+        const chkGen = document.getElementById('chkGenerarCedulaEscolar');
+        if (chkGen && chkGen.checked) {
+            const ceCed = document.getElementById('ceCedulaRepresentante');
+            const rawRepCed = (ceCed?.value || '').replace(/\D/g, '');
+            if (!rawRepCed) {
+                ceCed?.classList.add('input-invalid');
+                ceCed?.focus();
+                ceCed?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                mostrarToast('Cédula Representante Requerida', 'Ingresa la Cédula del Representante en el generador de Cédula Escolar.', 'error');
+                return false;
+            } else {
+                ceCed?.classList.remove('input-invalid');
+                if (typeof window.generarCedulaEscolar === 'function') {
+                    window.generarCedulaEscolar();
+                }
+            }
+        }
+    }
+
     const stepElem = document.getElementById(`stepContent${numPaso}`);
     if (!stepElem) return true;
 
@@ -929,7 +1069,12 @@ function ejecutarAutoguardado() {
         institutoCiudad: document.getElementById('institutoCiudad')?.value,
 
         selectGrado: document.getElementById('selectGrado')?.value,
-        observacionesPre: document.getElementById('observacionesPre')?.value
+        observacionesPre: document.getElementById('observacionesPre')?.value,
+
+        chkGenerarCedulaEscolar: document.getElementById('chkGenerarCedulaEscolar')?.checked,
+        ceNacionalidad: document.getElementById('ceNacionalidad')?.value,
+        ceTipoParto: document.getElementById('ceTipoParto')?.value,
+        ceCedulaRepresentante: document.getElementById('ceCedulaRepresentante')?.value
     };
 
     localStorage.setItem('fya_preinscripcion_draft', JSON.stringify(datos));
@@ -963,6 +1108,11 @@ function restaurarBorrador() {
                 }
             }
         });
+
+        const chkGen = document.getElementById('chkGenerarCedulaEscolar');
+        if (chkGen && chkGen.checked) {
+            chkGen.dispatchEvent(new Event('change'));
+        }
 
         actualizarResumenGrado();
         actualizarEstadoBotonImprimir();
@@ -1032,7 +1182,7 @@ function exportarRegistrosAExcel() {
         `"${r.repreCorreo || ''}"`,
         `"${r.grado || ''}"`,
         `"${(r.instituto || '').replace(/"/g, '""')}"`,
-        `"${r.recaudosCount || '5/5'}"`,
+        `"${r.recaudosCount || '4/4'}"`,
         `"${r.estado || ''}"`,
         `"${r.fecha || ''}"`
     ]);
@@ -1309,7 +1459,18 @@ function sincronizarDatosPlanilla() {
 
     const alTipoDoc = document.getElementById('alumnoTipoDoc')?.value || 'CE';
     const alNumDoc = (document.getElementById('alumnoNumDoc')?.value || '').trim();
-    const alDoc = alNumDoc ? `${alTipoDoc}-${alNumDoc}` : `${alTipoDoc}-118999444`;
+    let alDoc = '';
+    if (alNumDoc.includes('CE')) {
+        alDoc = alNumDoc;
+    } else {
+        alDoc = alNumDoc ? `${alTipoDoc}-${alNumDoc}` : `${alTipoDoc}-118999444`;
+    }
+
+    // Inyección de la Foto Carnet del Estudiante en la esquina superior derecha
+    const fotoCarnet = AppState.archivosCargados['4']?.dataUrl;
+    if (fotoCarnet && typeof inyectarFotoCarnetEnPlanilla === 'function') {
+        inyectarFotoCarnetEnPlanilla(fotoCarnet);
+    }
 
     const fNac = document.getElementById('alumnoFechaNac')?.value;
     let edad = '6 años';
@@ -1479,11 +1640,10 @@ function sincronizarRecaudosPlanilla(registro = null) {
     if (!tbody) return;
 
     const lista = [
-        { id: '1', nombre: 'Partida de Nacimiento del Estudiante', idSelect: 'estadoDoc1' },
-        { id: '2', nombre: 'Copia de Cédula de Identidad del Representante Legal', idSelect: 'estadoDoc2' },
-        { id: '3', nombre: 'Boleta o Informe Descriptivo del Grado Anterior', idSelect: 'estadoDoc3' },
-        { id: '4', nombre: '4 Fotografías Tipo Carnet del Estudiante', idSelect: 'estadoDoc4' },
-        { id: '5', nombre: 'Constancia de Residencia de la Comunidad', idSelect: 'estadoDoc5' }
+        { id: '1', nombre: 'Foto de Cédula de Identidad del Representante Legal', idSelect: 'estadoDoc1' },
+        { id: '2', nombre: 'Foto del Informe / Evaluación Cardiovascular', idSelect: 'estadoDoc2' },
+        { id: '3', nombre: 'Foto de la Partida de Nacimiento del Estudiante', idSelect: 'estadoDoc3' },
+        { id: '4', nombre: 'Foto Tipo Carnet del Estudiante (Inyectada en Planilla)', idSelect: 'estadoDoc4' }
     ];
 
     let html = '';
@@ -1497,7 +1657,9 @@ function sincronizarRecaudosPlanilla(registro = null) {
         } else {
             const sel = document.getElementById(item.idSelect);
             est = sel ? sel.value : 'NO_CONSIGNADO';
-            tieneArchivo = Boolean(AppState.archivosCargados[item.id]);
+            tieneArchivo = Boolean(AppState.archivosCargados && AppState.archivosCargados[item.id]?.dataUrl);
+            const input = document.getElementById(`fileUploadDoc${item.id}`);
+            if (input && input.files && input.files.length > 0) tieneArchivo = true;
         }
 
         const entregado = est === 'APROBADO' || est === 'CONSIGNADO' || tieneArchivo;
@@ -1520,18 +1682,94 @@ function sincronizarRecaudosPlanilla(registro = null) {
     tbody.innerHTML = html;
 }
 
+// Inyección y Restauración de Foto Tipo Carnet en la Planilla Oficial y PDF
+function inyectarFotoCarnetEnPlanilla(dataUrl) {
+    const photoBoxes = document.querySelectorAll('#sheetPhotoBox, #planilla-oficial .sheet-photo-box');
+    if (!photoBoxes || photoBoxes.length === 0) return;
+    if (dataUrl) {
+        photoBoxes.forEach(box => {
+            box.innerHTML = `<img src="${dataUrl}" alt="Foto Tipo Carnet del Estudiante" style="width: 100%; height: 100%; object-fit: cover; border-radius: 2px; display: block;" crossOrigin="anonymous" />`;
+        });
+    }
+}
+
+function restaurarPlaceholderFotoCarnet() {
+    const photoBoxes = document.querySelectorAll('#sheetPhotoBox, #planilla-oficial .sheet-photo-box');
+    if (!photoBoxes || photoBoxes.length === 0) return;
+    photoBoxes.forEach(box => {
+        box.innerHTML = `<span>FOTO DEL ALUMNO<br>TIPO CARNET</span>`;
+    });
+}
+
+// Catálogo normativo de los 4 recaudos fotográficos obligatorios
+const RECAUDOS_FOTOGRAFICOS_OBLIGATORIOS = [
+    { id: '1', nombre: 'Foto de la Cédula de Identidad del Representante', cardId: 'cardRecaudo1', icon: 'fa-id-card' },
+    { id: '2', nombre: 'Foto del Informe / Evaluación Cardiovascular', cardId: 'cardRecaudo2', icon: 'fa-heart-pulse' },
+    { id: '3', nombre: 'Foto de la Partida de Nacimiento del Estudiante', cardId: 'cardRecaudo3', icon: 'fa-certificate' },
+    { id: '4', nombre: 'Foto Tipo Carnet del Estudiante', cardId: 'cardRecaudo4', icon: 'fa-camera' }
+];
+
+// Validación Estricta de las 4 Fotografías Obligatorias (Paso 5, Vista Previa y Guardado)
+function validarCuatroFotosObligatorias(mostrarAlerta = true) {
+    const faltantes = [];
+
+    RECAUDOS_FOTOGRAFICOS_OBLIGATORIOS.forEach(item => {
+        const input = document.getElementById(`fileUploadDoc${item.id}`);
+        const card = document.getElementById(item.cardId);
+        const tieneEnState = Boolean(AppState.archivosCargados && AppState.archivosCargados[item.id]?.dataUrl);
+        const tieneEnInput = Boolean(input && input.files && input.files.length > 0);
+
+        if (!tieneEnState && !tieneEnInput) {
+            faltantes.push(item);
+            if (card) {
+                card.classList.add('recaudo-card-error');
+            }
+        } else {
+            if (card) {
+                card.classList.remove('recaudo-card-error');
+            }
+        }
+    });
+
+    if (faltantes.length > 0) {
+        if (mostrarAlerta) {
+            const listaHtml = faltantes.map((f, i) => `${i + 1}. ${f.nombre}`).join('<br>');
+            mostrarToast(
+                'Fotografías Obligatorias Requeridas',
+                `Debe cargar las 4 fotografías obligatorias antes de continuar:<br><strong>${listaHtml}</strong>`,
+                'error'
+            );
+            const primerCard = document.getElementById(faltantes[0].cardId);
+            if (primerCard) {
+                primerCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        return false;
+    }
+
+    return true;
+}
+
 /* ==============================================================================
-   10. CARGA DE ARCHIVOS / RECAUDOS POR EL REPRESENTANTE
+   10. CARGA DE ARCHIVOS / RECAUDOS FOTOGRÁFICOS POR EL REPRESENTANTE
    ============================================================================== */
 function initUploadRecaudos() {
     document.querySelectorAll('.file-recaudo-input').forEach(input => {
         input.addEventListener('change', (e) => {
             const file = e.target.files[0];
             const docId = e.target.getAttribute('data-doc-id');
+            const card = document.getElementById(`cardRecaudo${docId}`);
             if (!file) return;
 
+            // Validación rigurosa de formato de imagen
+            if (!file.type || !file.type.startsWith('image/')) {
+                mostrarToast('Formato Inválido', 'Debe seleccionar un archivo de imagen válido (JPG, PNG, WEBP).', 'error');
+                e.target.value = '';
+                return;
+            }
+
             if (file.size > 5 * 1024 * 1024) {
-                mostrarToast('Archivo muy grande', 'El documento excede el límite de 5 MB permitido.', 'error');
+                mostrarToast('Archivo muy grande', 'La fotografía excede el límite de 5 MB permitido.', 'error');
                 e.target.value = '';
                 return;
             }
@@ -1539,6 +1777,7 @@ function initUploadRecaudos() {
             const reader = new FileReader();
             reader.onload = (event) => {
                 const dataUrl = event.target.result;
+                if (!AppState.archivosCargados) AppState.archivosCargados = {};
                 AppState.archivosCargados[docId] = {
                     nombre: file.name,
                     tamano: file.size,
@@ -1547,12 +1786,30 @@ function initUploadRecaudos() {
                     fecha: new Date().toLocaleDateString('es-VE')
                 };
 
+                // Actualizar thumbnail con miniatura de la imagen cargada
+                const thumbBox = document.getElementById(`thumbBoxDoc${docId}`);
+                if (thumbBox) {
+                    thumbBox.innerHTML = `<img src="${dataUrl}" alt="Vista previa ${docId}" class="recaudo-thumb-img" />`;
+                }
+
+                // Inyección Inmediata en Planilla Oficial si es la Foto Tipo Carnet (Doc 4)
+                if (docId === '4') {
+                    inyectarFotoCarnetEnPlanilla(dataUrl);
+                }
+
+                // Quitar indicador de error de la tarjeta
+                if (card) {
+                    card.classList.remove('recaudo-card-error');
+                }
+
                 renderizarChipArchivoCargado(docId, file.name, file.size);
 
                 const sel = document.getElementById(`estadoDoc${docId}`);
                 if (sel) sel.value = 'CONSIGNADO';
 
-                mostrarToast('Recaudo Cargado', `"${file.name}" cargado exitosamente.`);
+                sincronizarRecaudosPlanilla();
+
+                mostrarToast('Fotografía Cargada', `"${file.name}" cargada correctamente.`);
             };
             reader.readAsDataURL(file);
         });
@@ -1568,14 +1825,14 @@ function renderizarChipArchivoCargado(docId, nombre, tamano) {
     statusElem.innerHTML = `
         <div class="recaudo-file-chip">
             <i class="fa-solid fa-circle-check"></i>
-            <span style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${nombre}">
+            <span style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${nombre}">
                 ${nombre} (${tamanoStr})
             </span>
             <div class="recaudo-chip-actions">
-                <button type="button" class="recaudo-chip-btn" onclick="previsualizarArchivoCargado('${docId}')" title="Ver documento">
+                <button type="button" class="recaudo-chip-btn" onclick="previsualizarArchivoCargado('${docId}')" title="Ver fotografía">
                     <i class="fa-solid fa-eye"></i>
                 </button>
-                <button type="button" class="recaudo-chip-btn" onclick="quitarArchivoCargado('${docId}')" title="Quitar archivo">
+                <button type="button" class="recaudo-chip-btn" onclick="quitarArchivoCargado('${docId}')" title="Quitar fotografía">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
@@ -1584,17 +1841,37 @@ function renderizarChipArchivoCargado(docId, nombre, tamano) {
 }
 
 window.quitarArchivoCargado = function(docId) {
-    delete AppState.archivosCargados[docId];
+    if (AppState.archivosCargados) {
+        delete AppState.archivosCargados[docId];
+    }
     const input = document.getElementById(`fileUploadDoc${docId}`);
     if (input) input.value = '';
+
+    // Restaurar thumbnail original con su ícono representativo
+    const thumbBox = document.getElementById(`thumbBoxDoc${docId}`);
+    if (thumbBox) {
+        const iconMap = {
+            '1': 'fa-id-card',
+            '2': 'fa-heart-pulse',
+            '3': 'fa-certificate',
+            '4': 'fa-camera'
+        };
+        const ico = iconMap[docId] || 'fa-image';
+        thumbBox.innerHTML = `<i class="fa-solid ${ico}"></i>`;
+    }
+
+    // Si es la foto tipo carnet (Doc 4), restaurar el texto en la planilla
+    if (docId === '4') {
+        restaurarPlaceholderFotoCarnet();
+    }
 
     const statusElem = document.getElementById(`fileStatusDoc${docId}`);
     if (statusElem) {
         statusElem.innerHTML = `
-            <i class="fa-regular fa-file"></i>
+            <i class="fa-solid fa-cloud-arrow-up"></i>
             <div>
-                <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin archivo adjunto</strong>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Formatos admitidos: PDF, JPG, PNG (Máx 5MB)</span>
+                <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin fotografía cargada</strong>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Formatos admitidos: JPG, PNG, WEBP (Obligatorio)</span>
             </div>
         `;
     }
@@ -1602,11 +1879,13 @@ window.quitarArchivoCargado = function(docId) {
     const sel = document.getElementById(`estadoDoc${docId}`);
     if (sel) sel.value = 'NO_CONSIGNADO';
 
-    mostrarToast('Recaudo Eliminado', 'Se retiró el archivo adjunto.');
+    sincronizarRecaudosPlanilla();
+
+    mostrarToast('Recaudo Retirado', 'Se retiró la fotografía. Recuerde que las 4 fotos son obligatorias para el envío.', 'warning');
 };
 
 window.previsualizarArchivoCargado = function(docId) {
-    const archivo = AppState.archivosCargados[docId];
+    const archivo = AppState.archivosCargados ? AppState.archivosCargados[docId] : null;
     if (archivo) {
         mostrarModalPreviewDoc(archivo.nombre, archivo.dataUrl, archivo.tipo);
     }
@@ -1682,16 +1961,16 @@ function filtrarYRenderizarPanelDocente() {
     filtrados.forEach(r => {
         let entregados = 0;
         if (r.documentos) {
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 4; i++) {
                 const docVal = r.documentos[String(i)] || (r.archivos && r.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
                 if (docVal === 'APROBADO' || docVal === 'CONSIGNADO') entregados++;
             }
         } else if (r.recaudosCount) {
             entregados = parseInt(r.recaudosCount.split('/')[0] || '0', 10);
         }
-        r.recaudosCount = `${entregados}/5`;
+        r.recaudosCount = `${entregados}/4`;
 
-        const estaIncompleto = (entregados < 5);
+        const estaIncompleto = (entregados < 4);
         if (estaIncompleto) {
             r.estado = 'DOCUMENTOS_INCOMPLETOS';
         } else if (r.estado === 'DOCUMENTOS_INCOMPLETOS' || !r.estado) {
@@ -1709,14 +1988,14 @@ function filtrarYRenderizarPanelDocente() {
         const recaudosBadge = r.recaudosCount;
 
         const selectorEstadoHtml = estaIncompleto ? `
-            <div class="status-locked-wrapper" title="Bloqueo automático del sistema: Faltan recaudos obligatorios (${entregados}/5 consignados). El expediente está bloqueado hasta consignar el 100% de recaudos.">
+            <div class="status-locked-wrapper" title="Bloqueo automático del sistema: Faltan recaudos obligatorios (${entregados}/4 consignados). El expediente está bloqueado hasta consignar el 100% de recaudos.">
                 <span class="badge-lock-indicator"><i class="fa-solid fa-lock"></i> BLOQUEADO</span>
-                <select class="form-control select-locked-status" disabled title="Bloqueado por sistema: Faltan recaudos por consignar (${entregados}/5). Debe consignar el 100% para habilitar revisión y aprobación docente.">
+                <select class="form-control select-locked-status" disabled title="Bloqueado por sistema: Faltan recaudos por consignar (${entregados}/4). Debe consignar el 100% para habilitar revisión y aprobación docente.">
                     <option value="DOCUMENTOS_INCOMPLETOS" selected>DOCS. INCOMPLETOS</option>
                 </select>
             </div>
         ` : `
-            <div class="status-unlocked-wrapper" title="Expediente con 100% de recaudos consignados (5/5). Control docente habilitado para revisión y aprobación en taquilla.">
+            <div class="status-unlocked-wrapper" title="Expediente con 100% de recaudos consignados (4/4). Control docente habilitado para revisión y aprobación en taquilla.">
                 <span class="badge-unlocked-indicator"><i class="fa-solid fa-lock-open"></i> HABILITADO</span>
                 <select class="form-control" style="font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.5rem; ${badgeColor}" onchange="cambiarEstadoPreinscripcion('${r.codigo}', this.value)">
                     <option value="EN_REVISION" ${r.estado === 'EN_REVISION' ? 'selected' : ''}>EN REVISIÓN</option>
@@ -1789,17 +2068,17 @@ function actualizarKpisDocente() {
     registros.forEach(r => {
         let entregados = 0;
         if (r.documentos) {
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 4; i++) {
                 const e = r.documentos[String(i)] || (r.archivos && r.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
                 if (e === 'APROBADO' || e === 'CONSIGNADO') entregados++;
             }
         } else if (r.recaudosCount) {
             entregados = parseInt(r.recaudosCount.split('/')[0] || '0', 10);
         }
-        r.recaudosCount = `${entregados}/5`;
+        r.recaudosCount = `${entregados}/4`;
 
         // Regla estricta automatizada:
-        if (entregados < 5) {
+        if (entregados < 4) {
             r.estado = 'DOCUMENTOS_INCOMPLETOS';
         } else if (r.estado === 'DOCUMENTOS_INCOMPLETOS' || !r.estado) {
             r.estado = 'EN_REVISION';
@@ -1857,7 +2136,7 @@ window.cambiarEstadoPreinscripcion = async function(codigo, nuevoEstado) {
 
     let entregados = 0;
     if (reg.documentos) {
-        for (let i = 1; i <= 5; i++) {
+        for (let i = 1; i <= 4; i++) {
             const docVal = reg.documentos[String(i)] || (reg.archivos && reg.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
             if (docVal === 'APROBADO' || docVal === 'CONSIGNADO') entregados++;
         }
@@ -1865,8 +2144,8 @@ window.cambiarEstadoPreinscripcion = async function(codigo, nuevoEstado) {
         entregados = parseInt(reg.recaudosCount.split('/')[0] || '0', 10);
     }
 
-    if (entregados < 5 && nuevoEstado === 'APROBADA') {
-        mostrarToast('Aprobación Bloqueada', 'El expediente tiene recaudos incompletos. Debe validar el 100% de los recaudos (5/5) antes de aprobar.', 'error');
+    if (entregados < 4 && nuevoEstado === 'APROBADA') {
+        mostrarToast('Aprobación Bloqueada', 'El expediente tiene recaudos incompletos. Debe validar el 100% de los recaudos (4/4) antes de aprobar.', 'error');
         filtrarYRenderizarPanelDocente();
         return;
     }
@@ -2122,7 +2401,7 @@ function filtrarYRenderizarHistorial() {
                 <td><span class="badge-tag" style="background: var(--fya-red-bg); color: var(--fya-red-dark); font-size: 0.78rem;">${r.grado}</span></td>
                 <td>
                     <span class="badge-tag" style="background: #e0f2fe; color: #0284c7; font-size: 0.78rem;">
-                        <i class="fa-solid fa-folder"></i> ${r.recaudosCount || '4/5'}
+                        <i class="fa-solid fa-folder"></i> ${r.recaudosCount || '4/4'}
                     </span>
                 </td>
                 <td>
@@ -2156,6 +2435,12 @@ function filtrarYRenderizarHistorial() {
 async function manejarEnvioPreinscripcion(e) {
     e.preventDefault();
 
+    // 1. Bloqueo estricto e innegociable si faltan las 4 fotografías obligatorias
+    if (!validarCuatroFotosObligatorias(true)) {
+        irAlPaso(5);
+        return;
+    }
+
     // Validar rigurosamente los 5 pasos consecutivos
     for (let p = 1; p <= 5; p++) {
         if (!validarPaso(p)) {
@@ -2182,9 +2467,9 @@ async function manejarEnvioPreinscripcion(e) {
 
     const docEstados = {};
     let recaudosEntregados = 0;
-    ['1', '2', '3', '4', '5'].forEach(id => {
+    ['1', '2', '3', '4'].forEach(id => {
         const el = document.getElementById(`estadoDoc${id}`);
-        const tieneArch = Boolean(AppState.archivosCargados[id]);
+        const tieneArch = Boolean(AppState.archivosCargados && AppState.archivosCargados[id]);
         const val = el ? el.value : (tieneArch ? 'CONSIGNADO' : 'NO_CONSIGNADO');
         docEstados[id] = val;
         if (val === 'APROBADO' || val === 'CONSIGNADO' || tieneArch) {
@@ -2193,10 +2478,10 @@ async function manejarEnvioPreinscripcion(e) {
     });
 
     // Máquina de estados automatizada:
-    // Si faltan recaudos (< 5/5) se fija obligatoriamente DOCUMENTOS_INCOMPLETOS.
-    // Si tiene el 100% de recaudos consignados (5/5), pasa a EN_REVISION (o el seleccionado por el docente si ya revisó en taquilla).
+    // Si faltan recaudos (< 4/4) se fija obligatoriamente DOCUMENTOS_INCOMPLETOS.
+    // Si tiene el 100% de recaudos consignados (4/4), pasa a EN_REVISION (o el seleccionado por el docente si ya revisó en taquilla).
     let est = 'EN_REVISION';
-    if (recaudosEntregados < 5) {
+    if (recaudosEntregados < 4) {
         est = 'DOCUMENTOS_INCOMPLETOS';
     } else {
         if (AppState.rol === 'docente') {
@@ -2249,7 +2534,7 @@ async function manejarEnvioPreinscripcion(e) {
         idUser: idUser,
         documentos: docEstados,
         archivos: { ...AppState.archivosCargados },
-        recaudosCount: `${recaudosEntregados}/5`,
+        recaudosCount: `${recaudosEntregados}/4`,
         fecha: new Date().toLocaleDateString('es-VE')
     };
 
@@ -2401,8 +2686,8 @@ function cargarRegistroSemillaSiVacio() {
                 periodo: '2026-2027',
                 operador: 'Control de Estudios (Admin)',
                 idUser: '1',
-                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO', '5': 'CONSIGNADO' },
-                recaudosCount: '5/5',
+                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO' },
+                recaudosCount: '4/4',
                 fecha: '08/10/2026'
             },
             {
@@ -2433,8 +2718,8 @@ function cargarRegistroSemillaSiVacio() {
                 periodo: '2026-2027',
                 operador: 'Secretaría Académica',
                 idUser: '2',
-                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO', '5': 'APROBADO' },
-                recaudosCount: '5/5',
+                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO' },
+                recaudosCount: '4/4',
                 fecha: '08/10/2026'
             },
             {
@@ -2465,8 +2750,8 @@ function cargarRegistroSemillaSiVacio() {
                 periodo: '2026-2027',
                 operador: 'Control de Estudios (Admin)',
                 idUser: '1',
-                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'NO_CONSIGNADO', '4': 'CONSIGNADO', '5': 'NO_CONSIGNADO' },
-                recaudosCount: '3/5',
+                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'NO_CONSIGNADO', '4': 'NO_CONSIGNADO' },
+                recaudosCount: '2/4',
                 fecha: '08/10/2026'
             },
             {
@@ -2497,8 +2782,8 @@ function cargarRegistroSemillaSiVacio() {
                 periodo: '2026-2027',
                 operador: 'Control de Estudios (Admin)',
                 idUser: '1',
-                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO', '5': 'APROBADO' },
-                recaudosCount: '5/5',
+                documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO' },
+                recaudosCount: '4/4',
                 fecha: '08/10/2026'
             }
         ];
@@ -2508,8 +2793,6 @@ function cargarRegistroSemillaSiVacio() {
 
 function cargarAspiranteEjemplo() {
     // Alumno
-    document.getElementById('alumnoTipoDoc').value = 'CE';
-    document.getElementById('alumnoNumDoc').value = '120555666';
     document.getElementById('alumnoNombres').value = 'Jesús David';
     document.getElementById('alumnoApellidos').value = 'Gómez Blanco';
     document.getElementById('alumnoFechaNac').value = '2020-03-12';
@@ -2534,6 +2817,29 @@ function cargarAspiranteEjemplo() {
     document.getElementById('repreLugarTrabajo').value = 'Sector San Francisco Centro';
     document.getElementById('repreDireccion').value = 'Barrio 24 de Julio, Av. 49B entre Calles 176 y 177, San Francisco, Edo. Zulia';
 
+    // Generador Automático de Cédula Escolar (Paso 1)
+    const chkCe = document.getElementById('chkGenerarCedulaEscolar');
+    if (chkCe) {
+        chkCe.checked = true;
+        const panel = document.getElementById('panelGeneradorCedulaEscolar');
+        if (panel) panel.style.display = 'block';
+        const numDoc = document.getElementById('alumnoNumDoc');
+        if (numDoc) {
+            numDoc.readOnly = true;
+            numDoc.classList.add('input-readonly');
+        }
+        document.getElementById('alumnoTipoDoc').value = 'CE';
+        document.getElementById('ceNacionalidad').value = 'V';
+        document.getElementById('ceTipoParto').value = '1';
+        document.getElementById('ceCedulaRepresentante').value = '19888777';
+        if (typeof generarCedulaEscolarAutomatica === 'function') {
+            generarCedulaEscolarAutomatica();
+        }
+    } else {
+        document.getElementById('alumnoTipoDoc').value = 'CE';
+        document.getElementById('alumnoNumDoc').value = 'V120CE19888777';
+    }
+
     // Instituto de Procedencia
     document.getElementById('chkPrimerIngreso').checked = false;
     const instWrapper = document.getElementById('institutoFieldsWrapper');
@@ -2550,16 +2856,49 @@ function cargarAspiranteEjemplo() {
     document.getElementById('selectGrado').value = '1';
     actualizarResumenGrado();
 
-    // Recaudos
-    document.getElementById('estadoDoc1').value = 'APROBADO';
-    document.getElementById('estadoDoc2').value = 'APROBADO';
-    document.getElementById('estadoDoc3').value = 'CONSIGNADO';
-    document.getElementById('estadoDoc4').value = 'CONSIGNADO';
-    document.getElementById('estadoDoc5').value = 'CONSIGNADO';
+    // 4 Recaudos Fotográficos Obligatorios de Demostración
+    const samplePhotoDataUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400"><rect width="100%" height="100%" fill="%23e0f2fe"/><circle cx="150" cy="140" r="65" fill="%230284c7"/><path d="M60 360 C60 250, 240 250, 240 360 Z" fill="%230369a1"/><text x="150" y="385" font-family="sans-serif" font-size="14" fill="%230c4a6e" text-anchor="middle" font-weight="bold">FOTO CARNET ALUMNO</text></svg>';
+    const sampleDocDataUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280" viewBox="0 0 400 280"><rect width="100%" height="100%" fill="%23f8fafc" stroke="%2316a34a" stroke-width="6"/><text x="200" y="140" font-family="sans-serif" font-size="18" fill="%2315803d" text-anchor="middle" font-weight="bold">CONSIGNADO Y VERIFICADO</text></svg>';
+
+    if (!AppState.archivosCargados) AppState.archivosCargados = {};
+    const nombresDocs = [
+        'Foto_Cedula_Representante.jpg',
+        'Foto_Informe_Cardiovascular.jpg',
+        'Foto_Partida_Nacimiento.jpg',
+        'Foto_Tipo_Carnet_Estudiante.jpg'
+    ];
+
+    ['1', '2', '3', '4'].forEach((id, idx) => {
+        const isPhotoCarnet = id === '4';
+        const dUrl = isPhotoCarnet ? samplePhotoDataUrl : sampleDocDataUrl;
+        AppState.archivosCargados[id] = {
+            nombre: nombresDocs[idx],
+            tamano: 450000,
+            tipo: 'image/jpeg',
+            dataUrl: dUrl,
+            fecha: new Date().toLocaleDateString('es-VE')
+        };
+
+        const thumbBox = document.getElementById(`thumbBoxDoc${id}`);
+        if (thumbBox) {
+            thumbBox.innerHTML = `<img src="${dUrl}" alt="Vista previa ${id}" class="recaudo-thumb-img" />`;
+        }
+        const card = document.getElementById(`cardRecaudo${id}`);
+        if (card) card.classList.remove('recaudo-card-error');
+
+        renderizarChipArchivoCargado(id, nombresDocs[idx], 450000);
+
+        const sel = document.getElementById(`estadoDoc${id}`);
+        if (sel) sel.value = 'CONSIGNADO';
+    });
+
+    // Inyección de Foto Tipo Carnet en la Planilla Oficial y PDF
+    inyectarFotoCarnetEnPlanilla(samplePhotoDataUrl);
 
     document.querySelectorAll('.input-invalid').forEach(el => el.classList.remove('input-invalid'));
+    sincronizarRecaudosPlanilla();
     actualizarEstadoBotonImprimir();
-    mostrarToast('Ejemplo Cargado', 'Formulario autocompletado con aspirante para 1er Grado (San Francisco, Zulia).');
+    mostrarToast('Ejemplo Cargado', 'Formulario autocompletado con Cédula Escolar generada y 4 fotografías obligatorias consignadas.');
 }
 
 /* ==============================================================================
@@ -2588,6 +2927,10 @@ function initEventListeners() {
     const btnGenerarPlanilla = document.getElementById('btnGenerarPlanilla');
     if (btnGenerarPlanilla) {
         btnGenerarPlanilla.addEventListener('click', () => {
+            // Bloqueo estricto e innegociable: exige las 4 fotos obligatorias
+            if (!validarCuatroFotosObligatorias(true)) {
+                return;
+            }
             sincronizarDatosPlanilla();
             abrirModal('modalPlanillaBackdrop');
         });
@@ -2803,11 +3146,10 @@ window.abrirVerificarRecaudos = function(codigo) {
     if (!container) return;
 
     const docsMeta = [
-        { id: '1', nombre: 'Partida de Nacimiento del Estudiante', icon: 'fa-certificate' },
-        { id: '2', nombre: 'Cédula de Identidad del Representante Legal', icon: 'fa-id-card' },
-        { id: '3', nombre: 'Boleta o Informe Descriptivo del Grado Anterior', icon: 'fa-file-invoice' },
-        { id: '4', nombre: '4 Fotografías Tipo Carnet del Estudiante', icon: 'fa-image' },
-        { id: '5', nombre: 'Constancia de Residencia de la Comunidad', icon: 'fa-house-chimney-user' }
+        { id: '1', nombre: 'Foto de Cédula del Representante Legal', icon: 'fa-id-card' },
+        { id: '2', nombre: 'Foto de Informe / Evaluación Cardiovascular', icon: 'fa-heart-pulse' },
+        { id: '3', nombre: 'Foto de Partida de Nacimiento del Estudiante', icon: 'fa-certificate' },
+        { id: '4', nombre: 'Foto Tipo Carnet del Estudiante', icon: 'fa-camera' }
     ];
 
     let html = '';
@@ -2846,7 +3188,7 @@ window.abrirVerificarRecaudos = function(codigo) {
 
                 <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                     ${tieneArchivo ? `
-                        <button type="button" class="btn btn-outline-red btn-sm" onclick="mostrarModalPreviewDoc('${fileName}', '${fileInfo.dataUrl || ''}', '${fileInfo.tipo || ''}')" title="Ver documento">
+                        <button type="button" class="btn btn-outline-red btn-sm" onclick="mostrarModalPreviewDoc('${fileName}', '${fileInfo.dataUrl || ''}', '${fileInfo.tipo || ''}')" title="Ver fotografía">
                             <i class="fa-solid fa-eye"></i> Ver
                         </button>
                     ` : ''}
@@ -2873,16 +3215,16 @@ window.verificarRecaudoDocente = async function(codigo, docId, nuevoEstado) {
     reg.documentos[docId] = nuevoEstado;
 
     let entregados = 0;
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 4; i++) {
         const e = reg.documentos[String(i)] || (reg.archivos && reg.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
         if (e === 'APROBADO' || e === 'CONSIGNADO') entregados++;
     }
-    reg.recaudosCount = `${entregados}/5`;
+    reg.recaudosCount = `${entregados}/4`;
 
     const estadoAnterior = reg.estado;
     let cambioBloqueo = false;
 
-    if (entregados === 5) {
+    if (entregados === 4) {
         if (reg.estado === 'DOCUMENTOS_INCOMPLETOS' || !reg.estado) {
             reg.estado = 'EN_REVISION';
             cambioBloqueo = true;
@@ -2900,10 +3242,10 @@ window.verificarRecaudoDocente = async function(codigo, docId, nuevoEstado) {
     abrirVerificarRecaudos(codigo);
 
     if (cambioBloqueo) {
-        if (entregados === 5) {
-            mostrarToast('Expediente Desbloqueado', '100% de recaudos consignados (5/5). El expediente pasó a EN REVISIÓN y se desbloqueó la opción de aprobación docente.', 'success');
+        if (entregados === 4) {
+            mostrarToast('Expediente Desbloqueado', '100% de recaudos consignados (4/4). El expediente pasó a EN REVISIÓN y se desbloqueó la opción de aprobación docente.', 'success');
         } else {
-            mostrarToast('Bloqueo Automático', `Recaudos incompletos (${entregados}/5). El expediente ha sido bloqueado automáticamente por el sistema.`, 'warning');
+            mostrarToast('Bloqueo Automático', `Recaudos incompletos (${entregados}/4). El expediente ha sido bloqueado automáticamente por el sistema.`, 'warning');
         }
     } else {
         mostrarToast('Recaudo Verificado', `Documento ${docId} marcado como ${nuevoEstado}.`);

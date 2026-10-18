@@ -1,5 +1,86 @@
 [
   {
+    "id": 1792319880257,
+    "timestamp": "2026-10-18T10:38:00.257Z",
+    "usuario": "manteca",
+    "rol": "DOCENTE",
+    "accion": "PURGA_TOTAL_BD",
+    "descripcion": "Se ejecutó el vaciado de raíz y purga profunda de las tablas de preinscripciones, alumnos, representantes, recaudos y procedencia en la base de datos MySQL (AUTO_INCREMENT = 1).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792319880249,
+    "timestamp": "2026-10-18T10:38:00.249Z",
+    "usuario": "prof.gonzalez.0204",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente María Teresa González Parra (@prof.gonzalez.0204).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792319880243,
+    "timestamp": "2026-10-18T10:38:00.243Z",
+    "usuario": "prof.gonzalez.0204",
+    "rol": "DOCENTE",
+    "accion": "RECUPERACION_CLAVE",
+    "descripcion": "Contraseña restablecida satisfactoriamente para la cuenta @prof.gonzalez.0204 mediante comprobación de pregunta de seguridad.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792319880232,
+    "timestamp": "2026-10-18T10:38:00.232Z",
+    "usuario": "prof.gonzalez.0204",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente María Teresa González Parra (@prof.gonzalez.0204).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792319880226,
+    "timestamp": "2026-10-18T10:38:00.226Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "APROBACION_DOCENTE",
+    "descripcion": "El Administrador Maestro autorizó la cuenta del docente María Teresa González Parra (@prof.gonzalez.0204, prof.gonzalez.0204@feyalegrianuevaamerica.edu.ve).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792319880213,
+    "timestamp": "2026-10-18T10:38:00.213Z",
+    "usuario": "prof.gonzalez.0204",
+    "rol": "DOCENTE",
+    "accion": "REGISTRO_DOCENTE",
+    "descripcion": "Nueva solicitud de acceso docente radicada por María Teresa González Parra (prof.gonzalez.0204@feyalegrianuevaamerica.edu.ve). Estado: En espera de aprobación por el Superroot.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792319880202,
+    "timestamp": "2026-10-18T10:38:00.202Z",
+    "usuario": "manteca",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente Profesor Manteca (@manteca).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792319880189,
+    "timestamp": "2026-10-18T10:38:00.189Z",
+    "usuario": "superroot",
+    "rol": "SUPERROOT",
+    "accion": "LOGIN_SUPERROOT",
+    "descripcion": "Acceso autenticado al Panel Maestro Superroot.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792319880149,
+    "timestamp": "2026-10-18T10:38:00.149Z",
+    "usuario": "superroot",
+    "rol": "ANONIMO",
+    "accion": "FALLO_LOGIN_SUPERROOT",
+    "descripcion": "Intento de acceso inválido con usuario: superroot",
+    "ip_address": "::1"
+  },
+  {
     "id": 1792192565657,
     "timestamp": "2026-10-16T23:16:05.657Z",
     "usuario": "superroot",

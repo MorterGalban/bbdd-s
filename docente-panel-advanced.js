@@ -67,12 +67,12 @@
             // 3. Estatus de Solicitud (EN_REVISION, APROBADA, etc.)
             const matchEstado = !estado || (r.estado === estado);
 
-            // 4. Estatus de Recaudos (Aprobado/Completo 5/5, En Revisión 5/5, Incompleto < 5)
+            // 4. Estatus de Recaudos (Aprobado/Completo 4/4, En Revisión 4/4, Incompleto < 4)
             let matchRecaudos = true;
             if (recaudosFiltro) {
                 let entregados = 0;
                 if (r.documentos) {
-                    for (let i = 1; i <= 5; i++) {
+                    for (let i = 1; i <= 4; i++) {
                         const d = r.documentos[String(i)] || (r.archivos && r.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
                         if (d === 'APROBADO' || d === 'CONSIGNADO') entregados++;
                     }
@@ -81,11 +81,11 @@
                 }
 
                 if (recaudosFiltro === 'COMPLETO') {
-                    matchRecaudos = (entregados >= 5);
+                    matchRecaudos = (entregados >= 4);
                 } else if (recaudosFiltro === 'REVISION') {
-                    matchRecaudos = (entregados >= 5 && r.estado === 'EN_REVISION');
+                    matchRecaudos = (entregados >= 4 && r.estado === 'EN_REVISION');
                 } else if (recaudosFiltro === 'INCOMPLETO') {
-                    matchRecaudos = (entregados < 5 || r.estado === 'DOCUMENTOS_INCOMPLETOS');
+                    matchRecaudos = (entregados < 4 || r.estado === 'DOCUMENTOS_INCOMPLETOS');
                 }
             }
 
@@ -151,18 +151,18 @@
             // Contar recaudos y evaluar máquina de estados automática
             let entregados = 0;
             if (r.documentos) {
-                for (let i = 1; i <= 5; i++) {
+                for (let i = 1; i <= 4; i++) {
                     const docVal = r.documentos[String(i)] || (r.archivos && r.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
                     if (docVal === 'APROBADO' || docVal === 'CONSIGNADO') entregados++;
                 }
             } else if (r.recaudosCount) {
                 entregados = parseInt(r.recaudosCount.split('/')[0] || '0', 10);
             }
-            r.recaudosCount = `${entregados}/5`;
+            r.recaudosCount = `${entregados}/4`;
 
-            // Máquina de estados: si faltan recaudos (< 5), se bloquea automáticamente en DOCUMENTOS_INCOMPLETOS.
-            // Si tiene 100% (5/5) y estaba en DOCUMENTOS_INCOMPLETOS, pasa a EN_REVISION (habilitando el control docente).
-            const estaIncompleto = (entregados < 5);
+            // Máquina de estados: si faltan recaudos (< 4), se bloquea automáticamente en DOCUMENTOS_INCOMPLETOS.
+            // Si tiene 100% (4/4) y estaba en DOCUMENTOS_INCOMPLETOS, pasa a EN_REVISION (habilitando el control docente).
+            const estaIncompleto = (entregados < 4);
             if (estaIncompleto) {
                 r.estado = 'DOCUMENTOS_INCOMPLETOS';
             } else if (r.estado === 'DOCUMENTOS_INCOMPLETOS' || !r.estado) {
@@ -180,14 +180,14 @@
             const recaudosBadge = r.recaudosCount;
 
             const selectorEstadoHtml = estaIncompleto ? `
-                <div class="status-locked-wrapper" title="Bloqueo automático del sistema: Faltan recaudos obligatorios (${entregados}/5 consignados). El expediente está bloqueado hasta consignar el 100% de recaudos.">
+                <div class="status-locked-wrapper" title="Bloqueo automático del sistema: Faltan recaudos obligatorios (${entregados}/4 consignados). El expediente está bloqueado hasta consignar el 100% de recaudos.">
                     <span class="badge-lock-indicator"><i class="fa-solid fa-lock"></i> BLOQUEADO</span>
-                    <select class="form-control select-locked-status" disabled title="Bloqueado por sistema: Faltan recaudos por consignar (${entregados}/5). Debe consignar el 100% para habilitar revisión y aprobación docente.">
+                    <select class="form-control select-locked-status" disabled title="Bloqueado por sistema: Faltan recaudos por consignar (${entregados}/4). Debe consignar el 100% para habilitar revisión y aprobación docente.">
                         <option value="DOCUMENTOS_INCOMPLETOS" selected>DOCS. INCOMPLETOS</option>
                     </select>
                 </div>
             ` : `
-                <div class="status-unlocked-wrapper" title="Expediente con 100% de recaudos consignados (5/5). Control docente habilitado para revisión y aprobación en taquilla.">
+                <div class="status-unlocked-wrapper" title="Expediente con 100% de recaudos consignados (4/4). Control docente habilitado para revisión y aprobación en taquilla.">
                     <span class="badge-unlocked-indicator"><i class="fa-solid fa-lock-open"></i> HABILITADO</span>
                     <select class="form-control" style="font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.5rem; ${badgeColor}" onchange="cambiarEstadoPreinscripcion('${r.codigo}', this.value)">
                         <option value="EN_REVISION" ${r.estado === 'EN_REVISION' ? 'selected' : ''}>EN REVISIÓN</option>
@@ -300,7 +300,7 @@
             `"${r.repreCorreo || ''}"`,
             `"${r.grado || ''}"`,
             `"${(r.instituto || '').replace(/"/g, '""')}"`,
-            `"${r.recaudosCount || '5/5'}"`,
+            `"${r.recaudosCount || '4/4'}"`,
             `"${r.estado || ''}"`,
             `"${r.fecha || ''}"`
         ]);

@@ -3786,3 +3786,226 @@ body.mode-docente #docenteSidebarSection {
     outline: none !important;
     box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
 }
+
+/* ==============================================================================
+   MÓDULO: GENERADOR AUTOMÁTICO DE CÉDULA ESCOLAR (PASO 1)
+   ============================================================================== */
+.cedula-escolar-checkbox-box {
+    background: #fef2f2;
+    border: 1.5px dashed #f87171;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    transition: var(--transition);
+}
+
+.cedula-escolar-checkbox-box:hover {
+    background: #fee2e2;
+    border-color: var(--fya-red);
+}
+
+.cedula-escolar-checkbox-box input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--fya-red);
+    cursor: pointer;
+}
+
+.cedula-escolar-checkbox-box label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #991b1b;
+    user-select: none;
+}
+
+#panelGeneradorCedulaEscolar {
+    animation: fadeInSlideDown 0.35s ease-out;
+}
+
+.cedula-escolar-panel-content {
+    background: linear-gradient(145deg, #fffafa 0%, #fff1f2 100%);
+    border: 1.5px solid #fecdd3;
+    border-radius: var(--radius-md);
+    padding: 1.2rem;
+    box-shadow: 0 4px 12px -2px rgba(185, 28, 28, 0.08);
+}
+
+.cedula-escolar-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #9f1239;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px dashed #fecdd3;
+}
+
+.cedula-escolar-panel-header i {
+    font-size: 1.15rem;
+    color: var(--fya-red);
+}
+
+.cedula-escolar-preview-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: #ffffff;
+    border: 1px solid #fecdd3;
+    border-radius: var(--radius-sm);
+}
+
+.cedula-escolar-badge {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #991b1b;
+    background: #fee2e2;
+    padding: 0.25rem 0.85rem;
+    border-radius: 6px;
+    border: 1.5px solid #f87171;
+    letter-spacing: 0.08em;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(153, 27, 27, 0.1);
+}
+
+.form-control.input-readonly {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    font-family: 'Consolas', 'Courier New', monospace !important;
+    border-color: #cbd5e1 !important;
+    cursor: not-allowed !important;
+    letter-spacing: 0.04em !important;
+}
+
+/* Modo oscuro para generador de cédula escolar */
+body.dark-mode .cedula-escolar-checkbox-box {
+    background: #1c141d;
+    border-color: #7f1d1d;
+}
+
+body.dark-mode .cedula-escolar-checkbox-box label {
+    color: #fca5a5;
+}
+
+body.dark-mode .cedula-escolar-panel-content {
+    background: linear-gradient(145deg, #1e131d 0%, #17111b 100%);
+    border-color: #831843;
+}
+
+body.dark-mode .cedula-escolar-panel-header {
+    color: #fbcfe8;
+    border-color: #500724;
+}
+
+body.dark-mode .cedula-escolar-preview-strip {
+    background: #111827;
+    border-color: #374151;
+}
+
+body.dark-mode .cedula-escolar-badge {
+    background: #3b0712;
+    color: #fca5a5;
+    border-color: #991b1b;
+}
+
+body.dark-mode .form-control.input-readonly {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #475569 !important;
+}
+
+/* ==============================================================================
+   MÓDULO: VISTAS PREVIAS EN MINIATURA Y ERROR DE 4 RECAUDOS FOTOGRÁFICOS (PASO 5)
+   ============================================================================== */
+.recaudo-thumb-box {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: #f1f5f9;
+    border: 1.5px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+}
+
+.recaudo-thumb-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.recaudo-thumb-box .thumb-placeholder-icon {
+    font-size: 1.6rem;
+    color: #94a3b8;
+}
+
+.recaudo-item-card.recaudo-card-error {
+    border-color: #dc2626 !important;
+    background: #fff8f8 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.22) !important;
+    animation: recaudoShake 0.45s ease-in-out;
+}
+
+body.dark-mode .recaudo-item-card.recaudo-card-error {
+    background: #2b1116 !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3) !important;
+}
+
+@keyframes recaudoShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes fadeInSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==============================================================================
+   MÓDULO: RENDERIZADO NÍTIDO DE FOTO TIPO CARNET EN PLANILLA Y PDF CARTA
+   ============================================================================== */
+#planilla-oficial .sheet-photo-box {
+    position: relative !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+#planilla-oficial .sheet-photo-box img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 2px !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+

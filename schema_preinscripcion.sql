@@ -293,14 +293,12 @@ INSERT INTO grado_periodos (id_grado, id_periodo, estado) VALUES
 (5, 1, 'DISPONIBLE'), -- 5to Grado 2026-2027
 (6, 1, 'DISPONIBLE'); -- 6to Grado 2026-2027
 
--- 6. Catálogo de Documentos
+-- 6. Catálogo de Documentos (4 Recaudos Fotográficos Obligatorios)
 INSERT INTO documentos (codigo, nombre, es_obligatorio) VALUES
-('PARTIDA_NAC', 'Partida de Nacimiento del Alumno (Copia y Original)', TRUE),
-('CI_REPRESENTANTE', 'Cédula de Identidad del Representante (Copia legible)', TRUE),
-('BOLETA_NOTAS', 'Informe Descriptivo / Boleta de Calificaciones del grado anterior', TRUE),
-('FOTOS_CARNET', '4 Fotografías del estudiante tipo carnet (Fondo blanco)', TRUE),
-('CARTA_RESIDENCIA', 'Constancia de Residencia de la comunidad', TRUE),
-('TARJETA_VACUNAS', 'Tarjeta o Certificado de Vacunación vigente', FALSE);
+('FOTO_CI_REPRESENTANTE', 'Foto de la Cédula de Identidad del Representante Legal', TRUE),
+('FOTO_INFORME_CARDIO', 'Foto del Informe / Evaluación Cardiovascular', TRUE),
+('FOTO_PARTIDA_NAC', 'Foto de la Partida de Nacimiento del Estudiante', TRUE),
+('FOTO_TIPO_CARNET', 'Foto Tipo Carnet del Estudiante', TRUE);
 
 -- ==============================================================================
 -- 11. TABLA: docentes (Registro Jerárquico con Aprobación del Superroot)

@@ -303,9 +303,9 @@
                     </select>
                     <select id="filtroDocenteRecaudos" name="filtroDocenteRecaudos" class="form-control" style="width: auto; min-width: 175px;">
                         <option value="">Todos los Recaudos</option>
-                        <option value="COMPLETO">100% Completo (5/5)</option>
-                        <option value="REVISION">En Revisión (5/5)</option>
-                        <option value="INCOMPLETO">Incompleto (&lt; 5 recaudos)</option>
+                        <option value="COMPLETO">100% Completo (4/4)</option>
+                        <option value="REVISION">En Revisión (4/4)</option>
+                        <option value="INCOMPLETO">Incompleto (&lt; 4 recaudos)</option>
                     </select>
                     <select id="filtroDocenteEstado" name="filtroDocenteEstado" class="form-control" style="width: auto; min-width: 150px;">
                         <option value="">Todos los Estados</option>
@@ -474,9 +474,56 @@
                                 *</label>
                             <input type="text" id="alumnoNumDoc" name="alumnoNumDoc" class="form-control" placeholder="Ej: 118999444"
                                 required>
-                            <span class="form-hint">Si no posee cédula de identidad, ingrese la cédula escolar
-                                asignada.</span>
+                            <span class="form-hint">Si no posee cédula de identidad, marque la casilla inferior para generar su Cédula Escolar automática.</span>
                             <span class="form-error-msg">Este campo es obligatorio</span>
+                        </div>
+
+                        <!-- 1. GENERADOR AUTOMÁTICO DE CÉDULA ESCOLAR (PASO 1 - ALUMNO) -->
+                        <div class="form-group col-12" style="margin-top: -0.25rem;">
+                            <div class="cedula-escolar-checkbox-box">
+                                <input type="checkbox" id="chkGenerarCedulaEscolar" name="chkGenerarCedulaEscolar">
+                                <label for="chkGenerarCedulaEscolar">
+                                    <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--fya-red); margin-right: 0.35rem;"></i>
+                                    El alumno no posee Cédula de Identidad (Generar Cédula Escolar)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-12" id="panelGeneradorCedulaEscolar" style="display: none;">
+                            <div class="cedula-escolar-panel-content">
+                                <div class="cedula-escolar-panel-header">
+                                    <i class="fa-solid fa-id-card-clip"></i>
+                                    <span><strong>Generador Automático de Cédula Escolar</strong> (Estructura Normativa: Nacionalidad + Tipo Parto + Año Nacimiento + CE + Cédula Repre)</span>
+                                </div>
+                                <div class="form-grid" style="margin-top: 0.85rem;">
+                                    <div class="form-group col-4">
+                                        <label for="ceNacionalidad" class="form-label">Nacionalidad del niño *</label>
+                                        <select id="ceNacionalidad" name="ceNacionalidad" class="form-control">
+                                            <option value="V" selected>V - Venezolana</option>
+                                            <option value="E">E - Extranjera</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-4">
+                                        <label for="ceTipoParto" class="form-label">Tipo de parto *</label>
+                                        <select id="ceTipoParto" name="ceTipoParto" class="form-control">
+                                            <option value="1" selected>1 - Sencillo</option>
+                                            <option value="2">2 - Morochos / Gemelos</option>
+                                            <option value="3">3 - Trillizos o múltiple</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-4">
+                                        <label for="ceCedulaRepresentante" class="form-label">N° de Cédula del Representante *</label>
+                                        <input type="text" id="ceCedulaRepresentante" name="ceCedulaRepresentante" class="form-control" placeholder="Ej: 19888777" maxlength="12">
+                                        <span class="form-hint" style="font-size: 0.72rem;">Sincronizado en tiempo real con el Paso 2</span>
+                                    </div>
+                                </div>
+                                <div class="cedula-escolar-preview-strip">
+                                    <span style="font-size: 0.82rem; color: #52525b; font-weight: 600;">
+                                        <i class="fa-solid fa-certificate" style="color: var(--fya-red);"></i> Cédula Escolar Ensamblada:
+                                    </span>
+                                    <span id="ceBadgeVisual" class="cedula-escolar-badge">--</span>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group col-6">
@@ -845,19 +892,19 @@
                         de admisiones:
                     </p>
 
-                    <!-- Lista de Recaudos Fe y Alegría con Carga de Archivos -->
+                    <!-- 2. REESTRUCTURACIÓN ESTRICTA A 4 RECAUDOS FOTOGRÁFICOS OBLIGATORIOS (PASO 5) -->
                     <div id="recaudosListWrapper">
-                        <!-- Doc 1: Partida de Nacimiento -->
+                        <!-- Recaudo 1: Foto de la Cédula de Identidad del Representante -->
                         <div class="recaudo-item-card" id="recaudoCard1">
                             <div class="recaudo-header">
                                 <div class="recaudo-title-group">
-                                    <div class="doc-icon-badge"><i class="fa-solid fa-certificate"></i></div>
+                                    <div class="doc-icon-badge"><i class="fa-solid fa-id-card"></i></div>
                                     <div>
                                         <h5 style="font-size: 0.98rem; margin-bottom: 0.2rem;">
-                                            1. Partida de Nacimiento del Estudiante <span class="req-badge">Obligatorio</span>
+                                            1. Foto de la Cédula de Identidad del Representante <span class="req-badge">Obligatorio</span>
                                         </h5>
                                         <span style="font-size: 0.8rem; color: var(--text-muted);">
-                                            Copia legible o escaneo original (PDF, JPG o PNG)
+                                            Fotografía nítida y legible de la cédula del representante legal (padre, madre o tutor)
                                         </span>
                                     </div>
                                 </div>
@@ -871,33 +918,37 @@
                                 </div>
                             </div>
                             <div class="recaudo-upload-zone">
-                                <div class="recaudo-file-info" id="fileStatusDoc1">
-                                    <i class="fa-regular fa-file"></i>
-                                    <div>
-                                        <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin archivo adjunto</strong>
-                                        <span style="font-size: 0.75rem; color: var(--text-muted);">Formatos admitidos: PDF, JPG, PNG (Máx 5MB)</span>
+                                <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 220px;">
+                                    <div class="recaudo-thumb-box" id="thumbBoxDoc1">
+                                        <i class="fa-solid fa-id-card thumb-placeholder-icon"></i>
+                                    </div>
+                                    <div class="recaudo-file-info" id="fileStatusDoc1">
+                                        <div>
+                                            <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin fotografía adjunta</strong>
+                                            <span style="font-size: 0.75rem; color: var(--text-muted);">Requisito fotográfico obligatorio (JPG, PNG)</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
-                                    <input type="file" id="fileUploadDoc1" name="fileUploadDoc1" class="file-recaudo-input" data-doc-id="1" accept="image/*,application/pdf" style="display: none;">
+                                    <input type="file" id="fileUploadDoc1" name="fileUploadDoc1" class="file-recaudo-input" data-doc-id="1" accept="image/*" required style="display: none;">
                                     <label for="fileUploadDoc1" class="recaudo-btn-upload">
-                                        <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Partida
+                                        <i class="fa-solid fa-camera"></i> Cargar Foto Cédula
                                     </label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Doc 2: Cédula de Identidad Representante -->
+                        <!-- Recaudo 2: Foto del Informe / Evaluación Cardiovascular -->
                         <div class="recaudo-item-card" id="recaudoCard2">
                             <div class="recaudo-header">
                                 <div class="recaudo-title-group">
-                                    <div class="doc-icon-badge"><i class="fa-solid fa-id-card"></i></div>
+                                    <div class="doc-icon-badge"><i class="fa-solid fa-heart-pulse"></i></div>
                                     <div>
                                         <h5 style="font-size: 0.98rem; margin-bottom: 0.2rem;">
-                                            2. Cédula de Identidad del Representante Legal <span class="req-badge">Obligatorio</span>
+                                            2. Foto del Informe / Evaluación Cardiovascular <span class="req-badge">Obligatorio</span>
                                         </h5>
                                         <span style="font-size: 0.8rem; color: var(--text-muted);">
-                                            Copia ampliada y vigente del padre, madre o tutor
+                                            Fotografía del informe médico o certificado de aptitud cardiovascular del estudiante
                                         </span>
                                     </div>
                                 </div>
@@ -911,33 +962,37 @@
                                 </div>
                             </div>
                             <div class="recaudo-upload-zone">
-                                <div class="recaudo-file-info" id="fileStatusDoc2">
-                                    <i class="fa-regular fa-file"></i>
-                                    <div>
-                                        <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin archivo adjunto</strong>
-                                        <span style="font-size: 0.75rem; color: var(--text-muted);">Formatos admitidos: PDF, JPG, PNG (Máx 5MB)</span>
+                                <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 220px;">
+                                    <div class="recaudo-thumb-box" id="thumbBoxDoc2">
+                                        <i class="fa-solid fa-heart-pulse thumb-placeholder-icon"></i>
+                                    </div>
+                                    <div class="recaudo-file-info" id="fileStatusDoc2">
+                                        <div>
+                                            <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin fotografía adjunta</strong>
+                                            <span style="font-size: 0.75rem; color: var(--text-muted);">Requisito fotográfico obligatorio (JPG, PNG)</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
-                                    <input type="file" id="fileUploadDoc2" name="fileUploadDoc2" class="file-recaudo-input" data-doc-id="2" accept="image/*,application/pdf" style="display: none;">
+                                    <input type="file" id="fileUploadDoc2" name="fileUploadDoc2" class="file-recaudo-input" data-doc-id="2" accept="image/*" required style="display: none;">
                                     <label for="fileUploadDoc2" class="recaudo-btn-upload">
-                                        <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Cédula
+                                        <i class="fa-solid fa-camera"></i> Cargar Evaluación
                                     </label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Doc 3: Boleta o Informe Descriptivo -->
+                        <!-- Recaudo 3: Foto de la Partida de Nacimiento del Estudiante -->
                         <div class="recaudo-item-card" id="recaudoCard3">
                             <div class="recaudo-header">
                                 <div class="recaudo-title-group">
-                                    <div class="doc-icon-badge"><i class="fa-solid fa-file-invoice"></i></div>
+                                    <div class="doc-icon-badge"><i class="fa-solid fa-certificate"></i></div>
                                     <div>
                                         <h5 style="font-size: 0.98rem; margin-bottom: 0.2rem;">
-                                            3. Boleta o Informe Descriptivo del Grado Anterior <span class="req-badge">Obligatorio</span>
+                                            3. Foto de la Partida de Nacimiento del Estudiante <span class="req-badge">Obligatorio</span>
                                         </h5>
                                         <span style="font-size: 0.8rem; color: var(--text-muted);">
-                                            Emitido por el plantel de procedencia (para 2° a 6° o informe inicial)
+                                            Fotografía clara y completa del acta original o copia certificada de nacimiento
                                         </span>
                                     </div>
                                 </div>
@@ -951,33 +1006,37 @@
                                 </div>
                             </div>
                             <div class="recaudo-upload-zone">
-                                <div class="recaudo-file-info" id="fileStatusDoc3">
-                                    <i class="fa-regular fa-file"></i>
-                                    <div>
-                                        <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin archivo adjunto</strong>
-                                        <span style="font-size: 0.75rem; color: var(--text-muted);">Formatos admitidos: PDF, JPG, PNG (Máx 5MB)</span>
+                                <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 220px;">
+                                    <div class="recaudo-thumb-box" id="thumbBoxDoc3">
+                                        <i class="fa-solid fa-certificate thumb-placeholder-icon"></i>
+                                    </div>
+                                    <div class="recaudo-file-info" id="fileStatusDoc3">
+                                        <div>
+                                            <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin fotografía adjunta</strong>
+                                            <span style="font-size: 0.75rem; color: var(--text-muted);">Requisito fotográfico obligatorio (JPG, PNG)</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
-                                    <input type="file" id="fileUploadDoc3" name="fileUploadDoc3" class="file-recaudo-input" data-doc-id="3" accept="image/*,application/pdf" style="display: none;">
+                                    <input type="file" id="fileUploadDoc3" name="fileUploadDoc3" class="file-recaudo-input" data-doc-id="3" accept="image/*" required style="display: none;">
                                     <label for="fileUploadDoc3" class="recaudo-btn-upload">
-                                        <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Boleta
+                                        <i class="fa-solid fa-camera"></i> Cargar Partida
                                     </label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Doc 4: Fotografías Tipo Carnet -->
+                        <!-- Recaudo 4: Foto Tipo Carnet del Estudiante -->
                         <div class="recaudo-item-card" id="recaudoCard4">
                             <div class="recaudo-header">
                                 <div class="recaudo-title-group">
-                                    <div class="doc-icon-badge"><i class="fa-solid fa-image"></i></div>
+                                    <div class="doc-icon-badge"><i class="fa-solid fa-camera"></i></div>
                                     <div>
                                         <h5 style="font-size: 0.98rem; margin-bottom: 0.2rem;">
-                                            4. Fotografías Tipo Carnet del Estudiante <span class="req-badge">Obligatorio</span>
+                                            4. Foto Tipo Carnet del Estudiante <span class="req-badge">Obligatorio</span>
                                         </h5>
                                         <span style="font-size: 0.8rem; color: var(--text-muted);">
-                                            Foto reciente fondo blanco (Cargar versión digital para expediente)
+                                            Fotografía frontal reciente fondo blanco (se inyectará directamente en la planilla oficial)
                                         </span>
                                     </div>
                                 </div>
@@ -991,57 +1050,21 @@
                                 </div>
                             </div>
                             <div class="recaudo-upload-zone">
-                                <div class="recaudo-file-info" id="fileStatusDoc4">
-                                    <i class="fa-regular fa-image"></i>
-                                    <div>
-                                        <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin archivo adjunto</strong>
-                                        <span style="font-size: 0.75rem; color: var(--text-muted);">Formatos admitidos: JPG, PNG (Máx 5MB)</span>
+                                <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 220px;">
+                                    <div class="recaudo-thumb-box" id="thumbBoxDoc4">
+                                        <i class="fa-solid fa-user thumb-placeholder-icon"></i>
+                                    </div>
+                                    <div class="recaudo-file-info" id="fileStatusDoc4">
+                                        <div>
+                                            <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin fotografía adjunta</strong>
+                                            <span style="font-size: 0.75rem; color: var(--text-muted);">Requisito fotográfico obligatorio (JPG, PNG)</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
-                                    <input type="file" id="fileUploadDoc4" name="fileUploadDoc4" class="file-recaudo-input" data-doc-id="4" accept="image/*" style="display: none;">
+                                    <input type="file" id="fileUploadDoc4" name="fileUploadDoc4" class="file-recaudo-input" data-doc-id="4" accept="image/*" required style="display: none;">
                                     <label for="fileUploadDoc4" class="recaudo-btn-upload">
-                                        <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Foto
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Doc 5: Constancia de Residencia -->
-                        <div class="recaudo-item-card" id="recaudoCard5">
-                            <div class="recaudo-header">
-                                <div class="recaudo-title-group">
-                                    <div class="doc-icon-badge"><i class="fa-solid fa-house-chimney-user"></i></div>
-                                    <div>
-                                        <h5 style="font-size: 0.98rem; margin-bottom: 0.2rem;">
-                                            5. Constancia de Residencia de la Comunidad <span class="req-badge">Obligatorio</span>
-                                        </h5>
-                                        <span style="font-size: 0.8rem; color: var(--text-muted);">
-                                            Emitida por el Consejo Comunal, recibo de servicio o autoridad local
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="admin-only-section" style="display: none; align-items: center; gap: 0.5rem;">
-                                    <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">Estado Docente:</label>
-                                    <select class="form-control" id="estadoDoc5" name="estadoDoc5" style="width: auto; font-size: 0.82rem; padding: 0.35rem 0.65rem;">
-                                        <option value="NO_CONSIGNADO" selected>Pendiente por Entrega</option>
-                                        <option value="CONSIGNADO">Consignado</option>
-                                        <option value="APROBADO">Aprobado</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="recaudo-upload-zone">
-                                <div class="recaudo-file-info" id="fileStatusDoc5">
-                                    <i class="fa-regular fa-file"></i>
-                                    <div>
-                                        <strong style="display: block; font-size: 0.86rem; color: var(--text-secondary);">Sin archivo adjunto</strong>
-                                        <span style="font-size: 0.75rem; color: var(--text-muted);">Formatos admitidos: PDF, JPG, PNG (Máx 5MB)</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <input type="file" id="fileUploadDoc5" name="fileUploadDoc5" class="file-recaudo-input" data-doc-id="5" accept="image/*,application/pdf" style="display: none;">
-                                    <label for="fileUploadDoc5" class="recaudo-btn-upload">
-                                        <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Constancia
+                                        <i class="fa-solid fa-camera"></i> Cargar Foto Carnet
                                     </label>
                                 </div>
                             </div>
@@ -1120,7 +1143,7 @@
                                     PLANILLA OFICIAL DE PREINSCRIPCIÓN - EDUCACIÓN PRIMARIA
                                 </div>
                             </div>
-                            <div class="sheet-photo-box">
+                            <div class="sheet-photo-box" id="sheetPhotoBox">
                                 <span>FOTO DEL ALUMNO<br>TIPO CARNET<br>(3cm x 3.5cm)</span>
                             </div>
                         </div>

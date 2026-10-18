@@ -65,8 +65,8 @@ const REGISTROS_DEMO = [
         periodo: '2026-2027',
         operador: 'Control de Estudios (Admin)',
         idUser: '1',
-        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO', '5': 'CONSIGNADO' },
-        recaudosCount: '5/5',
+        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO' },
+        recaudosCount: '4/4',
         fecha: '08/10/2026'
     },
     {
@@ -97,8 +97,8 @@ const REGISTROS_DEMO = [
         periodo: '2026-2027',
         operador: 'Secretaría Académica',
         idUser: '2',
-        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO', '5': 'APROBADO' },
-        recaudosCount: '5/5',
+        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO' },
+        recaudosCount: '4/4',
         fecha: '08/10/2026'
     },
     {
@@ -129,8 +129,8 @@ const REGISTROS_DEMO = [
         periodo: '2026-2027',
         operador: 'Control de Estudios (Admin)',
         idUser: '1',
-        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'NO_CONSIGNADO', '4': 'CONSIGNADO', '5': 'NO_CONSIGNADO' },
-        recaudosCount: '3/5',
+        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'NO_CONSIGNADO', '4': 'NO_CONSIGNADO' },
+        recaudosCount: '2/4',
         fecha: '08/10/2026'
     },
     {
@@ -161,8 +161,8 @@ const REGISTROS_DEMO = [
         periodo: '2026-2027',
         operador: 'Control de Estudios (Admin)',
         idUser: '1',
-        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO', '5': 'APROBADO' },
-        recaudosCount: '5/5',
+        documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO' },
+        recaudosCount: '4/4',
         fecha: '08/10/2026'
     }
 ];
@@ -785,8 +785,8 @@ async function insertarRegistroEnMySQL(conn, reg) {
 // CONFIGURACIÓN DE MIDDLEWARE DE EXPRESS
 // ==============================================================================
 app.use(cors());
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Middleware de autenticación y protección para rutas administrativas sensibles
 function authSuperrootMiddleware(req, res, next) {
@@ -1373,7 +1373,7 @@ app.get('/api/proceso-admision/estado', async (req, res) => {
 
             let entregados = 0;
             if (p.documentos) {
-                for (let i = 1; i <= 5; i++) {
+                for (let i = 1; i <= 4; i++) {
                     const e = p.documentos[String(i)] || (p.archivos && p.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
                     if (e === 'APROBADO' || e === 'CONSIGNADO') entregados++;
                 }
@@ -1382,7 +1382,7 @@ app.get('/api/proceso-admision/estado', async (req, res) => {
             }
 
             let est = (p.estado || '').toUpperCase();
-            if (entregados < 5) {
+            if (entregados < 4) {
                 est = 'DOCUMENTOS_INCOMPLETOS';
             } else if (est === 'DOCUMENTOS_INCOMPLETOS' || !est) {
                 est = 'EN_REVISION';
@@ -2342,14 +2342,14 @@ app.put('/api/preinscripciones/:codigo/recaudo', async (req, res) => {
             reg.documentos[String(docId)] = nuevoEstado;
 
             let entregados = 0;
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 4; i++) {
                 const e = reg.documentos[String(i)] || (reg.archivos && reg.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
                 if (e === 'APROBADO' || e === 'CONSIGNADO') entregados++;
             }
-            reg.recaudosCount = `${entregados}/5`;
+            reg.recaudosCount = `${entregados}/4`;
 
             const estadoAnterior = reg.estado;
-            if (entregados === 5) {
+            if (entregados === 4) {
                 if (reg.estado === 'DOCUMENTOS_INCOMPLETOS' || !reg.estado) {
                     reg.estado = 'EN_REVISION';
                 }
@@ -2373,11 +2373,11 @@ app.put('/api/preinscripciones/:codigo/recaudo', async (req, res) => {
                 }
             }
 
-            const detalleLog = (entregados === 5 && estadoAnterior === 'DOCUMENTOS_INCOMPLETOS')
-                ? `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo}. 100% consignado (5/5): Expediente DESBLOQUEADO y pasado a EN_REVISION.`
-                : (entregados < 5 && estadoAnterior !== 'DOCUMENTOS_INCOMPLETOS'
-                    ? `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo}. Incompleto (${entregados}/5): Expediente BLOQUEADO AUTOMÁTICAMENTE a DOCUMENTOS_INCOMPLETOS.`
-                    : `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo} (${entregados}/5 recaudos). Estado: ${reg.estado}.`);
+            const detalleLog = (entregados === 4 && estadoAnterior === 'DOCUMENTOS_INCOMPLETOS')
+                ? `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo}. 100% consignado (4/4): Expediente DESBLOQUEADO y pasado a EN_REVISION.`
+                : (entregados < 4 && estadoAnterior !== 'DOCUMENTOS_INCOMPLETOS'
+                    ? `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo}. Incompleto (${entregados}/4): Expediente BLOQUEADO AUTOMÁTICAMENTE a DOCUMENTOS_INCOMPLETOS.`
+                    : `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo} (${entregados}/4 recaudos). Estado: ${reg.estado}.`);
 
             await registrarLog(
                 req.body.usuario || 'Docente / Control de Estudios',

@@ -12,5 +12,19 @@
     "fecha_registro": "2026-10-16T12:00:00.000Z",
     "fecha_aprobacion": "2026-10-16T12:00:00.000Z",
     "aprobado_por": "superroot"
+  },
+  {
+    "id": 1792319880211,
+    "nombres": "María Teresa",
+    "apellidos": "González Parra",
+    "correo": "prof.gonzalez.0204@feyalegrianuevaamerica.edu.ve",
+    "usuario": "prof.gonzalez.0204",
+    "password_hash": "3d8aea98c9e018107283b730dd89520840e77d0d473dbcb135984ee0953ab8eb",
+    "pregunta_seguridad": "¿Cuál es su color institucional favorito?",
+    "respuesta_seguridad_hash": "4f09653a86aa66803c366850f55bbb77f62ce7cdebb325b63f90dc995d1b768c",
+    "is_approved": 1,
+    "fecha_registro": "2026-10-18T10:38:00.211Z",
+    "fecha_aprobacion": "2026-10-18T10:38:00.224Z",
+    "aprobado_por": "superroot"
   }
 ]
