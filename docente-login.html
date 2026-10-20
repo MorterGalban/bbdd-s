@@ -206,15 +206,6 @@
                 Ingresa con tus credenciales institucionales para auditar expedientes, validar recaudos y gestionar las preinscripciones 2026-2027.
             </p>
 
-            <!-- Credenciales autorizadas del único docente base -->
-            <div class="login-hint-box">
-                <i class="fa-solid fa-key"></i> <strong>Credencial Docente Autorizada:</strong><br>
-                • Usuario: <code>manteca</code> &nbsp;|&nbsp; Contraseña: <code>manteca</code><br>
-                <span style="font-size: 0.78rem; color: var(--text-secondary); display: block; margin-top: 4px;">
-                    * Los nuevos docentes deben <a href="docente-registro.html" style="font-weight: 700; color: var(--fya-red);">solicitar su registro aquí</a> y esperar la aprobación del Administrador Maestro.
-                </span>
-            </div>
-
             <!-- Caja de Mensaje de Error / Estado -->
             <div id="loginDocenteAlert" style="display: none;" class="alert-box" role="alert">
                 <i id="loginDocenteAlertIcon" class="fa-solid fa-circle-xmark" style="font-size: 1.15rem; margin-top: 1px;"></i>
@@ -254,12 +245,9 @@
                 </a>
             </div>
 
-            <div class="login-footer-links">
+            <div class="login-footer-links" style="justify-content: center;">
                 <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">
                     <i class="fa-solid fa-house"></i> Volver a Inicio
-                </a>
-                <a href="preinscripcion.html?rol=representante" style="color: var(--fya-red); text-decoration: none; font-weight: 600;">
-                    <i class="fa-solid fa-pencil"></i> Modo Representante
                 </a>
             </div>
         </div>
@@ -524,6 +512,7 @@
             } catch (err) {
                 console.warn('[Fetch Login Fallback]', err.message);
                 // Fallback de contingencia si el servidor node está fuera de línea momentáneamente
+
                 if (u === 'manteca' && p === 'manteca') {
                     sessionStorage.setItem('fya_rol', 'docente');
                     sessionStorage.setItem('fya_docente_auth', 'true');
@@ -534,6 +523,13 @@
                     localStorage.removeItem('fya_docente_user');
                     localStorage.removeItem('fya_docente_nombre');
                     localStorage.removeItem('fya_rol');
+
+                    mostrarAlertaLogin('success', '¡Modo demostración local activado! Ingresando...');
+                    setTimeout(() => {
+                        window.location.href = 'preinscripcion.html?rol=docente';
+                    }, 500);
+                    return;
+                }
 
                     window.location.href = 'preinscripcion.html?rol=docente';
                 } else {

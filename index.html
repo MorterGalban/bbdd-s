@@ -62,7 +62,7 @@
                     aria-label="Cambiar tema claro / oscuro" title="Cambiar tema claro / oscuro">
                     <i class="fa-solid fa-moon"></i>
                 </button>
-                <button type="button" class="btn btn-outline-red" id="btnConsultarEstatusNav" onclick="abrirModalConsultaRepresentante()">
+                <button type="button" class="btn btn-outline-red" id="btnConsultarEstatusNav" onclick="irAConsultaInicio()">
                     <i class="fa-solid fa-file-circle-exclamation"></i> Consultar Estatus
                 </button>
                 <a href="preinscripcion.html?rol=representante" class="btn btn-primary" id="btnIrPreinscripcionHeader">
@@ -96,7 +96,7 @@
                         id="btnIniciarPreinscripcionHero">
                         <i class="fa-solid fa-user-pen"></i> Ingresar como Representante
                     </a>
-                    <button type="button" class="btn btn-outline-red btn-lg" id="btnConsultarEstatusHero" onclick="abrirModalConsultaRepresentante()">
+                    <button type="button" class="btn btn-outline-red btn-lg" id="btnConsultarEstatusHero" onclick="irAConsultaInicio()">
                         <i class="fa-solid fa-file-circle-exclamation"></i> Consultar Estatus / Subsanar
                     </button>
                     <a href="docente-login.html" class="btn btn-secondary btn-lg" id="btnAccesoDocenteHero">
@@ -115,6 +115,52 @@
                 <p class="hero-card-desc">1° a 6° Grado de Educación Primaria</p>
                 <div class="periodo-highlight-badge">
                     <i class="fa-solid fa-calendar-check"></i> PERIODO ESCOLAR 2026 - 2027
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- PORTAL DE CONSULTA Y SUBSANACIÓN DE RECAUDOS (EN EL INICIO)    -->
+    <!-- ============================================================== -->
+    <section class="seccion-consulta-inicio" id="seccionConsultaInicio" style="padding: 2.5rem 1rem 3rem 1rem; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); border-bottom: 1px solid #e2e8f0;">
+        <div class="container" style="max-width: 920px; margin: 0 auto;">
+            <div style="background: #ffffff; border-radius: 16px; border: 1.5px solid #e2e8f0; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.07); padding: 2rem 2.25rem; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #b91c1c, #dc2626, #f59e0b);"></div>
+                
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+                    <div style="width: 52px; height: 52px; border-radius: 12px; background: #fee2e2; color: #b91c1c; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin: 0;">Portal de Consulta y Subsanación</h2>
+                        <p style="font-size: 0.9rem; color: #64748b; margin: 0.25rem 0 0 0;">
+                            Consulte el estatus de su solicitud, subsane fotografías observadas o descargue el carnet estudiantil provisional
+                        </p>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                    <label for="inputConsultaCedulaInicio" style="font-size: 0.88rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-id-card"></i> Cédula del Representante o Cédula Escolar del Alumno:
+                    </label>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <input type="text" id="inputConsultaCedulaInicio" class="form-control" placeholder="Ej: 19888777 o CE-31566111236" style="flex: 1; min-width: 240px; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.95rem; border: 1.5px solid #cbd5e1;">
+                        <button type="button" class="btn btn-primary" id="btnEjecutarConsultaInicio" onclick="ejecutarConsultaRepresentante('inicio')" style="padding: 0.75rem 1.6rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-magnifying-glass"></i> Consultar Solicitud
+                        </button>
+                    </div>
+                    <span style="font-size: 0.78rem; color: #64748b; margin-top: 0.5rem; display: block;">
+                        <i class="fa-solid fa-circle-info"></i> Ingrese la cédula (sin puntos) o el código de preinscripción (ej: PRE-2026-0001). Presione Enter para consultar.
+                    </span>
+                </div>
+
+                <!-- Contenedor de Resultados en el Inicio -->
+                <div id="consultaResultadosInicio">
+                    <div style="text-align: center; padding: 1.75rem 1rem; color: #94a3b8; border: 2px dashed #e2e8f0; border-radius: 10px;">
+                        <i class="fa-solid fa-folder-open" style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem; color: #cbd5e1;"></i>
+                        <span style="font-size: 0.92rem; font-weight: 600; color: #64748b;">Ingrese su número de identificación para consultar el estatus o subsanar recaudos</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -553,6 +599,31 @@
             t._timer = setTimeout(() => t.classList.remove('show'), 4500);
         }
 
+        // Normalizador Global de Documento Estudiantil (Elimina duplicados de prefijos como CE-CE o V-V)
+        window.formatearDocumentoAlumno = function(doc) {
+            if (!doc) return 'S/N';
+            let str = String(doc).trim();
+            str = str.replace(/^CE[-_\s]*CE[-_\s]*/i, 'CE-');
+            str = str.replace(/^V[-_\s]*V[-_\s]*/i, 'V-');
+            str = str.replace(/^E[-_\s]*E[-_\s]*/i, 'E-');
+            if (/^CE[-_\s]*\d+/i.test(str)) {
+                str = 'CE-' + str.replace(/^CE[-_\s]*/i, '');
+            } else if (/^[VE][-_\s]*\d+/i.test(str)) {
+                const letra = str.charAt(0).toUpperCase();
+                str = letra + '-' + str.slice(1).replace(/^[-_\s]*/, '');
+            }
+            return str;
+        };
+
+        window.irAConsultaInicio = function() {
+            const sec = document.getElementById('seccionConsultaInicio');
+            if (sec) {
+                sec.scrollIntoView({ behavior: 'smooth' });
+                const inp = document.getElementById('inputConsultaCedulaInicio');
+                if (inp) setTimeout(() => inp.focus(), 350);
+            }
+        };
+
         window.abrirModalConsultaRepresentante = function() {
             const m = document.getElementById('modalConsultaRepresentante');
             if (m) {
@@ -566,6 +637,28 @@
             const m = document.getElementById('modalConsultaRepresentante');
             if (m) m.style.display = 'none';
         };
+
+        // Escucha de tecla Enter para ambos buscadores
+        document.addEventListener('DOMContentLoaded', () => {
+            const inpIni = document.getElementById('inputConsultaCedulaInicio');
+            if (inpIni) {
+                inpIni.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        ejecutarConsultaRepresentante('inicio');
+                    }
+                });
+            }
+            const inpMod = document.getElementById('inputConsultaCedula');
+            if (inpMod) {
+                inpMod.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        ejecutarConsultaRepresentante('modal');
+                    }
+                });
+            }
+        });
 
         // Compresión automática en memoria con Canvas
         function comprimirImagenCanvas(file, maxWidth = 800, quality = 0.7) {
@@ -599,20 +692,37 @@
             });
         }
 
-        window.ejecutarConsultaRepresentante = async function() {
-            const val = (document.getElementById('inputConsultaCedula')?.value || '').trim();
-            const wrapper = document.getElementById('consultaResultadosWrapper');
+        window.ejecutarConsultaRepresentante = async function(origen = 'inicio') {
+            const inputInicio = document.getElementById('inputConsultaCedulaInicio');
+            const inputModal = document.getElementById('inputConsultaCedula');
+            
+            let val = '';
+            if (origen === 'inicio' && inputInicio) {
+                val = inputInicio.value.trim();
+                if (inputModal) inputModal.value = val;
+            } else if (origen === 'modal' && inputModal) {
+                val = inputModal.value.trim();
+                if (inputInicio) inputInicio.value = val;
+            } else {
+                val = (inputInicio?.value || inputModal?.value || '').trim();
+            }
+
+            const wrapperInicio = document.getElementById('consultaResultadosInicio');
+            const wrapperModal = document.getElementById('consultaResultadosWrapper');
+
             if (!val) {
                 mostrarToast('Identificación requerida', 'Por favor ingrese su número de cédula o la de su representado.', 'warning');
                 return;
             }
 
-            wrapper.innerHTML = `
-                <div style="text-align: center; padding: 2rem; color: #64748b;">
-                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: #b91c1c; display: block; margin-bottom: 0.5rem;"></i>
-                    Buscando solicitudes registradas...
+            const loadingHtml = `
+                <div style="text-align: center; padding: 2.5rem 1rem; color: #64748b;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 2.2rem; color: #b91c1c; display: block; margin-bottom: 0.6rem;"></i>
+                    <strong>Buscando solicitudes registradas...</strong>
                 </div>
             `;
+            if (wrapperInicio) wrapperInicio.innerHTML = loadingHtml;
+            if (wrapperModal) wrapperModal.innerHTML = loadingHtml;
 
             let registros = [];
             // 1. Intentar desde backend
@@ -628,7 +738,7 @@
                 console.warn('[Consulta] Fallback a almacenamiento local:', e);
             }
 
-            // 2. Fusionar inteligentemente con datos de localStorage para no perder rechazos ni fotos locales
+            // 2. Fusionar inteligentemente con datos de localStorage
             try {
                 const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
                 const cleanDigits = val.replace(/\D/g, '');
@@ -659,12 +769,26 @@
                         };
                     });
                 }
+
+                // Guardar/Actualizar en localStorage para que estén disponibles para carnet y subsanación
+                registros.forEach(r => {
+                    const idx = localData.findIndex(l => l.codigo === r.codigo);
+                    if (idx !== -1) {
+                        localData[idx] = { ...localData[idx], ...r };
+                    } else {
+                        localData.push(r);
+                    }
+                });
+                localStorage.setItem('fya_preinscripciones_db', JSON.stringify(localData));
             } catch (e) {
                 console.warn('[Consulta] Error en merge local:', e);
             }
 
+            // Cache global en memoria
+            window._registrosConsultadosCache = registros;
+
             if (registros.length === 0) {
-                wrapper.innerHTML = `
+                const noResultsHtml = `
                     <div style="text-align: center; padding: 2.5rem 1rem; color: #64748b;">
                         <i class="fa-solid fa-folder-xmark" style="font-size: 2.5rem; color: #94a3b8; display: block; margin-bottom: 0.75rem;"></i>
                         <strong style="color: #1e293b; font-size: 1.05rem;">No se encontraron solicitudes registradas</strong>
@@ -674,109 +798,122 @@
                         </a>
                     </div>
                 `;
+                if (wrapperInicio) wrapperInicio.innerHTML = noResultsHtml;
+                if (wrapperModal) wrapperModal.innerHTML = noResultsHtml;
                 return;
             }
 
-            let html = '';
-            registros.forEach(r => {
-                const rechazos = r.rechazos || {};
-                const keysRechazos = Object.keys(rechazos).filter(k => rechazos[k] && (rechazos[k].rechazada !== false) && (rechazos[k].motivo || rechazos[k].rechazada));
-                const tieneRechazos = keysRechazos.length > 0;
+            const renderHtml = (isInicio) => {
+                let html = '';
+                registros.forEach(r => {
+                    const rechazos = r.rechazos || {};
+                    const keysRechazos = Object.keys(rechazos).filter(k => rechazos[k] && (rechazos[k].rechazada !== false) && (rechazos[k].motivo || rechazos[k].rechazada));
+                    const tieneRechazos = keysRechazos.length > 0;
 
-                const badgeColor = {
-                    'APROBADA': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
-                    'APROBADO': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
-                    'EN_REVISION': 'background: #fef3c7; color: #b45309; border: 1px solid #fde68a;',
-                    'DOCUMENTOS_INCOMPLETOS': 'background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;',
-                    'PENDIENTE': 'background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;'
-                }[r.estado] || 'background: #f1f5f9; color: #475569;';
+                    const badgeColor = {
+                        'APROBADA': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
+                        'APROBADO': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
+                        'EN_REVISION': 'background: #fef3c7; color: #b45309; border: 1px solid #fde68a;',
+                        'DOCUMENTOS_INCOMPLETOS': 'background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;',
+                        'PENDIENTE': 'background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;'
+                    }[r.estado] || 'background: #f1f5f9; color: #475569;';
 
-                const estadoLabel = {
-                    'APROBADA': 'APROBADA / EN REGLA',
-                    'APROBADO': 'APROBADA / EN REGLA',
-                    'EN_REVISION': 'EN REVISIÓN EN TAQUILLA',
-                    'DOCUMENTOS_INCOMPLETOS': 'DOCUMENTOS INCOMPLETOS',
-                    'PENDIENTE': 'PENDIENTE'
-                }[r.estado] || r.estado;
+                    const estadoLabel = {
+                        'APROBADA': 'APROBADA / EN REGLA',
+                        'APROBADO': 'APROBADA / EN REGLA',
+                        'EN_REVISION': 'EN REVISIÓN EN TAQUILLA',
+                        'DOCUMENTOS_INCOMPLETOS': 'DOCUMENTOS INCOMPLETOS',
+                        'PENDIENTE': 'PENDIENTE'
+                    }[r.estado] || r.estado;
 
-                html += `
-                    <div class="consulta-card" id="cardConsulta_${r.codigo}">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem;">
-                            <div>
-                                <span style="font-family: monospace; font-size: 0.82rem; font-weight: 800; color: #b91c1c; background: #fee2e2; padding: 2px 8px; border-radius: 4px;">
-                                    ${r.codigo}
-                                </span>
-                                <h4 style="margin: 0.4rem 0 0.15rem 0; font-size: 1.1rem; color: #0f172a;">${r.alumno}</h4>
-                                <span style="font-size: 0.82rem; color: #64748b;">
-                                    C.I./C.E: <strong>${r.alumnoDoc || 'S/N'}</strong> • Grado: <strong>${r.grado || 'Primaria'}</strong>
-                                </span>
-                            </div>
-                            <div style="text-align: right;">
-                                <span style="font-size: 0.76rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 999px; display: inline-block; ${badgeColor}">
-                                    ${estadoLabel}
-                                </span>
-                                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Recaudos: ${r.recaudosCount || '4/4'}</div>
-                            </div>
-                        </div>
-                `;
+                    const docFormateado = window.formatearDocumentoAlumno(r.alumnoDoc);
+                    const inputPrefix = isInicio ? 'subsanarInputInicio_' : 'subsanarInput_';
 
-                if (tieneRechazos) {
                     html += `
-                        <div class="alerta-subsanar-destacada">
-                            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.35rem;">
-                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.15rem; color: #e11d48;"></i>
-                                Atención: Fotografías Observadas por el Docente
+                        <div class="consulta-card" id="cardConsulta_${isInicio ? 'ini_' : ''}${r.codigo}">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem;">
+                                <div>
+                                    <span style="font-family: monospace; font-size: 0.82rem; font-weight: 800; color: #b91c1c; background: #fee2e2; padding: 2px 8px; border-radius: 4px;">
+                                        ${r.codigo}
+                                    </span>
+                                    <h4 style="margin: 0.4rem 0 0.15rem 0; font-size: 1.1rem; color: #0f172a;">${r.alumno}</h4>
+                                    <span style="font-size: 0.82rem; color: #64748b;">
+                                        C.I./C.E: <strong>${docFormateado}</strong> • Grado: <strong>${r.grado || 'Primaria'}</strong>
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-size: 0.76rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 999px; display: inline-block; ${badgeColor}">
+                                        ${estadoLabel}
+                                    </span>
+                                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Recaudos: ${r.recaudosCount || '4/4'}</div>
+                                </div>
                             </div>
-                            <p style="font-size: 0.84rem; margin: 0 0 0.75rem 0; color: #9f1239;">
-                                El personal de admisiones ha observado los siguientes recaudos. Puede adjuntar una nueva fotografía nítida para subsanar el expediente y retornarlo a <strong>EN REVISIÓN</strong>:
-                            </p>
                     `;
 
-                    keysRechazos.forEach(docId => {
-                        const recInfo = rechazos[docId];
-                        const docNombre = RECAUDOS_NOMBRES[docId] || `Recaudo #${docId}`;
+                    if (tieneRechazos) {
                         html += `
-                            <div style="background: white; border: 1px solid #fda4af; border-radius: 8px; padding: 0.85rem; margin-top: 0.5rem;">
-                                <div style="font-weight: 700; font-size: 0.88rem; color: #9f1239;">
-                                    <i class="fa-solid fa-camera"></i> ${docNombre}
+                            <div class="alerta-subsanar-destacada">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.35rem;">
+                                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.15rem; color: #e11d48;"></i>
+                                    Atención: Fotografías Observadas por el Docente
                                 </div>
-                                <div style="font-size: 0.8rem; color: #b91c1c; margin: 0.25rem 0 0.6rem 0; font-style: italic;">
-                                    Observación del docente: "${recInfo.motivo || 'Documento no legible o no conforme'}"
+                                <p style="font-size: 0.84rem; margin: 0 0 0.75rem 0; color: #9f1239;">
+                                    El personal de admisiones ha observado los siguientes recaudos. Puede adjuntar una nueva fotografía nítida para subsanar el expediente y retornarlo a <strong>EN REVISIÓN</strong>:
+                                </p>
+                        `;
+
+                        keysRechazos.forEach(docId => {
+                            const recInfo = rechazos[docId];
+                            const docNombre = RECAUDOS_NOMBRES[docId] || `Recaudo #${docId}`;
+                            html += `
+                                <div style="background: white; border: 1px solid #fda4af; border-radius: 8px; padding: 0.85rem; margin-top: 0.5rem;">
+                                    <div style="font-weight: 700; font-size: 0.88rem; color: #9f1239;">
+                                        <i class="fa-solid fa-camera"></i> ${docNombre}
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #b91c1c; margin: 0.25rem 0 0.6rem 0; font-style: italic;">
+                                        Observación del docente: "${recInfo.motivo || 'Documento no legible o no conforme'}"
+                                    </div>
+                                    <div class="subsanar-upload-row">
+                                        <input type="file" accept="image/*" id="${inputPrefix}${r.codigo}_${docId}" class="form-control" style="font-size: 0.8rem; flex: 1; min-width: 200px;">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="subsanarRecaudoRepresentante('${r.codigo}', '${docId}')" style="font-size: 0.8rem;">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i> Subir Documento Corregido
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="subsanar-upload-row">
-                                    <input type="file" accept="image/*" id="subsanarInput_${r.codigo}_${docId}" class="form-control" style="font-size: 0.8rem; flex: 1; min-width: 200px;">
-                                    <button type="button" class="btn btn-primary btn-sm" onclick="subsanarRecaudoRepresentante('${r.codigo}', '${docId}')" style="font-size: 0.8rem;">
-                                        <i class="fa-solid fa-cloud-arrow-up"></i> Subir Documento Corregido
-                                    </button>
-                                </div>
+                            `;
+                        });
+
+                        html += `</div>`;
+                    }
+
+                    if (r.estado === 'APROBADA' || r.estado === 'APROBADO') {
+                        html += `
+                            <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                                <span style="font-size: 0.82rem; color: #15803d; font-weight: 700;">
+                                    <i class="fa-solid fa-circle-check"></i> Solicitud formalmente aprobada para el Año Escolar 2026 - 2027
+                                </span>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="emitirCarnetProvisional('${r.codigo}')" style="font-size: 0.82rem; font-weight: 700;">
+                                    <i class="fa-solid fa-id-badge"></i> Emitir Carnet Provisional
+                                </button>
                             </div>
                         `;
-                    });
+                    }
 
                     html += `</div>`;
-                }
+                });
+                return html;
+            };
 
-                if (r.estado === 'APROBADA' || r.estado === 'APROBADO') {
-                    html += `
-                        <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                            <span style="font-size: 0.82rem; color: #15803d; font-weight: 700;">
-                                <i class="fa-solid fa-circle-check"></i> Solicitud formalmente aprobada para el Año Escolar 2026 - 2027
-                            </span>
-                            <button type="button" class="btn btn-outline-success btn-sm" onclick="emitirCarnetProvisional('${r.codigo}')" style="font-size: 0.82rem; font-weight: 700;">
-                                <i class="fa-solid fa-id-badge"></i> Emitir Carnet Provisional
-                            </button>
-                        </div>
-                    `;
-                }
-
-                html += `</div>`;
-            });
-
-            wrapper.innerHTML = html;
+            if (wrapperInicio) wrapperInicio.innerHTML = renderHtml(true);
+            if (wrapperModal) wrapperModal.innerHTML = renderHtml(false);
         };
 
         window.subsanarRecaudoRepresentante = async function(codigo, docId) {
-            const fileInput = document.getElementById(`subsanarInput_${codigo}_${docId}`);
+            let fileInput = document.getElementById(`subsanarInputInicio_${codigo}_${docId}`);
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                fileInput = document.getElementById(`subsanarInput_${codigo}_${docId}`);
+            }
+
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
                 mostrarToast('Archivo Requerido', 'Por favor seleccione la nueva fotografía corregida antes de enviar.', 'warning');
                 return;
@@ -846,6 +983,14 @@
 
                     localData[idx] = reg;
                     localStorage.setItem('fya_preinscripciones_db', JSON.stringify(localData));
+
+                    // Actualizar cache global en memoria si existe
+                    if (window._registrosConsultadosCache) {
+                        const cacheIdx = window._registrosConsultadosCache.findIndex(r => r.codigo === codigo);
+                        if (cacheIdx !== -1) {
+                            window._registrosConsultadosCache[cacheIdx] = { ...window._registrosConsultadosCache[cacheIdx], ...reg };
+                        }
+                    }
                 } catch (e) {}
 
                 mostrarToast('Documento Corregido', 'La fotografía fue reemplazada con éxito. El expediente vuelve a EN REVISIÓN para validación docente.', 'success');
@@ -862,11 +1007,13 @@
         let carnetRegistroActivo = null;
 
         window.emitirCarnetProvisional = function(codigo) {
-            let reg = null;
-            try {
-                const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
-                reg = localData.find(r => r.codigo === codigo);
-            } catch (e) {}
+            let reg = (window._registrosConsultadosCache || []).find(r => r.codigo === codigo);
+            if (!reg) {
+                try {
+                    const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+                    reg = localData.find(r => r.codigo === codigo);
+                } catch (e) {}
+            }
 
             if (!reg) {
                 mostrarToast('Registro no encontrado', 'No se pudo cargar la información para el carnet.', 'error');
@@ -882,50 +1029,70 @@
                 reg.archivos['4'].dataUrl :
                 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="260" viewBox="0 0 200 260"><rect width="100%" height="100%" fill="%23f1f5f9"/><circle cx="100" cy="90" r="45" fill="%23cbd5e1"/><path d="M30 240 C30 170, 170 170, 170 240 Z" fill="%2394a3b8"/></svg>';
 
+            const sangre = reg.alumnoSangre || 'O+';
+            const alergias = reg.alumnoAlergias || 'Ninguna conocida / Sin alergias';
+            const emTel = reg.repreTelefono || '0414-0000000';
+            const contactoEm = `${reg.representante || 'Representante'} (${emTel})`;
+            const docLimpio = window.formatearDocumentoAlumno(reg.alumnoDoc);
+
             printArea.innerHTML = `
+                <!-- Marca de agua de fondo institucional -->
+                <div class="carnet-cr80-watermark">
+                    <img src="logo_feyalegria.png" alt="Marca de Agua Institucional" crossOrigin="anonymous">
+                </div>
+
                 <div class="carnet-cr80-header">
-                    <img src="logo_feyalegria.png" alt="Logo Fe y Alegría" class="carnet-cr80-header-logo">
+                    <img src="logo_feyalegria.png" alt="Logo Fe y Alegría" class="carnet-cr80-header-logo" crossOrigin="anonymous">
                     <div class="carnet-cr80-header-titles">
                         <h4>U.E. FE Y ALEGRÍA "NUEVA AMÉRICA"</h4>
-                        <p>PERIODO ESCOLAR 2026 - 2027 • SAN FRANCISCO, EDO. ZULIA</p>
+                        <p>CARNET ESTUDIANTIL PROVISIONAL • PERIODO 2026 - 2027</p>
                     </div>
-                    <div class="carnet-cr80-header-badge">PROVISIONAL</div>
+                    <div class="carnet-cr80-header-badge">PRIMARIA</div>
                 </div>
+
                 <div class="carnet-cr80-body">
-                    <div class="carnet-cr80-photo-wrap">
-                        <img src="${fotoCarnet}" alt="Foto Estudiante" class="carnet-cr80-photo" crossOrigin="anonymous">
-                    </div>
-                    <div class="carnet-cr80-details">
-                        <div>
-                            <div class="carnet-cr80-student-name">${reg.alumno}</div>
-                            <div class="carnet-cr80-field-row">
-                                <span class="carnet-cr80-field-label">C.I. / C.E.:</span>
-                                <span class="carnet-cr80-field-value highlight-cedula">${reg.alumnoDoc || 'S/N'}</span>
-                            </div>
-                            <div class="carnet-cr80-field-row">
-                                <span class="carnet-cr80-field-label">Grado:</span>
-                                <span class="carnet-cr80-field-value" style="color: #b91c1c; font-weight: 700;">${reg.grado || 'Educación Primaria'}</span>
-                            </div>
-                            <div class="carnet-cr80-field-row">
-                                <span class="carnet-cr80-field-label">Tipo Sangre:</span>
-                                <span class="carnet-cr80-field-value">${reg.alumnoSangre || 'O+'}</span>
-                            </div>
-                            <div class="carnet-cr80-field-row">
-                                <span class="carnet-cr80-field-label">Alergias/Cond:</span>
-                                <span class="carnet-cr80-field-value" style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                    ${reg.alumnoAlergias || 'Ninguna conocida'}
-                                </span>
-                            </div>
+                    <div class="carnet-cr80-photo-col">
+                        <div class="carnet-cr80-photo-wrap">
+                            <img src="${fotoCarnet}" alt="Foto Estudiante" class="carnet-cr80-photo" crossOrigin="anonymous">
                         </div>
-                        <div style="background: #fdf2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 3px 6px; font-size: 0.65rem;">
-                            <strong>Emergencia / Repre:</strong> ${reg.representante} • <strong>Tel:</strong> ${reg.repreTelefono || 'N/A'}
+                        <div class="carnet-cr80-blood-badge">
+                            <i class="fa-solid fa-droplet"></i> SANGRE: ${sangre}
+                        </div>
+                    </div>
+
+                    <div class="carnet-cr80-details">
+                        <div class="carnet-cr80-student-name">${reg.alumno}</div>
+
+                        <div class="carnet-cr80-field-row">
+                            <span class="carnet-cr80-field-label">C.I. / C.E.:</span>
+                            <strong class="carnet-cr80-field-value highlight-cedula">${docLimpio}</strong>
+                        </div>
+
+                        <div class="carnet-cr80-field-row">
+                            <span class="carnet-cr80-field-label">GRADO:</span>
+                            <span class="carnet-cr80-field-value carnet-grado-highlight">${reg.grado || 'Educación Primaria'}</span>
+                        </div>
+
+                        <div class="carnet-cr80-field-row">
+                            <span class="carnet-cr80-field-label">COND./ALERGIAS:</span>
+                            <span class="carnet-cr80-field-value text-truncate-custom">${alergias}</span>
+                        </div>
+
+                        <div class="carnet-emergency-box">
+                            <div style="font-size: 0.60rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Contacto de Emergencia / Representante:</div>
+                            <div style="font-size: 0.68rem; font-weight: 700; color: #1e293b;" class="text-truncate-custom">
+                                ${contactoEm}
+                            </div>
                         </div>
                     </div>
                 </div>
+
                 <div class="carnet-cr80-footer">
-                    <span>Folio: <strong>${reg.codigo}</strong></span>
-                    <span>VÁLIDO COMO IDENTIFICACIÓN ESTUDIANTIL PROVISIONAL</span>
-                    <span>DEA-FYA-00921</span>
+                    <div class="carnet-cr80-footer-left">MUNICIPIO SAN FRANCISCO, ESTADO ZULIA • CONTROL DE ESTUDIOS</div>
+                    <div>
+                        <span class="carnet-folio-label">FOLIO:</span>
+                        <span class="carnet-folio-code">${reg.codigo}</span>
+                    </div>
                 </div>
             `;
 
@@ -946,27 +1113,80 @@
 
         window.descargarCarnetPdf = async function() {
             if (!carnetRegistroActivo) return;
-            const elem = document.getElementById('carnetCr80PrintArea');
-            if (!elem) return;
+            const origElem = document.getElementById('carnetCr80PrintArea');
+            if (!origElem) return;
 
             try {
-                mostrarToast('Generando Carnet', 'Exportando carnet CR80 en PDF...', 'info');
+                mostrarToast('Generando Carnet', 'Generando carnet CR80 en alta resolución...', 'info');
+
+                // Clonar y ubicar en contenedor temporal a coordenadas fijas (0, 0)
+                // Esto elimina el problema de páginas en blanco por scroll o posiciones dentro de modales centrados
+                const clone = origElem.cloneNode(true);
+                const container = document.createElement('div');
+                container.id = 'tempCarnetPdfContainer';
+                container.style.cssText = 'position: fixed; top: 0; left: 0; width: 500px; height: 315px; z-index: 999999; margin: 0; padding: 0; background: #ffffff; display: block; overflow: hidden;';
+                
+                clone.style.width = '500px';
+                clone.style.height = '315px';
+                clone.style.minWidth = '500px';
+                clone.style.minHeight = '315px';
+                clone.style.maxWidth = '500px';
+                clone.style.maxHeight = '315px';
+                clone.style.margin = '0';
+                clone.style.boxShadow = 'none';
+                clone.style.borderRadius = '0';
+
+                container.appendChild(clone);
+                document.body.appendChild(container);
+
+                // Esperar a que las imágenes del clon estén totalmente cargadas
+                const imgs = Array.from(container.querySelectorAll('img'));
+                await Promise.all(imgs.map(img => {
+                    if (img.complete) return Promise.resolve();
+                    return new Promise(res => {
+                        img.onload = res;
+                        img.onerror = res;
+                        setTimeout(res, 800);
+                    });
+                }));
+
+                await new Promise(r => setTimeout(r, 150));
+
+                const codigoLimpio = (carnetRegistroActivo.alumnoDoc || carnetRegistroActivo.codigo).replace(/\D/g, '');
                 const opt = {
                     margin: 0,
-                    filename: `Carnet_Provisional_${(carnetRegistroActivo.alumnoDoc || carnetRegistroActivo.codigo).replace(/\D/g, '')}.pdf`,
+                    filename: `Carnet_Provisional_${codigoLimpio}.pdf`,
                     image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 3, useCORS: true },
-                    jsPDF: { unit: 'mm', format: [85.6, 54], orientation: 'landscape' }
+                    html2canvas: {
+                        scale: 3,
+                        useCORS: true,
+                        allowTaint: true,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: 500,
+                        windowHeight: 315
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: [85.6, 54],
+                        orientation: 'landscape'
+                    }
                 };
 
                 if (typeof html2pdf !== 'undefined') {
-                    await html2pdf().set(opt).from(elem).save();
+                    await html2pdf().set(opt).from(container).save();
                     mostrarToast('Carnet Descargado', 'El carnet estudiantil CR80 ha sido generado y descargado.', 'success');
                 } else {
                     mostrarToast('Error de Librería', 'La librería html2pdf no está disponible.', 'error');
                 }
+
+                if (container.parentNode) {
+                    container.parentNode.removeChild(container);
+                }
             } catch (err) {
                 console.error('[Carnet PDF Error]', err);
+                const cont = document.getElementById('tempCarnetPdfContainer');
+                if (cont && cont.parentNode) cont.parentNode.removeChild(cont);
                 mostrarToast('Error al Descargar', 'No se pudo generar el PDF del carnet.', 'error');
             }
         };

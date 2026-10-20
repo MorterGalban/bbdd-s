@@ -32,6 +32,22 @@ const AppState = {
 // Exponer explícitamente en el objeto global window para módulos satélite
 window.AppState = AppState;
 
+// Normalizador Global de Documento Estudiantil (Elimina duplicados de prefijos como CE-CE o V-V)
+window.formatearDocumentoAlumno = function(doc) {
+    if (!doc) return 'S/N';
+    let str = String(doc).trim();
+    str = str.replace(/^CE[-_\s]*CE[-_\s]*/i, 'CE-');
+    str = str.replace(/^V[-_\s]*V[-_\s]*/i, 'V-');
+    str = str.replace(/^E[-_\s]*E[-_\s]*/i, 'E-');
+    if (/^CE[-_\s]*\d+/i.test(str)) {
+        str = 'CE-' + str.replace(/^CE[-_\s]*/i, '');
+    } else if (/^[VE][-_\s]*\d+/i.test(str)) {
+        const letra = str.charAt(0).toUpperCase();
+        str = letra + '-' + str.slice(1).replace(/^[-_\s]*/, '');
+    }
+    return str;
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     determinarRolInicial();
     initTheme();
@@ -2785,7 +2801,7 @@ async function manejarEnvioPreinscripcion(e) {
     const registro = {
         codigo: codSol,
         alumno: alNom,
-        alumnoDoc: `${document.getElementById('alumnoTipoDoc')?.value}-${document.getElementById('alumnoNumDoc')?.value}`,
+        alumnoDoc: window.formatearDocumentoAlumno(`${document.getElementById('alumnoTipoDoc')?.value}-${document.getElementById('alumnoNumDoc')?.value}`),
         alumnoFechaNac: document.getElementById('alumnoFechaNac')?.value,
         alumnoGenero: document.getElementById('alumnoGenero')?.value,
         alumnoSangre: document.getElementById('alumnoTipoSangre')?.value,
@@ -4446,55 +4462,69 @@ window.emitirCarnetProvisional = function(codigo) {
     const alergias = reg.alumnoAlergias || 'Ninguna conocida / Sin alergias';
     const emTel = reg.repreTelefono || '0414-0000000';
     const contactoEm = `${reg.representante || 'Representante'} (${emTel})`;
+    const docLimpio = window.formatearDocumentoAlumno(reg.alumnoDoc);
 
-    // Formatear el contenedor para que sea la tarjeta CR80 directa
+    // Formatear el contenedor con el diseño institucional premium CR80
     container.className = 'carnet-cr80-card';
     container.id = 'carnetCr80PrintArea';
     container.innerHTML = `
+        <!-- Marca de agua de fondo institucional -->
+        <div class="carnet-cr80-watermark">
+            <img src="logo_feyalegria.png" alt="Marca de Agua Institucional" crossOrigin="anonymous" />
+        </div>
+
         <div class="carnet-cr80-header">
-            <div class="carnet-cr80-logo-title">
-                <div class="carnet-cr80-school">U.E. FE Y ALEGRÍA "NUEVA AMÉRICA"</div>
-                <div class="carnet-cr80-sub">CARNET ESTUDIANTIL PROVISIONAL • PERIODO 2026 - 2027</div>
+            <img src="logo_feyalegria.png" alt="Logo Fe y Alegría" class="carnet-cr80-header-logo" crossOrigin="anonymous" />
+            <div class="carnet-cr80-header-titles">
+                <h4>U.E. FE Y ALEGRÍA "NUEVA AMÉRICA"</h4>
+                <p>CARNET ESTUDIANTIL PROVISIONAL • PERIODO 2026 - 2027</p>
             </div>
-            <div class="carnet-cr80-badge">PRIMARIA</div>
+            <div class="carnet-cr80-header-badge">PRIMARIA</div>
         </div>
 
         <div class="carnet-cr80-body">
             <div class="carnet-cr80-photo-col">
                 <div class="carnet-cr80-photo-wrap">
-                    <img src="${fotoCarnet}" alt="Foto ${reg.alumno}" class="carnet-cr80-img" crossOrigin="anonymous" />
+                    <img src="${fotoCarnet}" alt="Foto ${reg.alumno}" class="carnet-cr80-photo" crossOrigin="anonymous" />
                 </div>
-                <div class="carnet-cr80-blood-pill">SANGRE: ${sangre}</div>
+                <div class="carnet-cr80-blood-badge">
+                    <i class="fa-solid fa-droplet"></i> SANGRE: ${sangre}
+                </div>
             </div>
 
-            <div class="carnet-cr80-info-col">
+            <div class="carnet-cr80-details">
                 <div class="carnet-cr80-student-name">${reg.alumno}</div>
 
-                <div class="carnet-cr80-doc-row">
-                    <span class="carnet-cr80-doc-label">C.I. / C.E.:</span>
-                    <strong class="carnet-cr80-doc-val">${reg.alumnoDoc || 'S/N'}</strong>
+                <div class="carnet-cr80-field-row">
+                    <span class="carnet-cr80-field-label">C.I. / C.E.:</span>
+                    <strong class="carnet-cr80-field-value highlight-cedula">${docLimpio}</strong>
                 </div>
 
-                <div class="carnet-cr80-grade-row">
-                    <span class="carnet-cr80-grade-label">GRADO:</span>
-                    <strong class="carnet-cr80-grade-val">${reg.grado}</strong>
+                <div class="carnet-cr80-field-row">
+                    <span class="carnet-cr80-field-label">GRADO:</span>
+                    <span class="carnet-cr80-field-value carnet-grado-highlight">${reg.grado || 'Educación Primaria'}</span>
                 </div>
 
-                <div class="carnet-cr80-med-row">
-                    <span class="carnet-cr80-med-label">COND./ALERGIAS:</span>
-                    <span class="carnet-cr80-med-val">${alergias}</span>
+                <div class="carnet-cr80-field-row">
+                    <span class="carnet-cr80-field-label">COND./ALERGIAS:</span>
+                    <span class="carnet-cr80-field-value text-truncate-custom">${alergias}</span>
                 </div>
 
-                <div class="carnet-cr80-emergency-row">
-                    <span class="carnet-cr80-em-label">CONTACTO EMERGENCIA:</span>
-                    <strong class="carnet-cr80-em-val">${contactoEm}</strong>
+                <div class="carnet-emergency-box">
+                    <div style="font-size: 0.60rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Contacto de Emergencia / Representante:</div>
+                    <div style="font-size: 0.68rem; font-weight: 700; color: #1e293b;" class="text-truncate-custom">
+                        ${contactoEm}
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="carnet-cr80-footer">
-            <span>MUNICIPIO SAN FRANCISCO, ESTADO ZULIA • CONTROL DE ESTUDIOS</span>
-            <span class="carnet-cr80-folio">FOLIO: ${reg.codigo}</span>
+            <div class="carnet-cr80-footer-left">MUNICIPIO SAN FRANCISCO, ESTADO ZULIA • CONTROL DE ESTUDIOS</div>
+            <div>
+                <span class="carnet-folio-label">FOLIO:</span>
+                <span class="carnet-folio-code">${reg.codigo}</span>
+            </div>
         </div>
     `;
 
@@ -4511,37 +4541,89 @@ window.cerrarModalCarnetProvisional = function() {
 };
 
 window.descargarCarnetPdf = async function() {
-    const elem = document.getElementById('carnetCr80PrintArea') || document.getElementById('carnetCr80Card') || document.getElementById('carnetCr80Content');
+    const origElem = document.getElementById('carnetCr80PrintArea') || document.getElementById('carnetCr80Card') || document.getElementById('carnetCr80Content');
     const modal = document.getElementById('modalCarnetProvisional');
     const codigo = modal ? modal.getAttribute('data-carnet-codigo') : 'ESTUDIANTE';
 
-    if (!elem) {
+    if (!origElem) {
         mostrarToast('Error', 'Elemento de carnet no encontrado.', 'error');
         return;
     }
 
     try {
-        mostrarToast('Generando Carnet', 'Descargando carnet formato CR80...', 'info');
+        mostrarToast('Generando Carnet', 'Generando carnet CR80 en alta resolución...', 'info');
+
+        // Clonar y ubicar en contenedor temporal a coordenadas fijas (0, 0)
+        // Esto elimina el problema de páginas en blanco por scroll o posiciones dentro de modales centrados
+        const clone = origElem.cloneNode(true);
+        const container = document.createElement('div');
+        container.id = 'tempCarnetPdfContainer';
+        container.style.cssText = 'position: fixed; top: 0; left: 0; width: 500px; height: 315px; z-index: 999999; margin: 0; padding: 0; background: #ffffff; display: block; overflow: hidden;';
+        
+        clone.style.width = '500px';
+        clone.style.height = '315px';
+        clone.style.minWidth = '500px';
+        clone.style.minHeight = '315px';
+        clone.style.maxWidth = '500px';
+        clone.style.maxHeight = '315px';
+        clone.style.margin = '0';
+        clone.style.boxShadow = 'none';
+        clone.style.borderRadius = '0';
+
+        container.appendChild(clone);
+        document.body.appendChild(container);
+
+        // Asegurar que las imágenes del clon estén totalmente cargadas
+        const imgs = Array.from(container.querySelectorAll('img'));
+        await Promise.all(imgs.map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(res => {
+                img.onload = res;
+                img.onerror = res;
+                setTimeout(res, 800);
+            });
+        }));
+
+        await new Promise(r => setTimeout(r, 150));
 
         const opt = {
             margin: 0,
             filename: `Carnet_Estudiantil_${codigo}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
-            jsPDF: { unit: 'mm', format: [85.6, 54], orientation: 'landscape' }
+            html2canvas: {
+                scale: 3,
+                useCORS: true,
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: 0,
+                windowWidth: 500,
+                windowHeight: 315
+            },
+            jsPDF: {
+                unit: 'mm',
+                format: [85.6, 54],
+                orientation: 'landscape'
+            }
         };
 
         if (typeof html2pdf !== 'undefined') {
-            await html2pdf().set(opt).from(elem).save();
+            await html2pdf().set(opt).from(container).save();
             mostrarToast('Carnet Descargado', 'El Carnet Estudiantil Provisional CR80 se descargó exitosamente.', 'success');
         } else {
             window.print();
         }
+
+        if (container.parentNode) {
+            container.parentNode.removeChild(container);
+        }
     } catch (err) {
         console.error('[Carnet PDF Error]', err);
+        const cont = document.getElementById('tempCarnetPdfContainer');
+        if (cont && cont.parentNode) cont.parentNode.removeChild(cont);
         mostrarToast('Error al descargar', 'No se pudo generar el PDF del carnet.', 'error');
     }
 };
+
 
 window.calcularYRenderizarDemografiaDocente = function(registros) {
     const container = document.getElementById('demografiaGradosGrid');

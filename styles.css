@@ -4264,10 +4264,12 @@ body.dark-mode .carnet-cr80-preview-container {
     height: 315px;
     min-width: 500px;
     min-height: 315px;
+    max-width: 500px;
+    max-height: 315px;
     background: #ffffff;
     border-radius: 14px;
     border: 2px solid #b91c1c;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
     position: relative;
     overflow: hidden;
     display: flex;
@@ -4275,7 +4277,26 @@ body.dark-mode .carnet-cr80-preview-container {
     box-sizing: border-box;
     font-family: 'Inter', -apple-system, sans-serif;
     color: #0f172a;
+    user-select: none;
 }
+
+/* Marca de Agua con Logo Institucional */
+.carnet-cr80-watermark {
+    position: absolute;
+    right: 25px;
+    top: 55px;
+    width: 190px;
+    height: 190px;
+    opacity: 0.085;
+    pointer-events: none;
+    z-index: 1;
+}
+.carnet-cr80-watermark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
 .carnet-cr80-header {
     background: linear-gradient(135deg, #b91c1c 0%, #991b1b 60%, #7f1d1d 100%);
     color: #ffffff;
@@ -4284,58 +4305,78 @@ body.dark-mode .carnet-cr80-preview-container {
     align-items: center;
     gap: 10px;
     border-bottom: 3px solid #facc15;
+    position: relative;
+    z-index: 2;
 }
 .carnet-cr80-header-logo {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     object-fit: contain;
     background: white;
     border-radius: 50%;
     padding: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.carnet-cr80-header-titles {
+    flex: 1;
+    text-align: left;
 }
 .carnet-cr80-header-titles h4 {
     margin: 0;
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     font-weight: 800;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     text-transform: uppercase;
+    color: #ffffff;
 }
 .carnet-cr80-header-titles p {
     margin: 0;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     color: #fecaca;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.3px;
 }
 .carnet-cr80-header-badge {
-    margin-left: auto;
     background: #facc15;
     color: #78350f;
-    font-size: 0.62rem;
+    font-size: 0.65rem;
     font-weight: 800;
-    padding: 2px 8px;
+    padding: 3px 9px;
     border-radius: 999px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
+
 .carnet-cr80-body {
     flex: 1;
     display: flex;
-    padding: 10px 14px;
-    gap: 12px;
-    background: linear-gradient(180deg, #ffffff 0%, #fdf2f2 100%);
+    padding: 12px 14px;
+    gap: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #fffbfb 100%);
+    position: relative;
+    z-index: 2;
+    align-items: center;
+}
+
+.carnet-cr80-photo-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
 }
 .carnet-cr80-photo-wrap {
-    width: 105px;
-    height: 140px;
-    border: 2px solid #b91c1c;
+    width: 108px;
+    height: 138px;
+    border: 2.5px solid #b91c1c;
     border-radius: 8px;
     overflow: hidden;
     background: #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
 }
 .carnet-cr80-photo {
     width: 100%;
@@ -4343,52 +4384,113 @@ body.dark-mode .carnet-cr80-preview-container {
     object-fit: cover;
     display: block;
 }
+.carnet-cr80-blood-badge {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    font-size: 0.64rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
 .carnet-cr80-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 5px;
+    text-align: left;
+    overflow: hidden;
 }
 .carnet-cr80-student-name {
+    font-family: 'Outfit', sans-serif;
     font-size: 1.05rem;
-    font-weight: 900;
+    font-weight: 800;
     color: #991b1b;
     line-height: 1.2;
-    margin: 0 0 4px 0;
+    margin: 0 0 2px 0;
     text-transform: uppercase;
+    letter-spacing: 0.2px;
 }
 .carnet-cr80-field-row {
     display: flex;
-    gap: 8px;
-    margin-bottom: 3px;
+    align-items: baseline;
+    gap: 6px;
     font-size: 0.72rem;
-    line-height: 1.3;
+    line-height: 1.35;
 }
 .carnet-cr80-field-label {
     font-weight: 700;
-    color: #52525b;
-    min-width: 70px;
+    color: #4b5563;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    min-width: 82px;
+    flex-shrink: 0;
 }
 .carnet-cr80-field-value {
     font-weight: 600;
-    color: #18181b;
+    color: #1e293b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .carnet-cr80-field-value.highlight-cedula {
     font-family: monospace;
     font-weight: 800;
     color: #b91c1c;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
 }
+.carnet-grado-highlight {
+    color: #0f172a;
+    font-weight: 800;
+    background: #fef2f2;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border-left: 2px solid #b91c1c;
+}
+.carnet-emergency-box {
+    margin-top: 4px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 3px 7px;
+}
+.text-truncate-custom {
+    max-width: 230px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .carnet-cr80-footer {
     background: #f8fafc;
-    border-top: 1px solid #e2e8f0;
-    padding: 4px 14px;
+    border-top: 1.5px solid #e2e8f0;
+    padding: 5px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.58rem;
-    color: #71717a;
+    color: #64748b;
+    position: relative;
+    z-index: 2;
+}
+.carnet-cr80-footer-left {
     font-weight: 600;
+    letter-spacing: 0.3px;
+}
+.carnet-folio-label {
+    font-size: 0.55rem;
+    color: #94a3b8;
+    margin-right: 4px;
+}
+.carnet-folio-code {
+    font-family: monospace;
+    font-weight: 800;
+    color: #b91c1c;
+    font-size: 0.72rem;
 }
 
 /* 5. Sección Estadística: Distribución Demográfica por Grado */

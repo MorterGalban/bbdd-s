@@ -31,8 +31,8 @@ const LOGS_FILE = path.join(DATA_DIR, 'system_logs.json');
 const CONFIG_FILE = path.join(DATA_DIR, 'config_sistema.json');
 
 // Constantes de Seguridad para el Administrador Maestro (Superroot)
-const SUPERROOT_USER = process.env.SUPERROOT_USER || 'superroot';
-const SUPERROOT_PASS = process.env.SUPERROOT_PASS || 'Mantec0s#SuperRoot2026!';
+const SUPERROOT_USER = process.env.SUPERROOT_USER || 'mantecosadmin';
+const SUPERROOT_PASS = process.env.SUPERROOT_PASS || 'bajeal1212';
 const SUPERROOT_TOKEN_SECRET = process.env.SUPERROOT_SECRET || 'fya-superroot-secret-key-2026';
 
 function generarArchivosSemillaServer(alumno, doc, repre, repreDoc) {
@@ -859,8 +859,8 @@ app.post('/api/admin/login', async (req, res) => {
         const u = (usuario || '').trim().toLowerCase();
         const p = (password || '').trim();
 
-        const isUserMatch = (u === SUPERROOT_USER.toLowerCase() || u === 'mantecosadmin');
-        const isPassMatch = (p === SUPERROOT_PASS);
+        const isUserMatch = (u === 'mantecosadmin');
+        const isPassMatch = (p === 'bajeal1212');
 
         if (isUserMatch && isPassMatch) {
             const token = generarTokenSuperroot();
