@@ -382,6 +382,84 @@
         <!-- ============================================================== -->
         <div class="pre-container" id="preContainerForm">
 
+            <!-- ============================================================== -->
+            <!-- BANNER / PANTALLA: PROCESO DE ADMISIÓN CERRADO (REPRESENTANTE) -->
+            <!-- ============================================================== -->
+            <div id="bannerProcesoCerrado" class="proceso-cerrado-container" style="display: none;">
+                <div class="proceso-cerrado-card">
+                    <div class="proceso-cerrado-icon-wrap">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <div class="proceso-cerrado-header">
+                        <span class="proceso-cerrado-badge">
+                            <i class="fa-solid fa-circle-exclamation"></i> Periodo Escolar 2026 - 2027
+                        </span>
+                        <h2 class="proceso-cerrado-title">Proceso de Preinscripción Cerrado</h2>
+                        <p class="proceso-cerrado-subtitle">
+                            U.E. Fe y Alegría "Nueva América" • Municipio San Francisco, Edo. Zulia
+                        </p>
+                    </div>
+
+                    <div class="proceso-cerrado-body">
+                        <p class="proceso-cerrado-desc">
+                            Estimado representante: Le informamos que la recepción de nuevas solicitudes de preinscripción para 
+                            <strong>Educación Primaria (1° a 6° Grado)</strong> se encuentra temporalmente <strong>CERRADA</strong> 
+                            por haber alcanzado el límite de cupos disponibles o por disposición de la Dirección del plantel.
+                        </p>
+
+                        <div class="proceso-cerrado-info-box">
+                            <div class="proceso-cerrado-info-item">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                                <div>
+                                    <strong>¿Ya postulaste a tu representado?</strong>
+                                    <span>Puedes consultar el estatus de aprobación de tu expediente, verificar el folio asignado o descargar tu planilla en cualquier momento.</span>
+                                </div>
+                            </div>
+                            <div class="proceso-cerrado-info-item">
+                                <i class="fa-solid fa-file-circle-check"></i>
+                                <div>
+                                    <strong>¿Tienes recaudos pendientes o rechazados?</strong>
+                                    <span>El portal de consulta te permite subsanar y subir nuevas fotografías de documentos con observaciones para que tu trámite continúe.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="proceso-cerrado-actions">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="abrirModalConsultaRepresentante()">
+                                <i class="fa-solid fa-file-circle-exclamation"></i> Consultar Estatus / Subsanar Recaudos
+                            </button>
+                            <a href="index.html" class="btn btn-secondary btn-lg">
+                                <i class="fa-solid fa-house"></i> Volver a la Página Principal
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="proceso-cerrado-footer">
+                        <div class="proceso-cerrado-contact-item">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span>Barrio 24 de Julio, Av. 48 con Calle 162, Municipio San Francisco</span>
+                        </div>
+                        <div class="proceso-cerrado-contact-item">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>Atención en Taquilla: Lunes a Viernes • 7:30 AM a 12:30 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner Alerta cuando se usa el formulario en Modo Docente con proceso cerrado -->
+            <div id="alertaProcesoCerradoDocente" class="docente-admision-alert" style="display: none;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.5rem; color: #d97706; flex-shrink: 0;"></i>
+                <div style="flex: 1;">
+                    <strong style="color: #b45309; font-size: 0.95rem; display: block; margin-bottom: 0.2rem;">
+                        Aviso Administrativo: Proceso General de Preinscripción CERRADO
+                    </strong>
+                    <p style="margin: 0; font-size: 0.85rem; color: #92400e;">
+                        El proceso de admisión pública está marcado como <strong>CERRADO</strong> en Superroot. Como operador docente administrativo autorizado, puedes visualizar los expedientes y registrar casos presenciales excepcionales si la Dirección lo instruye.
+                    </p>
+                </div>
+            </div>
+
             <!-- Banner Alerta cuando se usa el formulario en Modo Docente -->
             <div id="bannerModoDocenteEnForm" style="display: none; background: #fee2e2; border: 1.5px solid #fecaca; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.5rem; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
                 <div style="display: flex; align-items: center; gap: 0.75rem;">

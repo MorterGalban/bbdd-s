@@ -38,7 +38,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     initMobileSidebar();
     initSistemaRoles();
 
-    // 1. Cargar y sincronizar datos directamente desde la Nube (Railway)
+    // 1. Verificar estado del proceso de preinscripción (abierto / cerrado)
+    await window.verificarEstadoProcesoAdmision();
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'fya_proceso_admision_abierto') {
+            window.verificarEstadoProcesoAdmision();
+        }
+    });
+
+    // 2. Cargar y sincronizar datos directamente desde la Nube (Railway)
     await cargarRegistrosDesdeNube(true);
     normalizarRegistrosEnMemoria();
 
@@ -56,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     actualizarTimestampEmision();
     window.addEventListener('beforeprint', actualizarTimestampEmision);
 
-    // 2. Iniciar sincronización periódica en segundo plano para trabajo en equipo
+    // 3. Iniciar sincronización periódica en segundo plano para trabajo en equipo
     iniciarSincronizacionAutomatica();
 });
 
@@ -197,12 +205,18 @@ function iniciarSincronizacionAutomatica() {
     // Sincronizar automáticamente al enfocar la pestaña
     window.addEventListener('focus', () => {
         cargarRegistrosDesdeNube(true);
+        if (typeof window.verificarEstadoProcesoAdmision === 'function') {
+            window.verificarEstadoProcesoAdmision(true);
+        }
     });
 
     // Sondeo periódico cada 15 segundos en segundo plano si la pestaña está activa
     setInterval(() => {
         if (document.visibilityState === 'visible') {
             cargarRegistrosDesdeNube(true);
+            if (typeof window.verificarEstadoProcesoAdmision === 'function') {
+                window.verificarEstadoProcesoAdmision(true);
+            }
         }
     }, 15000);
 }
@@ -465,6 +479,83 @@ function cerrarMobileSidebar() {
     if (backdrop) backdrop.classList.remove('active');
 }
 
+// ==============================================================================
+// 2.1. CONTROL GLOBAL DE ADMISIÓN Y PROCESO DE PREINSCRIPCIÓN
+// ==============================================================================
+window.fyaProcesoAdmisionAbierto = true;
+
+window.verificarEstadoProcesoAdmision = async function(silencioso = false) {
+    let procesoAbierto = true;
+
+    // 1. Sincronización instantánea a través de localStorage (reactivo entre pestañas)
+    const localVal = localStorage.getItem('fya_proceso_admision_abierto');
+    if (localVal !== null) {
+        try {
+            procesoAbierto = JSON.parse(localVal);
+        } catch (e) {
+            procesoAbierto = (localVal === 'true');
+        }
+    }
+
+    // 2. Consulta asíncrona al backend
+    try {
+        const res = await fetch('/api/proceso-admision/estado');
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && typeof data.procesoAbierto === 'boolean') {
+                procesoAbierto = data.procesoAbierto;
+                localStorage.setItem('fya_proceso_admision_abierto', JSON.stringify(procesoAbierto));
+            }
+        }
+    } catch (err) {
+        // Fallback a almacenamiento local sin interrumpir la experiencia de usuario
+    }
+
+    window.fyaProcesoAdmisionAbierto = procesoAbierto;
+
+    // 3. Actualizar la visibilidad de elementos según el estado del proceso y el rol activo
+    const bannerCerrado = document.getElementById('bannerProcesoCerrado');
+    const alertaDocente = document.getElementById('alertaProcesoCerradoDocente');
+    const preForm = document.getElementById('preinscripcionForm');
+    const preHero = document.querySelector('.pre-hero');
+    const wizardCard = document.querySelector('.wizard-progress-card');
+    const stepperBox = document.querySelector('.stepper-box');
+
+    const esDocente = (AppState && AppState.rol === 'docente');
+
+    if (!procesoAbierto) {
+        if (!esDocente) {
+            // Representante o visitante: Cerrar y ocultar formulario
+            if (bannerCerrado) bannerCerrado.style.display = 'block';
+            if (preForm) preForm.style.display = 'none';
+            if (preHero) preHero.style.display = 'none';
+            if (wizardCard) wizardCard.style.display = 'none';
+            if (stepperBox) stepperBox.style.display = 'none';
+            if (alertaDocente) alertaDocente.style.display = 'none';
+        } else {
+            // Docente: Mantener acceso para gestión pero mostrar aviso
+            if (bannerCerrado) bannerCerrado.style.display = 'none';
+            if (alertaDocente) alertaDocente.style.display = 'flex';
+            if (preForm && AppState.vistaActiva === 'formulario') preForm.style.display = 'block';
+            if (preHero && AppState.vistaActiva === 'formulario') preHero.style.display = 'flex';
+            if (wizardCard && AppState.vistaActiva === 'formulario') wizardCard.style.display = 'block';
+            if (stepperBox && AppState.vistaActiva === 'formulario') stepperBox.style.display = 'flex';
+        }
+    } else {
+        // Proceso Abierto
+        if (bannerCerrado) bannerCerrado.style.display = 'none';
+        if (alertaDocente) alertaDocente.style.display = 'none';
+        if (AppState.vistaActiva === 'formulario' || !esDocente) {
+            if (preForm) preForm.style.display = 'block';
+            if (preHero) preHero.style.display = 'flex';
+            if (wizardCard) wizardCard.style.display = 'block';
+            if (stepperBox) stepperBox.style.display = 'flex';
+        }
+    }
+
+    return procesoAbierto;
+};
+
 window.mostrarFormularioDesdeSidebar = function() {
     const panelDocente = document.getElementById('panelDocenteContainer');
     const preContainerForm = document.getElementById('preContainerForm');
@@ -477,6 +568,8 @@ window.mostrarFormularioDesdeSidebar = function() {
     document.querySelectorAll('.sidebar-menu-item').forEach(i => i.classList.remove('active'));
     const linkLlenar = document.getElementById('sidebarLinkLlenarPlanilla');
     if (linkLlenar) linkLlenar.classList.add('active');
+
+    window.verificarEstadoProcesoAdmision(true);
 
     cerrarMobileSidebar();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2605,6 +2698,16 @@ function filtrarYRenderizarHistorial() {
 async function manejarEnvioPreinscripcion(e) {
     e.preventDefault();
 
+    // 0. Bloqueo estricto e innegociable si el proceso de preinscripción está CERRADO
+    const procesoAbierto = window.fyaProcesoAdmisionAbierto !== false;
+    if (!procesoAbierto && AppState.rol !== 'docente') {
+        mostrarToast('Proceso de Admisión Cerrado', 'La recepción de preinscripciones se encuentra actualmente cerrada por la Dirección del plantel. No se admiten nuevas solicitudes.', 'error');
+        if (typeof window.verificarEstadoProcesoAdmision === 'function') {
+            window.verificarEstadoProcesoAdmision();
+        }
+        return;
+    }
+
     // Ensamblaje diferido de Cédula Escolar
     if (typeof window.ensamblarCedulaEscolarDiferida === 'function') {
         window.ensamblarCedulaEscolarDiferida();
@@ -2800,6 +2903,17 @@ async function enviarPreinscripcionALaNube(registro) {
             actualizarIndicadorNube('online');
             return true;
         } else {
+            const data = await res.json().catch(() => ({}));
+            if (res.status === 403 && data.procesoCerrado) {
+                window.fyaProcesoAdmisionAbierto = false;
+                localStorage.setItem('fya_proceso_admision_abierto', 'false');
+                if (typeof window.verificarEstadoProcesoAdmision === 'function') {
+                    window.verificarEstadoProcesoAdmision();
+                }
+                mostrarToast('Proceso Cerrado', data.error || 'El proceso de preinscripción se encuentra actualmente cerrado por la Dirección.', 'error');
+                actualizarIndicadorNube('offline', 'Proceso Cerrado');
+                return false;
+            }
             console.warn('[Cloud Sync] Servidor respondió con estado:', res.status);
             actualizarIndicadorNube('offline', 'Modo Local');
             return false;
@@ -4039,7 +4153,11 @@ window.ejecutarConsultaRepresentante = async function() {
                             <i class="fa-solid fa-graduation-cap" style="color: var(--fya-red);"></i> ${r.alumno}
                         </h4>
                         <span style="font-size: 0.82rem; color: var(--text-muted); display: block;">
-                            <strong>Folio:</strong> ${r.codigo} &nbsp;•&nbsp; 
+                            <strong>Folio:</strong> <span style="font-family: monospace; font-weight: 700; color: var(--fya-red);">${r.codigo}</span>
+                            <button type="button" class="btn-copy-folio" onclick="window.copiarAlPortapapeles('${r.codigo}', this)" title="Copiar Folio" style="background: none; border: none; cursor: pointer; color: var(--fya-red); margin-left: 4px; padding: 0 4px;" aria-label="Copiar Folio">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                            &nbsp;•&nbsp; 
                             <strong>Doc:</strong> ${r.alumnoDoc || 'S/N'} &nbsp;•&nbsp; 
                             <strong>Grado:</strong> ${r.grado}
                         </span>
@@ -4077,10 +4195,16 @@ window.ejecutarConsultaRepresentante = async function() {
                                             <strong>Observación del docente:</strong> "${rechazosObj[docId].motivo || 'Fotografía no conforme o ilegible'}"
                                         </p>
                                         <div class="subsanar-upload-row">
-                                            <input type="file" id="subsanarInput_${r.codigo}_${docId}" accept="image/*" class="form-control form-control-sm" style="flex: 1; min-width: 200px;" />
+                                            <input type="file" id="subsanarInput_${r.codigo}_${docId}" accept="image/*" class="form-control form-control-sm" style="flex: 1; min-width: 200px;" onchange="window.previsualizarFotoSubsanar('${r.codigo}', '${docId}', this)" />
                                             <button type="button" class="btn btn-primary btn-sm" onclick="window.subsanarRecaudoRepresentante('${r.codigo}', '${docId}')">
                                                 <i class="fa-solid fa-cloud-arrow-up"></i> Subir Documento Corregido
                                             </button>
+                                        </div>
+                                        <div id="subsanarPreviewBox_${r.codigo}_${docId}" style="display: none; margin-top: 0.65rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0.5rem; text-align: center;">
+                                            <img id="subsanarPreviewImg_${r.codigo}_${docId}" src="" alt="Previsualización" style="max-height: 130px; max-width: 100%; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.12);" />
+                                            <span style="display: block; font-size: 0.75rem; color: #16a34a; font-weight: 700; margin-top: 4px;">
+                                                <i class="fa-solid fa-circle-check"></i> Fotografía seleccionada lista para enviar
+                                            </span>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -4113,6 +4237,42 @@ window.ejecutarConsultaRepresentante = async function() {
     });
 
     container.innerHTML = html;
+};
+
+window.copiarAlPortapapeles = function(texto, btn) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(() => {
+            mostrarToast('Folio Copiado', `El código de expediente ${texto} ha sido copiado al portapapeles.`, 'info');
+            if (btn) {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check" style="color: #16a34a;"></i>';
+                setTimeout(() => { btn.innerHTML = orig; }, 2000);
+            }
+        }).catch(() => {
+            mostrarToast('Folio del Expediente', `Código: ${texto}`, 'info');
+        });
+    } else {
+        mostrarToast('Folio del Expediente', `Código: ${texto}`, 'info');
+    }
+};
+
+window.previsualizarFotoSubsanar = function(codigo, docId, inputElem) {
+    const file = inputElem?.files ? inputElem.files[0] : null;
+    const box = document.getElementById(`subsanarPreviewBox_${codigo}_${docId}`);
+    const img = document.getElementById(`subsanarPreviewImg_${codigo}_${docId}`);
+    if (!file || !box || !img) return;
+
+    if (!file.type || !file.type.startsWith('image/')) {
+        box.style.display = 'none';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        img.src = e.target.result;
+        box.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
 };
 
 window.subsanarRecaudoRepresentante = async function(codigo, docId) {

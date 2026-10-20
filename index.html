@@ -21,9 +21,18 @@
 <body>
 
     <!-- Aviso Superior de Convocatoria -->
-    <div class="top-notice-bar">
-        <i class="fa-solid fa-bullhorn"></i> PROCESO DE ADMISIÓN ABIERTO: <strong>Periodo Escolar 2026 - 2027</strong> |
+    <div class="top-notice-bar" id="announcementNoticeBar">
+        <i class="fa-solid fa-bullhorn"></i> PROCESO DE ADMISIÓN: <strong>Periodo Escolar 2026 - 2027</strong> |
         Educación Primaria (1° a 6° Grado)
+    </div>
+
+    <!-- Cinta de Notificación Dinámica cuando el Proceso de Admisión está Cerrado -->
+    <div id="ribbonProcesoCerrado" class="ribbon-proceso-cerrado" style="display: none;">
+        <i class="fa-solid fa-lock"></i>
+        <span>Aviso Oficial: El proceso de preinscripción escolar 2026-2027 se encuentra actualmente <strong>CERRADO</strong> por capacidad de cupos.</span>
+        <button type="button" onclick="abrirModalConsultaRepresentante()">
+            <i class="fa-solid fa-magnifying-glass"></i> Consultar Estatus / Subsanar
+        </button>
     </div>
 
     <!-- Navegación Principal -->
@@ -961,6 +970,90 @@
                 mostrarToast('Error al Descargar', 'No se pudo generar el PDF del carnet.', 'error');
             }
         };
+
+        // ==============================================================
+        // VERIFICACIÓN DEL PROCESO DE ADMISIÓN (ABIERTO / CERRADO)
+        // ==============================================================
+        async function sincronizarEstadoAdmisionIndex() {
+            let abierto = true;
+            const local = localStorage.getItem('fya_proceso_admision_abierto');
+            if (local !== null) {
+                try { abierto = JSON.parse(local); } catch(e) { abierto = (local === 'true'); }
+            }
+
+            try {
+                const res = await fetch('/api/proceso-admision/estado');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.success && typeof data.procesoAbierto === 'boolean') {
+                        abierto = data.procesoAbierto;
+                        localStorage.setItem('fya_proceso_admision_abierto', JSON.stringify(abierto));
+                    }
+                }
+            } catch (e) {}
+
+            const ribbon = document.getElementById('ribbonProcesoCerrado');
+            const noticeBar = document.getElementById('announcementNoticeBar');
+            const btnHero = document.getElementById('btnIniciarPreinscripcionHero');
+            const btnHeader = document.getElementById('btnIrPreinscripcionHeader');
+            const btnBottom = document.getElementById('btnComenzarPreinscripcionBottom');
+
+            if (!abierto) {
+                if (ribbon) ribbon.style.display = 'flex';
+                if (noticeBar) {
+                    noticeBar.innerHTML = '<i class="fa-solid fa-lock"></i> PROCESO DE ADMISIÓN: <strong>Periodo Escolar 2026 - 2027</strong> | <span style="color: #fca5a5; font-weight: 800;">RECEPCIÓN DE SOLICITUDES CERRADA</span>';
+                }
+                if (btnHero) {
+                    btnHero.innerHTML = '<i class="fa-solid fa-lock"></i> Preinscripción Cerrada';
+                    btnHero.classList.remove('btn-primary');
+                    btnHero.classList.add('btn-secondary');
+                }
+                if (btnHeader) {
+                    btnHeader.innerHTML = '<i class="fa-solid fa-lock"></i> Cerrado';
+                }
+                if (btnBottom) {
+                    btnBottom.innerHTML = '<i class="fa-solid fa-lock"></i> Proceso Cerrado';
+                    btnBottom.classList.remove('btn-primary');
+                    btnBottom.classList.add('btn-secondary');
+                }
+            } else {
+                if (ribbon) ribbon.style.display = 'none';
+                if (noticeBar) {
+                    noticeBar.innerHTML = '<i class="fa-solid fa-bullhorn"></i> PROCESO DE ADMISIÓN: <strong>Periodo Escolar 2026 - 2027</strong> | Educación Primaria (1° a 6° Grado)';
+                }
+                if (btnHero) {
+                    btnHero.innerHTML = '<i class="fa-solid fa-user-pen"></i> Ingresar como Representante';
+                    btnHero.classList.add('btn-primary');
+                    btnHero.classList.remove('btn-secondary');
+                }
+                if (btnHeader) {
+                    btnHeader.innerHTML = '<i class="fa-solid fa-user-pen"></i> Representante';
+                }
+                if (btnBottom) {
+                    btnBottom.innerHTML = '<i class="fa-solid fa-file-signature"></i> Comenzar Preinscripción 2026-2027';
+                    btnBottom.classList.add('btn-primary');
+                    btnBottom.classList.remove('btn-secondary');
+                }
+            }
+        }
+
+        // Listener para tecla Enter en el campo de consulta de cédula
+        const inputCedulaConsulta = document.getElementById('inputConsultaCedula');
+        if (inputCedulaConsulta) {
+            inputCedulaConsulta.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    window.ejecutarConsultaRepresentante();
+                }
+            });
+        }
+
+        sincronizarEstadoAdmisionIndex();
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'fya_proceso_admision_abierto') {
+                sincronizarEstadoAdmisionIndex();
+            }
+        });
     </script>
 </body>
 
