@@ -155,7 +155,7 @@
                 const k = String(i);
                 const hasArch = Boolean(r.archivos && r.archivos[k] && r.archivos[k].dataUrl);
                 const docVal = r.documentos ? r.documentos[k] : null;
-                const isRechazado = Boolean(r.rechazos && r.rechazos[k] && r.rechazos[k].rechazada) || (docVal === 'RECHAZADO');
+                const isRechazado = Boolean(r.rechazos && r.rechazos[k] && (r.rechazos[k].rechazada !== false) && (r.rechazos[k].motivo || r.rechazos[k].rechazada)) || (docVal === 'RECHAZADO');
                 if (isRechazado) tieneRechazos = true;
                 if ((docVal === 'APROBADO' || docVal === 'CONSIGNADO' || hasArch) && !isRechazado) {
                     entregados++;
@@ -240,11 +240,9 @@
                             <button type="button" class="btn-action-icon btn-action-inspect" onclick="abrirLightboxDocente('${r.codigo}')" title="Inspeccionar Recaudos (Lightbox)">
                                 <i class="fa-solid fa-magnifying-glass-plus"></i> <span class="btn-action-text">Inspeccionar</span>
                             </button>
-                            ${esAprobado ? `
-                                <button type="button" class="btn-action-icon btn-action-carnet" onclick="emitirCarnetProvisional('${r.codigo}')" title="Emitir Carnet Estudiantil Provisional CR80" style="background: #15803d; color: white;">
-                                    <i class="fa-solid fa-id-badge"></i> <span class="btn-action-text">Carnet</span>
-                                </button>
-                            ` : ''}
+                            <button type="button" class="btn-action-icon btn-action-carnet" onclick="emitirCarnetProvisional('${r.codigo}')" title="Emitir Carnet Estudiantil Provisional CR80" style="${esAprobado ? 'background: #15803d; color: white;' : 'background: #e0f2fe; color: #0284c7;'}">
+                                <i class="fa-solid fa-id-badge"></i> <span class="btn-action-text">Carnet</span>
+                            </button>
                             <button type="button" class="btn-action-icon btn-action-print" onclick="verPlanillaRegistro('${r.codigo}')" title="Ver / Imprimir Planilla Oficial">
                                 <i class="fa-solid fa-print"></i> <span class="btn-action-text">Planilla</span>
                             </button>

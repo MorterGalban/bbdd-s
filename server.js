@@ -35,6 +35,29 @@ const SUPERROOT_USER = process.env.SUPERROOT_USER || 'superroot';
 const SUPERROOT_PASS = process.env.SUPERROOT_PASS || 'Mantec0s#SuperRoot2026!';
 const SUPERROOT_TOKEN_SECRET = process.env.SUPERROOT_SECRET || 'fya-superroot-secret-key-2026';
 
+function generarArchivosSemillaServer(alumno, doc, repre, repreDoc) {
+    const esc = (t) => String(t || '').replace(/[<>&"]/g, '');
+    const aNom = esc(alumno || 'Aspirante Escolar');
+    const aDoc = esc(doc || 'CE-2026-000');
+    const rNom = esc(repre || 'Representante Legal');
+    const rDoc = esc(repreDoc || 'V-00000000');
+
+    const svgFotoCarnet = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="360" viewBox="0 0 300 360"><rect width="100%" height="100%" fill="%23e0f2fe"/><rect x="15" y="15" width="270" height="330" rx="10" fill="white" stroke="%230284c7" stroke-width="3"/><circle cx="150" cy="120" r="50" fill="%230284c7"/><path d="M70 270 C70 190, 230 190, 230 270 Z" fill="%230369a1"/><rect x="30" y="290" width="240" height="36" rx="6" fill="%230c4a6e"/><text x="150" y="313" font-family="sans-serif" font-size="12" fill="white" text-anchor="middle" font-weight="bold">' + aNom.slice(0, 26) + '</text></svg>';
+
+    const svgCedula = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380"><rect width="100%" height="100%" fill="%23f8fafc"/><rect x="15" y="15" width="570" height="350" rx="12" fill="white" stroke="%23b91c1c" stroke-width="3"/><rect x="15" y="15" width="570" height="45" fill="%23b91c1c"/><text x="300" y="44" font-family="sans-serif" font-size="16" fill="white" font-weight="bold" text-anchor="middle">REPUBLICA BOLIVARIANA DE VENEZUELA</text><text x="300" y="115" font-family="monospace" font-size="28" fill="%23b91c1c" font-weight="bold" text-anchor="middle">' + rDoc + '</text><text x="300" y="160" font-family="sans-serif" font-size="20" fill="%231e293b" font-weight="bold" text-anchor="middle">' + rNom + '</text><text x="300" y="200" font-family="sans-serif" font-size="14" fill="%2364748b" text-anchor="middle">CEDULA DE IDENTIDAD VIGENTE</text><rect x="150" y="240" width="300" height="36" rx="6" fill="%23fee2e2" stroke="%23fca5a5"/><text x="300" y="263" font-family="sans-serif" font-size="12" fill="%23991b1b" font-weight="bold" text-anchor="middle">CONSIGNADO PARA CONTROL DE ESTUDIOS</text></svg>';
+
+    const svgCardio = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="420" viewBox="0 0 600 420"><rect width="100%" height="100%" fill="%23f0fdf4"/><rect x="15" y="15" width="570" height="390" rx="12" fill="white" stroke="%2316a34a" stroke-width="3"/><rect x="15" y="15" width="570" height="45" fill="%2316a34a"/><text x="300" y="44" font-family="sans-serif" font-size="16" fill="white" font-weight="bold" text-anchor="middle">INFORME MEDICO CARDIOVASCULAR</text><text x="300" y="120" font-family="sans-serif" font-size="18" fill="%2315803d" font-weight="bold" text-anchor="middle">EVALUACION DE APTITUD FISICA ESCOLAR</text><text x="300" y="165" font-family="sans-serif" font-size="16" fill="%231e293b" font-weight="bold" text-anchor="middle">PACIENTE: ' + aNom + '</text><text x="300" y="195" font-family="monospace" font-size="14" fill="%23475569" text-anchor="middle">DOC: ' + aDoc + '</text><text x="300" y="240" font-family="sans-serif" font-size="16" fill="%2316a34a" font-weight="bold" text-anchor="middle">DIAGNOSTICO: CARDIOVASCULARMENTE APTO</text><text x="300" y="270" font-family="sans-serif" font-size="12" fill="%2364748b" text-anchor="middle">Emision: San Francisco, Zulia • Validez: Periodo 2026-2027</text></svg>';
+
+    const svgPartida = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450"><rect width="100%" height="100%" fill="%23fffbeb"/><rect x="15" y="15" width="570" height="420" rx="12" fill="white" stroke="%23d97706" stroke-width="3"/><rect x="15" y="15" width="570" height="45" fill="%23d97706"/><text x="300" y="44" font-family="sans-serif" font-size="16" fill="white" font-weight="bold" text-anchor="middle">REGISTRO PRINCIPAL - PARTIDA DE NACIMIENTO</text><text x="300" y="125" font-family="sans-serif" font-size="20" fill="%23b45309" font-weight="bold" text-anchor="middle">' + aNom + '</text><text x="300" y="165" font-family="monospace" font-size="15" fill="%231e293b" text-anchor="middle">IDENTIFICACION: ' + aDoc + '</text><text x="300" y="205" font-family="sans-serif" font-size="14" fill="%23475569" text-anchor="middle">Lugar de Nacimiento: San Francisco, Estado Zulia</text><text x="300" y="240" font-family="sans-serif" font-size="14" fill="%23475569" text-anchor="middle">Filiacion Materna/Paterna: ' + rNom + '</text><rect x="150" y="290" width="300" height="38" rx="6" fill="%23fef3c7" stroke="%23fcd34d"/><text x="300" y="314" font-family="sans-serif" font-size="12" fill="%2392400e" font-weight="bold" text-anchor="middle">COPIA CERTIFICADA CONFORME AL ORIGINAL</text></svg>';
+
+    return {
+        '1': { nombre: 'cedula_representante.svg', tipo: 'image/svg+xml', dataUrl: svgCedula, fecha: '08/10/2026' },
+        '2': { nombre: 'informe_cardiovascular.svg', tipo: 'image/svg+xml', dataUrl: svgCardio, fecha: '08/10/2026' },
+        '3': { nombre: 'partida_nacimiento.svg', tipo: 'image/svg+xml', dataUrl: svgPartida, fecha: '08/10/2026' },
+        '4': { nombre: 'foto_carnet.svg', tipo: 'image/svg+xml', dataUrl: svgFotoCarnet, fecha: '08/10/2026' }
+    };
+}
+
 // Semilla institucional de demostración para preinscripciones
 const REGISTROS_DEMO = [
     {
@@ -66,6 +89,7 @@ const REGISTROS_DEMO = [
         operador: 'Control de Estudios (Admin)',
         idUser: '1',
         documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO' },
+        archivos: generarArchivosSemillaServer('Jesús David Gómez Blanco', 'CE-120555666', 'Carmen Elena Blanco de Gómez', 'V-19888777'),
         recaudosCount: '4/4',
         fecha: '08/10/2026'
     },
@@ -98,6 +122,7 @@ const REGISTROS_DEMO = [
         operador: 'Secretaría Académica',
         idUser: '2',
         documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO' },
+        archivos: generarArchivosSemillaServer('Sofia Valentina Rincón Morales', 'CE-121888333', 'Carlos Eduardo Rincón', 'V-18456123'),
         recaudosCount: '4/4',
         fecha: '08/10/2026'
     },
@@ -193,7 +218,7 @@ function asegurarDirectorioYArchivos() {
         if (!fs.existsSync(DATA_DIR)) {
             fs.mkdirSync(DATA_DIR, { recursive: true });
         }
-        if (!fs.existsSync(DATA_FILE)) {
+        if (!fs.existsSync(DATA_FILE) || fs.readFileSync(DATA_FILE, 'utf8').trim() === '[]' || fs.readFileSync(DATA_FILE, 'utf8').trim() === '') {
             fs.writeFileSync(DATA_FILE, JSON.stringify(REGISTROS_DEMO, null, 2), 'utf8');
         }
         if (!fs.existsSync(DOCENTES_FILE)) {
@@ -223,11 +248,22 @@ function leerRegistrosArchivo() {
     try {
         asegurarDirectorioYArchivos();
         const raw = fs.readFileSync(DATA_FILE, 'utf8');
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        let parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+            parsed = REGISTROS_DEMO;
+            guardarRegistrosArchivo(parsed);
+        } else {
+            // Garantizar que si un registro no tiene archivos, se le inicialicen los suyos
+            parsed.forEach(r => {
+                if (!r.archivos || Object.keys(r.archivos).length === 0) {
+                    r.archivos = generarArchivosSemillaServer(r.alumno, r.alumnoDoc || r.codigo, r.representante, r.repreDoc);
+                }
+            });
+        }
+        return parsed;
     } catch (e) {
         console.error('[Storage Local File] Error leyendo registros:', e.message);
-        return [];
+        return Array.isArray(REGISTROS_DEMO) ? [...REGISTROS_DEMO] : [];
     }
 }
 
@@ -2340,7 +2376,18 @@ app.put('/api/preinscripciones/:codigo/recaudo', async (req, res) => {
         const { docId, nuevoEstado, motivoRechazo, rechazada, archivoBase64, nombreArchivo, usuario } = req.body;
 
         const registros = leerRegistrosArchivo();
-        const reg = registros.find(r => r.codigo === codigo);
+        let reg = registros.find(r => r.codigo === codigo);
+        if (!reg) {
+            reg = {
+                codigo: codigo,
+                alumno: req.body.alumno || 'Aspirante Escolar',
+                representante: req.body.representante || 'Representante Legal',
+                documentos: {},
+                rechazos: {},
+                archivos: {}
+            };
+            registros.push(reg);
+        }
         if (reg) {
             if (!reg.documentos) reg.documentos = {};
             if (!reg.rechazos) reg.rechazos = {};

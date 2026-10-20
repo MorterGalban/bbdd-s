@@ -408,7 +408,7 @@
     <!-- ============================================================== -->
     <!-- MODAL: PORTAL DE CONSULTA Y SUBSANACIÓN PARA REPRESENTANTES    -->
     <!-- ============================================================== -->
-    <div class="modal-backdrop" id="modalConsultaRepresentante" style="display: none; z-index: 10040;">
+    <div class="modal-backdrop" id="modalConsultaRepresentante" style="z-index: 10040;">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: white;">
@@ -450,7 +450,7 @@
     <!-- ============================================================== -->
     <!-- MODAL: EMISIÓN DE CARNET ESTUDIANTIL PROVISIONAL CR80          -->
     <!-- ============================================================== -->
-    <div class="modal-backdrop" id="modalCarnetProvisional" style="display: none; z-index: 10060;">
+    <div class="modal-backdrop" id="modalCarnetProvisional" style="z-index: 10060;">
         <div class="modal-dialog" style="max-width: 600px;">
             <div class="modal-content">
                 <div class="modal-header" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: white;">
@@ -619,22 +619,39 @@
                 console.warn('[Consulta] Fallback a almacenamiento local:', e);
             }
 
-            // 2. Si no encontró en backend o falló, buscar en localStorage
-            if (registros.length === 0) {
-                try {
-                    const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
-                    const cleanDigits = val.replace(/\D/g, '');
-                    const cleanUpper = val.toUpperCase().replace(/\s+/g, '');
-                    registros = localData.filter(r => {
-                        if (!r) return false;
-                        const rRepDigits = (r.repreDoc || '').replace(/\D/g, '');
-                        const rAlDigits = (r.alumnoDoc || '').replace(/\D/g, '');
-                        const rAlUpper = (r.alumnoDoc || '').toUpperCase().replace(/\s+/g, '');
-                        const rCodigo = (r.codigo || '').toUpperCase();
-                        return (cleanDigits && (rRepDigits === cleanDigits || rAlDigits === cleanDigits)) ||
-                               (cleanUpper && (rAlUpper.includes(cleanUpper) || rCodigo.includes(cleanUpper)));
+            // 2. Fusionar inteligentemente con datos de localStorage para no perder rechazos ni fotos locales
+            try {
+                const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+                const cleanDigits = val.replace(/\D/g, '');
+                const cleanUpper = val.toUpperCase().replace(/\s+/g, '');
+                const localMatches = localData.filter(r => {
+                    if (!r) return false;
+                    const rRepDigits = (r.repreDoc || '').replace(/\D/g, '');
+                    const rAlDigits = (r.alumnoDoc || '').replace(/\D/g, '');
+                    const rAlUpper = (r.alumnoDoc || '').toUpperCase().replace(/\s+/g, '');
+                    const rCodigo = (r.codigo || '').toUpperCase();
+                    return (cleanDigits && (rRepDigits === cleanDigits || rAlDigits === cleanDigits)) ||
+                           (cleanUpper && (rAlUpper.includes(cleanUpper) || rCodigo.includes(cleanUpper)));
+                });
+
+                if (registros.length === 0) {
+                    registros = localMatches;
+                } else {
+                    registros = registros.map(srv => {
+                        const loc = localMatches.find(l => l.codigo === srv.codigo);
+                        if (!loc) return srv;
+                        return {
+                            ...srv,
+                            ...loc,
+                            archivos: { ...(srv.archivos || {}), ...(loc.archivos || {}) },
+                            rechazos: { ...(srv.rechazos || {}), ...(loc.rechazos || {}) },
+                            documentos: { ...(srv.documentos || {}), ...(loc.documentos || {}) },
+                            estado: loc.estado || srv.estado
+                        };
                     });
-                } catch (e) {}
+                }
+            } catch (e) {
+                console.warn('[Consulta] Error en merge local:', e);
             }
 
             if (registros.length === 0) {
@@ -654,7 +671,7 @@
             let html = '';
             registros.forEach(r => {
                 const rechazos = r.rechazos || {};
-                const keysRechazos = Object.keys(rechazos).filter(k => rechazos[k] && rechazos[k].rechazada);
+                const keysRechazos = Object.keys(rechazos).filter(k => rechazos[k] && (rechazos[k].rechazada !== false) && (rechazos[k].motivo || rechazos[k].rechazada));
                 const tieneRechazos = keysRechazos.length > 0;
 
                 const badgeColor = {
@@ -787,29 +804,39 @@
                 // Actualizar en localStorage
                 try {
                     const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
-                    const idx = localData.findIndex(r => r.codigo === codigo);
-                    if (idx !== -1) {
-                        const reg = localData[idx];
-                        if (!reg.archivos) reg.archivos = {};
-                        if (!reg.documentos) reg.documentos = {};
-                        if (reg.rechazos) delete reg.rechazos[docId];
-
-                        reg.archivos[docId] = {
-                            nombre: file.name,
-                            dataUrl: base64Comprimida,
-                            tipo: 'image/jpeg',
-                            fecha: new Date().toLocaleDateString('es-VE')
-                        };
-                        reg.documentos[docId] = 'CONSIGNADO';
-
-                        // Evaluar estado
-                        const keysRech = Object.keys(reg.rechazos || {});
-                        if (keysRech.length === 0) {
-                            reg.estado = 'EN_REVISION';
-                        }
-                        localData[idx] = reg;
-                        localStorage.setItem('fya_preinscripciones_db', JSON.stringify(localData));
+                    let idx = localData.findIndex(r => r.codigo === codigo);
+                    let reg = idx !== -1 ? localData[idx] : null;
+                    if (!reg) {
+                        reg = { codigo: codigo, archivos: {}, documentos: {}, rechazos: {} };
+                        localData.push(reg);
+                        idx = localData.length - 1;
                     }
+
+                    if (!reg.archivos) reg.archivos = {};
+                    if (!reg.documentos) reg.documentos = {};
+                    if (reg.rechazos) delete reg.rechazos[docId];
+
+                    reg.archivos[docId] = {
+                        nombre: file.name,
+                        dataUrl: base64Comprimida,
+                        tipo: 'image/jpeg',
+                        fecha: new Date().toLocaleDateString('es-VE')
+                    };
+                    reg.documentos[docId] = 'CONSIGNADO';
+
+                    // Evaluar estado
+                    const keysRech = Object.keys(reg.rechazos || {}).filter(k => reg.rechazos[k] && reg.rechazos[k].rechazada !== false);
+                    if (keysRech.length === 0) {
+                        reg.estado = 'EN_REVISION';
+                    }
+                    let entregados = 0;
+                    for (let i = 1; i <= 4; i++) {
+                        if (reg.archivos && reg.archivos[String(i)] && reg.archivos[String(i)].dataUrl) entregados++;
+                    }
+                    reg.recaudosCount = `${entregados}/4`;
+
+                    localData[idx] = reg;
+                    localStorage.setItem('fya_preinscripciones_db', JSON.stringify(localData));
                 } catch (e) {}
 
                 mostrarToast('Documento Corregido', 'La fotografía fue reemplazada con éxito. El expediente vuelve a EN REVISIÓN para validación docente.', 'success');
@@ -894,12 +921,18 @@
             `;
 
             const modal = document.getElementById('modalCarnetProvisional');
-            if (modal) modal.style.display = 'flex';
+            if (modal) {
+                modal.style.setProperty('display', 'flex', 'important');
+                modal.classList.add('active');
+            }
         };
 
         window.cerrarModalCarnetProvisional = function() {
             const modal = document.getElementById('modalCarnetProvisional');
-            if (modal) modal.style.display = 'none';
+            if (modal) {
+                modal.style.setProperty('display', 'none', 'important');
+                modal.classList.remove('active');
+            }
         };
 
         window.descargarCarnetPdf = async function() {

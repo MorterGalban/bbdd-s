@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 1. Cargar y sincronizar datos directamente desde la Nube (Railway)
     await cargarRegistrosDesdeNube(true);
+    normalizarRegistrosEnMemoria();
 
     actualizarResumenGrado();
     actualizarBadges();
@@ -99,7 +100,42 @@ window.cargarRegistrosDesdeNube = async function(silencioso = false) {
         const json = await res.json();
 
         if (json.success && Array.isArray(json.data)) {
-            AppState.registros = json.data;
+            let localDb = [];
+            try {
+                localDb = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+            } catch (e) {
+                localDb = [];
+            }
+
+            const merged = json.data.map(cloudReg => {
+                const localMatch = (localDb || []).find(l => l && l.codigo === cloudReg.codigo) ||
+                                   (AppState.registros || []).find(l => l && l.codigo === cloudReg.codigo);
+                if (!localMatch) return cloudReg;
+
+                const archivosMerged = { ...(cloudReg.archivos || {}), ...(localMatch.archivos || {}) };
+                const rechazosMerged = { ...(cloudReg.rechazos || {}), ...(localMatch.rechazos || {}) };
+                const documentosMerged = { ...(cloudReg.documentos || {}), ...(localMatch.documentos || {}) };
+
+                return {
+                    ...cloudReg,
+                    ...localMatch,
+                    archivos: archivosMerged,
+                    rechazos: rechazosMerged,
+                    documentos: documentosMerged,
+                    estado: (localMatch.estado || cloudReg.estado)
+                };
+            });
+
+            // Si algún registro no tiene fotos cargadas, asegurar que se generen o mantengan
+            merged.forEach(r => {
+                if (!r.archivos || Object.keys(r.archivos).length === 0) {
+                    if (typeof generarArchivosSemilla === 'function') {
+                        r.archivos = generarArchivosSemilla(r.alumno, r.alumnoDoc || r.codigo, r.representante, r.repreDoc);
+                    }
+                }
+            });
+
+            AppState.registros = merged;
             // Persistir copia local en caché del navegador
             localStorage.setItem('fya_preinscripciones_db', JSON.stringify(AppState.registros));
             AppState.cloudStorageType = json.storage || 'online';
@@ -2794,6 +2830,46 @@ function actualizarResumenGrado() {
 /* ==============================================================================
    14. DATOS SEMILLA DE EJEMPLO (MUNICIPIO SAN FRANCISCO, ZULIA)
    ============================================================================== */
+function generarArchivosSemilla(alumno = 'Aspirante', alumnoDoc = 'CE-120555666', repre = 'Representante', repreDoc = 'V-19888777') {
+    const svgCedula = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="450" height="280" viewBox="0 0 450 280"><rect width="100%" height="100%" fill="%23f8fafc" stroke="%23cbd5e1" stroke-width="3" rx="8"/><rect x="15" y="15" width="420" height="42" fill="%23b91c1c" rx="6"/><text x="225" y="42" font-family="sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="bold">REPÚBLICA BOLIVARIANA DE VENEZUELA</text><rect x="25" y="75" width="95" height="115" fill="%23e2e8f0" rx="6"/><circle cx="72" cy="118" r="28" fill="%2394a3b8"/><path d="M40 180 C40 148, 105 148, 105 180 Z" fill="%2364748b"/><text x="140" y="105" font-family="sans-serif" font-size="12" fill="%23334155" font-weight="bold">CÉDULA DE IDENTIDAD</text><text x="140" y="132" font-family="monospace" font-size="16" fill="%23b91c1c" font-weight="bold">${repreDoc}</text><text x="140" y="158" font-family="sans-serif" font-size="13" fill="%230f172a" font-weight="bold">${repre}</text><text x="140" y="180" font-family="sans-serif" font-size="10" fill="%2364748b">ESTADO CIVIL: CASADA • NACIONALIDAD: V</text><rect x="15" y="225" width="420" height="35" fill="%23f1f5f9" rx="4"/><text x="225" y="247" font-family="sans-serif" font-size="10" fill="%2364748b" text-anchor="middle">SAIME • DIRECCIÓN GENERAL DE IDENTIFICACIÓN CIVIL</text></svg>`;
+
+    const svgCardio = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="450" height="320" viewBox="0 0 450 320"><rect width="100%" height="100%" fill="%23f0fdf4" stroke="%2386efac" stroke-width="3" rx="8"/><rect x="15" y="15" width="420" height="42" fill="%2315803d" rx="6"/><text x="225" y="42" font-family="sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="bold">CERTIFICADO MÉDICO CARDIOVASCULAR</text><text x="30" y="95" font-family="sans-serif" font-size="11" fill="%23166534" font-weight="bold">MINISTERIO DEL PODER POPULAR PARA LA SALUD - MPPS</text><text x="30" y="125" font-family="sans-serif" font-size="13" fill="%230f172a">Paciente: ${alumno} (${alumnoDoc})</text><text x="30" y="155" font-family="sans-serif" font-size="12" fill="%23047857" font-weight="bold">EVALUACIÓN CLÍNICA: NORMOCARDIO, SIN SINTOMATOLOGÍA AGUDA</text><text x="30" y="180" font-family="sans-serif" font-size="12" fill="%2315803d" font-weight="bold">DIAGNÓSTICO: APTO PARA EDUCACIÓN FÍSICA Y DEPORTES 2026-2027</text><rect x="30" y="210" width="390" height="80" fill="%23dcfce7" stroke="%23bbf7d0" rx="6"/><text x="45" y="235" font-family="sans-serif" font-size="11" fill="%23166534">Ambulatorio El Silencio - San Francisco, Edo. Zulia</text><text x="45" y="258" font-family="sans-serif" font-size="11" fill="%23166534">Médico: Dr. Roberto C. Morales - MPPS 67.890</text><text x="45" y="280" font-family="sans-serif" font-size="10" fill="%2315803d" font-weight="bold">SELLO HÚMEDO Y FIRMA REGISTRADA</text></svg>`;
+
+    const svgPartida = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="450" height="340" viewBox="0 0 450 340"><rect width="100%" height="100%" fill="%23fffbeb" stroke="%23fde68a" stroke-width="3" rx="8"/><rect x="15" y="15" width="420" height="42" fill="%23b45309" rx="6"/><text x="225" y="42" font-family="sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="bold">ACTA DE NACIMIENTO - REGISTRO CIVIL PRINCIPAL</text><text x="30" y="95" font-family="sans-serif" font-size="11" fill="%2392400e" font-weight="bold">ESTADO ZULIA • MUNICIPIO SAN FRANCISCO • PARROQUIA SAN FRANCISCO</text><text x="30" y="130" font-family="sans-serif" font-size="13" fill="%230f172a" font-weight="bold">Presentado(a): ${alumno}</text><text x="30" y="155" font-family="sans-serif" font-size="12" fill="%23451a03">Cédula Escolar / Identificación: ${alumnoDoc}</text><text x="30" y="180" font-family="sans-serif" font-size="12" fill="%23451a03">Lugar de Nacimiento: Hospital Noriega Trigo, San Francisco</text><text x="30" y="205" font-family="sans-serif" font-size="12" fill="%23451a03">Representante: ${repre} (${repreDoc})</text><rect x="30" y="235" width="390" height="80" fill="%23fef3c7" stroke="%23fde68a" rx="6"/><text x="45" y="260" font-family="sans-serif" font-size="11" fill="%2392400e">Acta Nro. 441 - Tomo II - Libro de Nacimientos Año 2020</text><text x="45" y="280" font-family="sans-serif" font-size="11" fill="%2392400e">Registrador Civil: Abg. Leonardo J. Pirela - Folio 112</text><text x="45" y="300" font-family="sans-serif" font-size="10" fill="%23b45309" font-weight="bold">DOCUMENTO PÚBLICO AUTÉNTICO - VENEZUELA</text></svg>`;
+
+    const svgCarnet = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="360" viewBox="0 0 300 360"><rect width="100%" height="100%" fill="%23e0f2fe" rx="10"/><circle cx="150" cy="120" r="55" fill="%230284c7"/><path d="M50 310 C50 200, 250 200, 250 310 Z" fill="%230369a1"/><rect x="20" y="295" width="260" height="50" fill="white" rx="6" opacity="0.95"/><text x="150" y="315" font-family="sans-serif" font-size="12" fill="%230369a1" text-anchor="middle" font-weight="bold">FOTO TIPO CARNET FONDO BLANCO</text><text x="150" y="333" font-family="sans-serif" font-size="11" fill="%230f172a" text-anchor="middle" font-weight="bold">${alumno}</text></svg>`;
+
+    return {
+        '1': { nombre: 'foto_cedula_repre.jpg', tamano: 85400, tipo: 'image/jpeg', dataUrl: svgCedula, fecha: '08/10/2026' },
+        '2': { nombre: 'informe_cardio.jpg', tamano: 92100, tipo: 'image/jpeg', dataUrl: svgCardio, fecha: '08/10/2026' },
+        '3': { nombre: 'acta_nacimiento.jpg', tamano: 114500, tipo: 'image/jpeg', dataUrl: svgPartida, fecha: '08/10/2026' },
+        '4': { nombre: 'foto_estudiante.jpg', tamano: 64200, tipo: 'image/jpeg', dataUrl: svgCarnet, fecha: '08/10/2026' }
+    };
+}
+
+function normalizarRegistrosEnMemoria() {
+    if (!Array.isArray(AppState.registros)) return;
+    let modificado = false;
+    AppState.registros.forEach(r => {
+        if (!r) return;
+        if (r.rechazos) {
+            Object.keys(r.rechazos).forEach(k => {
+                if (r.rechazos[k] && r.rechazos[k].rechazada === undefined) {
+                    r.rechazos[k].rechazada = true;
+                    modificado = true;
+                }
+            });
+        }
+        if ((r.codigo === 'PRE-2026-0001' || r.codigo === 'PRE-2026-0002') && (!r.archivos || Object.keys(r.archivos).length === 0)) {
+            r.archivos = generarArchivosSemilla(r.alumno, r.alumnoDoc, r.representante, r.repreDoc);
+            modificado = true;
+        }
+    });
+    if (modificado) {
+        localStorage.setItem('fya_preinscripciones_db', JSON.stringify(AppState.registros));
+    }
+}
+
 function cargarRegistroSemillaSiVacio() {
     if (!AppState.registros || AppState.registros.length === 0) {
         AppState.registros = [
@@ -2826,6 +2902,7 @@ function cargarRegistroSemillaSiVacio() {
                 operador: 'Control de Estudios (Admin)',
                 idUser: '1',
                 documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'CONSIGNADO', '4': 'CONSIGNADO' },
+                archivos: generarArchivosSemilla('Jesús David Gómez Blanco', 'CE-120555666', 'Carmen Elena Blanco de Gómez', 'V-19888777'),
                 recaudosCount: '4/4',
                 fecha: '08/10/2026'
             },
@@ -2858,6 +2935,7 @@ function cargarRegistroSemillaSiVacio() {
                 operador: 'Secretaría Académica',
                 idUser: '2',
                 documentos: { '1': 'APROBADO', '2': 'APROBADO', '3': 'APROBADO', '4': 'APROBADO' },
+                archivos: generarArchivosSemilla('Sofia Valentina Rincón Morales', 'CE-121888333', 'Carlos Eduardo Rincón', 'V-18456123'),
                 recaudosCount: '4/4',
                 fecha: '08/10/2026'
             },
@@ -3542,15 +3620,16 @@ window.comprimirImagenCanvas = comprimirImagenCanvas;
    MÓDULO 4: VISOR LIGHTBOX, RECHAZO INDIVIDUAL DE FOTOS Y MÁQUINA DE ESTADOS (PANEL DOCENTE)
    ============================================================================== */
 window.abrirLightboxDocente = function(codigo) {
-    const reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    const reg = (AppState.registros || []).find(r => r.codigo === codigo) ||
+        (JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]')).find(r => r.codigo === codigo);
     if (!reg) {
         mostrarToast('Error', 'Expediente no encontrado.', 'error');
         return;
     }
 
     const modal = document.getElementById('modalLightboxRecaudos');
-    const info = document.getElementById('lightboxExpedienteInfo');
-    const grid = document.getElementById('lightboxGrid');
+    const info = document.getElementById('lightboxSubtituloEstudiante') || document.getElementById('lightboxExpedienteInfo');
+    const grid = document.getElementById('lightboxRecaudosGrid') || document.getElementById('lightboxGrid');
     if (!modal || !grid) return;
 
     if (info) {
@@ -3656,13 +3735,52 @@ window.abrirLightboxDocente = function(codigo) {
         `;
     });
 
+    const footerActionBtns = document.getElementById('lightboxFooterActionBtns');
+    if (footerActionBtns) {
+        let extraBtns = '';
+        const tieneRechazos = Boolean(reg.rechazos && Object.keys(reg.rechazos).some(k => reg.rechazos[k] && (reg.rechazos[k].rechazada !== false)));
+        const tiene4Fotos = [1, 2, 3, 4].every(i => reg.archivos && reg.archivos[String(i)] && reg.archivos[String(i)].dataUrl);
+
+        if (reg.estado === 'APROBADA' || reg.estado === 'APROBADO') {
+            extraBtns += `
+                <button type="button" class="btn btn-primary" style="background: #15803d; border-color: #15803d; font-size: 0.85rem;" onclick="cerrarLightboxDocente(); emitirCarnetProvisional('${reg.codigo}');">
+                    <i class="fa-solid fa-id-badge"></i> Emitir Carnet Provisional
+                </button>
+            `;
+        } else {
+            if (tiene4Fotos && !tieneRechazos) {
+                extraBtns += `
+                    <button type="button" class="btn btn-primary" style="background: #15803d; border-color: #15803d; font-size: 0.85rem;" onclick="cambiarEstadoPreinscripcion('${reg.codigo}', 'APROBADA'); window.abrirLightboxDocente('${reg.codigo}');">
+                        <i class="fa-solid fa-check-double"></i> Aprobar Expediente
+                    </button>
+                `;
+            }
+            extraBtns += `
+                <button type="button" class="btn btn-primary" style="background: #0284c7; border-color: #0284c7; font-size: 0.85rem;" onclick="cerrarLightboxDocente(); emitirCarnetProvisional('${reg.codigo}');" title="Generar Carnet Provisional">
+                    <i class="fa-solid fa-id-badge"></i> Generar Carnet Provisional
+                </button>
+            `;
+        }
+
+        footerActionBtns.innerHTML = `
+            ${extraBtns}
+            <button type="button" class="btn btn-secondary" onclick="cerrarLightboxDocente()">
+                <i class="fa-solid fa-xmark"></i> Cerrar Visor
+            </button>
+        `;
+    }
+
     grid.innerHTML = html;
+    modal.style.setProperty('display', 'flex', 'important');
     modal.classList.add('active');
 };
 
 window.cerrarLightboxDocente = function() {
     const modal = document.getElementById('modalLightboxRecaudos');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.classList.remove('active');
+    }
 };
 
 window.toggleZoomLightbox = function(imgElem) {
@@ -3681,7 +3799,11 @@ window.zoomOutLightbox = function(imgId) {
 };
 
 window.guardarRechazoFoto = async function(codigo, docId) {
-    const reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    let db = AppState.registros || [];
+    if (!Array.isArray(db) || db.length === 0) {
+        db = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+    }
+    const reg = db.find(r => r.codigo === codigo);
     if (!reg) return;
 
     const obsInput = document.getElementById(`lightboxObsInput_${docId}`);
@@ -3694,22 +3816,18 @@ window.guardarRechazoFoto = async function(codigo, docId) {
 
     if (!reg.rechazos) reg.rechazos = {};
     reg.rechazos[docId] = {
+        rechazada: true,
         motivo: motivo,
         fecha: new Date().toLocaleDateString('es-VE')
     };
 
     if (!reg.documentos) reg.documentos = {};
     reg.documentos[docId] = 'RECHAZADO';
-
-    // MÁQUINA DE ESTADOS ESTRICTA:
-    // Si el docente marca al menos una foto como rechazada, el estatus del expediente
-    // cambia forzosa y automáticamente a "DOCUMENTOS INCOMPLETOS" y el selector de aprobación queda bloqueado ('disabled').
     reg.estado = 'DOCUMENTOS_INCOMPLETOS';
 
-    // Guardar en almacenamiento local
-    localStorage.setItem('fya_preinscripciones_db', JSON.stringify(AppState.registros));
+    AppState.registros = db;
+    localStorage.setItem('fya_preinscripciones_db', JSON.stringify(db));
 
-    // Sincronizar en la base de datos MySQL & system_logs
     try {
         const usuarioSesion = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('fya_docente_auth'))
             ? JSON.parse(sessionStorage.getItem('fya_docente_auth')).usuario
@@ -3731,14 +3849,18 @@ window.guardarRechazoFoto = async function(codigo, docId) {
         console.warn('[Cloud Sync Rechazo Warning]', err.message);
     }
 
-    actualizarKpisDocente();
-    filtrarYRenderizarPanelDocente();
+    if (typeof actualizarKpisDocente === 'function') actualizarKpisDocente();
+    if (typeof filtrarYRenderizarPanelDocente === 'function') filtrarYRenderizarPanelDocente();
     window.abrirLightboxDocente(codigo);
     mostrarToast('Fotografía Rechazada', 'La foto fue marcada como rechazada y el expediente pasó a DOCUMENTOS INCOMPLETOS.', 'warning');
 };
 
 window.quitarRechazoFoto = async function(codigo, docId) {
-    const reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    let db = AppState.registros || [];
+    if (!Array.isArray(db) || db.length === 0) {
+        db = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+    }
+    const reg = db.find(r => r.codigo === codigo);
     if (!reg) return;
 
     if (reg.rechazos) {
@@ -3748,9 +3870,8 @@ window.quitarRechazoFoto = async function(codigo, docId) {
         reg.documentos[docId] = 'CONSIGNADO';
     }
 
-    // Comprobar estado de los 4 recaudos
     const tieneLasCuatro = [1, 2, 3, 4].every(i => reg.archivos && reg.archivos[String(i)] && reg.archivos[String(i)].dataUrl);
-    const tieneRechazos = reg.rechazos && Object.keys(reg.rechazos).length > 0;
+    const tieneRechazos = Boolean(reg.rechazos && Object.keys(reg.rechazos).some(k => reg.rechazos[k] && (reg.rechazos[k].rechazada !== false)));
 
     if (tieneLasCuatro && !tieneRechazos) {
         reg.estado = 'EN_REVISION';
@@ -3758,7 +3879,8 @@ window.quitarRechazoFoto = async function(codigo, docId) {
         reg.estado = 'DOCUMENTOS_INCOMPLETOS';
     }
 
-    localStorage.setItem('fya_preinscripciones_db', JSON.stringify(AppState.registros));
+    AppState.registros = db;
+    localStorage.setItem('fya_preinscripciones_db', JSON.stringify(db));
 
     try {
         const usuarioSesion = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('fya_docente_auth'))
@@ -3781,8 +3903,8 @@ window.quitarRechazoFoto = async function(codigo, docId) {
         console.warn('[Cloud Sync Quitar Rechazo Warning]', err.message);
     }
 
-    actualizarKpisDocente();
-    filtrarYRenderizarPanelDocente();
+    if (typeof actualizarKpisDocente === 'function') actualizarKpisDocente();
+    if (typeof filtrarYRenderizarPanelDocente === 'function') filtrarYRenderizarPanelDocente();
     window.abrirLightboxDocente(codigo);
     mostrarToast('Rechazo Levantado', `La fotografía ha sido revalidada. Estatus actual: ${reg.estado}.`, 'success');
 };
@@ -3792,17 +3914,25 @@ window.quitarRechazoFoto = async function(codigo, docId) {
    ============================================================================== */
 window.abrirModalConsultaRepresentante = function() {
     const modal = document.getElementById('modalConsultaRepresentante');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.classList.add('active');
+        const inp = document.getElementById('inputConsultaCedula');
+        if (inp) inp.focus();
+    }
 };
 
 window.cerrarModalConsultaRepresentante = function() {
     const modal = document.getElementById('modalConsultaRepresentante');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.classList.remove('active');
+    }
 };
 
 window.ejecutarConsultaRepresentante = async function() {
     const input = document.getElementById('inputConsultaCedula');
-    const container = document.getElementById('consultaResultadosContainer');
+    const container = document.getElementById('consultaResultadosWrapper') || document.getElementById('consultaResultadosContainer');
     if (!input || !container) return;
 
     const queryRaw = input.value.trim().toUpperCase();
@@ -3836,7 +3966,15 @@ window.ejecutarConsultaRepresentante = async function() {
                 json.data.forEach(servReg => {
                     const idx = db.findIndex(r => r.codigo === servReg.codigo);
                     if (idx !== -1) {
-                        db[idx] = { ...db[idx], ...servReg };
+                        const local = db[idx];
+                        db[idx] = {
+                            ...servReg,
+                            ...local,
+                            archivos: { ...(servReg.archivos || {}), ...(local.archivos || {}) },
+                            rechazos: { ...(servReg.rechazos || {}), ...(local.rechazos || {}) },
+                            documentos: { ...(servReg.documentos || {}), ...(local.documentos || {}) },
+                            estado: local.estado || servReg.estado
+                        };
                     } else {
                         db.push(servReg);
                     }
@@ -3884,12 +4022,14 @@ window.ejecutarConsultaRepresentante = async function() {
         const estadoNorm = (r.estado || 'EN_REVISION').toUpperCase();
         const badgeColor = {
             'APROBADA': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
+            'APROBADO': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
             'EN_REVISION': 'background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;',
             'DOCUMENTOS_INCOMPLETOS': 'background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;'
         }[estadoNorm] || 'background: #f1f5f9; color: #475569;';
 
         const rechazosObj = r.rechazos || {};
-        const tieneRechazos = Object.keys(rechazosObj).length > 0;
+        const keysRechazos = Object.keys(rechazosObj).filter(k => rechazosObj[k] && (rechazosObj[k].rechazada !== false) && (rechazosObj[k].motivo || rechazosObj[k].rechazada));
+        const tieneRechazos = keysRechazos.length > 0;
 
         html += `
             <div class="consulta-card">
@@ -3923,21 +4063,21 @@ window.ejecutarConsultaRepresentante = async function() {
                                     El docente evaluador ha solicitado la corrección de los siguientes recaudos. Puede cargar la nueva fotografía directamente aquí para que su expediente vuelva a revisión:
                                 </p>
 
-                                ${Object.keys(rechazosObj).map(docId => `
+                                ${keysRechazos.map(docId => `
                                     <div style="background: #ffffff; border: 1px solid #fca5a5; border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 0.75rem;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                                             <strong style="font-size: 0.88rem; color: var(--text-primary);">
-                                                <i class="fa-solid fa-paperclip"></i> ${catalogoDocs[docId] || 'Documento ' + docId}
+                                                 <i class="fa-solid fa-paperclip"></i> ${catalogoDocs[docId] || 'Documento ' + docId}
                                             </strong>
                                             <span style="font-size: 0.72rem; background: #fee2e2; color: #dc2626; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 999px;">
                                                 RECHAZADA
                                             </span>
                                         </div>
                                         <p style="font-size: 0.82rem; color: #4b5563; margin: 0 0 0.65rem; background: #fff5f5; padding: 0.4rem 0.6rem; border-radius: 4px; border-left: 3px solid #dc2626; font-style: italic;">
-                                            <strong>Observación del docente:</strong> "${rechazosObj[docId].motivo}"
+                                            <strong>Observación del docente:</strong> "${rechazosObj[docId].motivo || 'Fotografía no conforme o ilegible'}"
                                         </p>
                                         <div class="subsanar-upload-row">
-                                            <input type="file" id="subsanarInput_${r.codigo}_${docId}" accept="image/*" class="form-control form-control-sm" style="flex: 1;" />
+                                            <input type="file" id="subsanarInput_${r.codigo}_${docId}" accept="image/*" class="form-control form-control-sm" style="flex: 1; min-width: 200px;" />
                                             <button type="button" class="btn btn-primary btn-sm" onclick="window.subsanarRecaudoRepresentante('${r.codigo}', '${docId}')">
                                                 <i class="fa-solid fa-cloud-arrow-up"></i> Subir Documento Corregido
                                             </button>
@@ -3951,7 +4091,7 @@ window.ejecutarConsultaRepresentante = async function() {
                     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 0.85rem; margin: 0.75rem 0;">
                         <span style="font-size: 0.85rem; color: #334155; display: block;">
                             <i class="fa-solid fa-circle-info" style="color: #0284c7;"></i>
-                            ${estadoNorm === 'APROBADA'
+                            ${(estadoNorm === 'APROBADA' || estadoNorm === 'APROBADO')
                                 ? 'El expediente ha sido APROBADO por Control de Estudios. Puede emitir el Carnet Estudiantil Provisional a continuación.'
                                 : 'Todos los recaudos fotográficos obligatorios se encuentran debidamente consignados y en proceso de verificación física.'}
                         </span>
@@ -3959,8 +4099,8 @@ window.ejecutarConsultaRepresentante = async function() {
                 `}
 
                 <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.75rem; flex-wrap: wrap;">
-                    ${estadoNorm === 'APROBADA' ? `
-                        <button type="button" class="btn btn-primary btn-sm" onclick="window.emitirCarnetProvisional('${r.codigo}')" style="background: #16a34a; border-color: #16a34a;">
+                    ${(estadoNorm === 'APROBADA' || estadoNorm === 'APROBADO') ? `
+                        <button type="button" class="btn btn-primary btn-sm" onclick="window.emitirCarnetProvisional('${r.codigo}')" style="background: #16a34a; border-color: #16a34a; font-weight: 700;">
                             <i class="fa-solid fa-id-badge"></i> Emitir Carnet Provisional
                         </button>
                     ` : ''}
@@ -3992,61 +4132,112 @@ window.subsanarRecaudoRepresentante = async function(codigo, docId) {
     try {
         mostrarToast('Optimizando Documento', 'Comprimiendo y cargando fotografía...', 'info');
 
-        const maxWidth = (docId === '4') ? 300 : 800;
-        const dataUrl = await comprimirImagenCanvas(file, maxWidth, 0.7);
+        const maxWidth = (String(docId) === '4') ? 300 : 800;
+        let dataUrl = '';
+        try {
+            dataUrl = await comprimirImagenCanvas(file, maxWidth, 0.7);
+        } catch (compErr) {
+            console.warn('[Subsanar] Compresión canvas falló, leyendo directamente:', compErr);
+            dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
 
-        const db = AppState.registros || [];
-        const reg = db.find(r => r.codigo === codigo);
-        if (!reg) throw new Error('Expediente no encontrado en memoria.');
+        // Obtener o inicializar base de datos local
+        let localDb = [];
+        try {
+            localDb = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+        } catch (e) {
+            localDb = [];
+        }
 
+        if (!AppState.registros || AppState.registros.length === 0) {
+            AppState.registros = localDb;
+        }
+
+        let reg = (AppState.registros || []).find(r => r.codigo === codigo);
+        let idx = localDb.findIndex(r => r.codigo === codigo);
+
+        if (!reg && idx !== -1) {
+            reg = localDb[idx];
+            AppState.registros.push(reg);
+        }
+
+        if (!reg) {
+            throw new Error(`Expediente ${codigo} no encontrado en el sistema.`);
+        }
+
+        const idStr = String(docId);
         if (!reg.archivos) reg.archivos = {};
-        reg.archivos[docId] = {
+        if (!reg.rechazos) reg.rechazos = {};
+        if (!reg.documentos) reg.documentos = {};
+
+        reg.archivos[idStr] = {
             nombre: file.name,
             tamano: Math.round(dataUrl.length * 0.75),
-            tipo: 'image/jpeg',
+            tipo: file.type || 'image/jpeg',
             dataUrl: dataUrl,
             fecha: new Date().toLocaleDateString('es-VE')
         };
 
         // Eliminar la marca de rechazo para este documento
-        if (reg.rechazos) {
-            delete reg.rechazos[docId];
-        }
-        if (reg.documentos) {
-            reg.documentos[docId] = 'CONSIGNADO';
-        }
+        delete reg.rechazos[idStr];
+        reg.documentos[idStr] = 'CONSIGNADO';
 
-        // Si ya no quedan fotos rechazadas y tiene las 4 fotos, el estatus pasa automáticamente a EN_REVISION
-        const tieneRechazosRestantes = reg.rechazos && Object.keys(reg.rechazos).length > 0;
+        // Evaluar si quedan rechazos
+        const keysRechazos = Object.keys(reg.rechazos).filter(k => reg.rechazos[k] && reg.rechazos[k].rechazada !== false);
         const tieneLasCuatro = [1, 2, 3, 4].every(i => reg.archivos && reg.archivos[String(i)] && reg.archivos[String(i)].dataUrl);
 
-        if (!tieneRechazosRestantes && tieneLasCuatro) {
+        if (keysRechazos.length === 0 && tieneLasCuatro) {
             reg.estado = 'EN_REVISION';
         } else {
             reg.estado = 'DOCUMENTOS_INCOMPLETOS';
         }
 
-        localStorage.setItem('fya_preinscripciones_db', JSON.stringify(db));
+        // Recalcular conteo de recaudos
+        let entregados = 0;
+        for (let i = 1; i <= 4; i++) {
+            if (reg.archivos && reg.archivos[String(i)] && reg.archivos[String(i)].dataUrl) entregados++;
+        }
+        reg.recaudosCount = `${entregados}/4`;
 
-        // Enviar a la nube / MySQL con logging en system_logs
-        await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/recaudo`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                docId,
-                archivoBase64: dataUrl,
-                nombreArchivo: file.name,
-                accion: 'subsanar',
-                estadoFinal: reg.estado,
-                usuario: `Representante (${reg.representante || 'Portal'})`
-            })
-        });
+        // Persistir en localDb
+        if (idx !== -1) {
+            localDb[idx] = reg;
+        } else {
+            localDb.push(reg);
+        }
+        localStorage.setItem('fya_preinscripciones_db', JSON.stringify(localDb));
 
-        actualizarKpisDocente();
-        filtrarYRenderizarPanelDocente();
-        await window.ejecutarConsultaRepresentante();
+        // Sincronizar en backend de forma no bloqueante (resiliente)
+        try {
+            await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/recaudo`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    docId: idStr,
+                    archivoBase64: dataUrl,
+                    nombreArchivo: file.name,
+                    accion: 'subsanar',
+                    estadoFinal: reg.estado,
+                    usuario: `Representante (${reg.representante || 'Portal'})`
+                })
+            });
+        } catch (syncErr) {
+            console.warn('[Subsanar Cloud Sync Warning]', syncErr.message);
+        }
 
-        mostrarToast('Documento Subsanado con Éxito', 'La fotografía corregida ha sido cargada y el expediente escolar volvió automáticamente a EN REVISIÓN.', 'success');
+        // Actualizar vistas
+        if (typeof actualizarKpisDocente === 'function') actualizarKpisDocente();
+        if (typeof filtrarYRenderizarPanelDocente === 'function') filtrarYRenderizarPanelDocente();
+        if (typeof window.ejecutarConsultaRepresentante === 'function') {
+            await window.ejecutarConsultaRepresentante();
+        }
+
+        mostrarToast('Documento Subsanado con Éxito', 'La fotografía corregida ha sido cargada y el expediente escolar volvió automáticamente a EN REVISIÓN para validación docente.', 'success');
     } catch (err) {
         console.error('[Subsanar Error]', err);
         mostrarToast('Error al subsanar', err.message || 'No se pudo procesar el documento.', 'error');
@@ -4064,15 +4255,26 @@ window.descargarPlanillaDesdeConsulta = function(codigo) {
    MÓDULO 6: EMISOR DE CARNET ESTUDIANTIL PROVISIONAL CR80 & CLASIFICADOR DEMOGRÁFICO
    ============================================================================== */
 window.emitirCarnetProvisional = function(codigo) {
-    const reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    let reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    if (!reg) {
+        try {
+            const localDb = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+            reg = localDb.find(r => r.codigo === codigo);
+        } catch (e) {}
+    }
+
     if (!reg) {
         mostrarToast('Error', 'Expediente no encontrado para emitir carnet.', 'error');
         return;
     }
 
     const modal = document.getElementById('modalCarnetProvisional');
-    const container = document.getElementById('carnetCr80Content');
-    if (!modal || !container) return;
+    const container = document.getElementById('carnetCr80PrintArea') || document.getElementById('carnetCr80Content');
+    if (!modal || !container) {
+        console.error('[Carnet Provisional] No se encontró el modal o el contenedor', { modal, container });
+        mostrarToast('Error', 'No se encontró el contenedor del carnet provisional.', 'error');
+        return;
+    }
 
     modal.setAttribute('data-carnet-codigo', codigo);
 
@@ -4085,66 +4287,71 @@ window.emitirCarnetProvisional = function(codigo) {
     const emTel = reg.repreTelefono || '0414-0000000';
     const contactoEm = `${reg.representante || 'Representante'} (${emTel})`;
 
+    // Formatear el contenedor para que sea la tarjeta CR80 directa
+    container.className = 'carnet-cr80-card';
+    container.id = 'carnetCr80PrintArea';
     container.innerHTML = `
-        <div id="carnetCr80Card" class="carnet-cr80-card">
-            <div class="carnet-cr80-header">
-                <div class="carnet-cr80-logo-title">
-                    <div class="carnet-cr80-school">U.E. FE Y ALEGRÍA "NUEVA AMÉRICA"</div>
-                    <div class="carnet-cr80-sub">CARNET ESTUDIANTIL PROVISIONAL • PERIODO 2026 - 2027</div>
+        <div class="carnet-cr80-header">
+            <div class="carnet-cr80-logo-title">
+                <div class="carnet-cr80-school">U.E. FE Y ALEGRÍA "NUEVA AMÉRICA"</div>
+                <div class="carnet-cr80-sub">CARNET ESTUDIANTIL PROVISIONAL • PERIODO 2026 - 2027</div>
+            </div>
+            <div class="carnet-cr80-badge">PRIMARIA</div>
+        </div>
+
+        <div class="carnet-cr80-body">
+            <div class="carnet-cr80-photo-col">
+                <div class="carnet-cr80-photo-wrap">
+                    <img src="${fotoCarnet}" alt="Foto ${reg.alumno}" class="carnet-cr80-img" crossOrigin="anonymous" />
                 </div>
-                <div class="carnet-cr80-badge">PRIMARIA</div>
+                <div class="carnet-cr80-blood-pill">SANGRE: ${sangre}</div>
             </div>
 
-            <div class="carnet-cr80-body">
-                <div class="carnet-cr80-photo-col">
-                    <div class="carnet-cr80-photo-wrap">
-                        <img src="${fotoCarnet}" alt="Foto ${reg.alumno}" class="carnet-cr80-img" crossOrigin="anonymous" />
-                    </div>
-                    <div class="carnet-cr80-blood-pill">SANGRE: ${sangre}</div>
+            <div class="carnet-cr80-info-col">
+                <div class="carnet-cr80-student-name">${reg.alumno}</div>
+
+                <div class="carnet-cr80-doc-row">
+                    <span class="carnet-cr80-doc-label">C.I. / C.E.:</span>
+                    <strong class="carnet-cr80-doc-val">${reg.alumnoDoc || 'S/N'}</strong>
                 </div>
 
-                <div class="carnet-cr80-info-col">
-                    <div class="carnet-cr80-student-name">${reg.alumno}</div>
+                <div class="carnet-cr80-grade-row">
+                    <span class="carnet-cr80-grade-label">GRADO:</span>
+                    <strong class="carnet-cr80-grade-val">${reg.grado}</strong>
+                </div>
 
-                    <div class="carnet-cr80-doc-row">
-                        <span class="carnet-cr80-doc-label">C.I. / C.E.:</span>
-                        <strong class="carnet-cr80-doc-val">${reg.alumnoDoc || 'S/N'}</strong>
-                    </div>
+                <div class="carnet-cr80-med-row">
+                    <span class="carnet-cr80-med-label">COND./ALERGIAS:</span>
+                    <span class="carnet-cr80-med-val">${alergias}</span>
+                </div>
 
-                    <div class="carnet-cr80-grade-row">
-                        <span class="carnet-cr80-grade-label">GRADO:</span>
-                        <strong class="carnet-cr80-grade-val">${reg.grado}</strong>
-                    </div>
-
-                    <div class="carnet-cr80-med-row">
-                        <span class="carnet-cr80-med-label">COND./ALERGIAS:</span>
-                        <span class="carnet-cr80-med-val">${alergias}</span>
-                    </div>
-
-                    <div class="carnet-cr80-emergency-row">
-                        <span class="carnet-cr80-em-label">CONTACTO EMERGENCIA:</span>
-                        <strong class="carnet-cr80-em-val">${contactoEm}</strong>
-                    </div>
+                <div class="carnet-cr80-emergency-row">
+                    <span class="carnet-cr80-em-label">CONTACTO EMERGENCIA:</span>
+                    <strong class="carnet-cr80-em-val">${contactoEm}</strong>
                 </div>
             </div>
+        </div>
 
-            <div class="carnet-cr80-footer">
-                <span>MUNICIPIO SAN FRANCISCO, ESTADO ZULIA • CONTROL DE ESTUDIOS</span>
-                <span class="carnet-cr80-folio">FOLIO: ${reg.codigo}</span>
-            </div>
+        <div class="carnet-cr80-footer">
+            <span>MUNICIPIO SAN FRANCISCO, ESTADO ZULIA • CONTROL DE ESTUDIOS</span>
+            <span class="carnet-cr80-folio">FOLIO: ${reg.codigo}</span>
         </div>
     `;
 
+    modal.style.setProperty('display', 'flex', 'important');
     modal.classList.add('active');
 };
 
 window.cerrarModalCarnetProvisional = function() {
     const modal = document.getElementById('modalCarnetProvisional');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.classList.remove('active');
+    }
 };
 
 window.descargarCarnetPdf = async function() {
-    const elem = document.getElementById('carnetCr80Card');
+    const elem = document.getElementById('carnetCr80PrintArea') || document.getElementById('carnetCr80Card') || document.getElementById('carnetCr80Content');
     const modal = document.getElementById('modalCarnetProvisional');
     const codigo = modal ? modal.getAttribute('data-carnet-codigo') : 'ESTUDIANTE';
 

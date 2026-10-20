@@ -1,1 +1,202 @@
-[]
+[
+  {
+    "codigo": "PRE-2026-0001",
+    "alumno": "Jesús David Gómez Blanco",
+    "alumnoDoc": "CE-120555666",
+    "alumnoFechaNac": "2020-03-12",
+    "alumnoGenero": "MASCULINO",
+    "alumnoSangre": "O+",
+    "alumnoLugarNac": "San Francisco, Edo. Zulia",
+    "alumnoViveCon": "Ambos Padres",
+    "alumnoDireccion": "Barrio 24 de Julio, Av. 49B entre Calles 176 y 177, San Francisco, Edo. Zulia",
+    "alumnoAlergias": "Ninguna conocida / Sin alergias",
+    "representante": "Carmen Elena Blanco de Gómez",
+    "repreDoc": "V-19888777",
+    "repreParentesco": "MADRE",
+    "repreTelefono": "0414-6309876",
+    "repreCorreo": "carmen.blanco@correo.com",
+    "repreOcupacion": "Comerciante / Emprendedora",
+    "repreDireccion": "Barrio 24 de Julio, Av. 49B entre Calles 176 y 177, San Francisco, Edo. Zulia",
+    "instituto": "C.E.I. Barrio 24 de Julio",
+    "institutoCodigo": "DEA-CEI-24J",
+    "institutoTipo": "PUBLICA",
+    "institutoCiudad": "San Francisco, Edo. Zulia",
+    "grado": "1er Grado de Educación Primaria",
+    "gradoId": "1",
+    "estado": "EN_REVISION",
+    "periodo": "2026-2027",
+    "operador": "Control de Estudios (Admin)",
+    "idUser": "1",
+    "documentos": {
+      "1": "APROBADO",
+      "2": "APROBADO",
+      "3": "CONSIGNADO",
+      "4": "CONSIGNADO"
+    },
+    "archivos": {
+      "1": {
+        "nombre": "cedula_representante.svg",
+        "tipo": "image/svg+xml",
+        "dataUrl": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"380\" viewBox=\"0 0 600 380\"><rect width=\"100%\" height=\"100%\" fill=\"%23f8fafc\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"350\" rx=\"12\" fill=\"white\" stroke=\"%23b91c1c\" stroke-width=\"3\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"45\" fill=\"%23b91c1c\"/><text x=\"300\" y=\"44\" font-family=\"sans-serif\" font-size=\"16\" fill=\"white\" font-weight=\"bold\" text-anchor=\"middle\">REPUBLICA BOLIVARIANA DE VENEZUELA</text><text x=\"300\" y=\"115\" font-family=\"monospace\" font-size=\"28\" fill=\"%23b91c1c\" font-weight=\"bold\" text-anchor=\"middle\">V-19888777</text><text x=\"300\" y=\"160\" font-family=\"sans-serif\" font-size=\"20\" fill=\"%231e293b\" font-weight=\"bold\" text-anchor=\"middle\">Carmen Elena Blanco de Gómez</text><text x=\"300\" y=\"200\" font-family=\"sans-serif\" font-size=\"14\" fill=\"%2364748b\" text-anchor=\"middle\">CEDULA DE IDENTIDAD VIGENTE</text><rect x=\"150\" y=\"240\" width=\"300\" height=\"36\" rx=\"6\" fill=\"%23fee2e2\" stroke=\"%23fca5a5\"/><text x=\"300\" y=\"263\" font-family=\"sans-serif\" font-size=\"12\" fill=\"%23991b1b\" font-weight=\"bold\" text-anchor=\"middle\">CONSIGNADO PARA CONTROL DE ESTUDIOS</text></svg>",
+        "fecha": "08/10/2026"
+      },
+      "2": {
+        "nombre": "informe_cardiovascular.svg",
+        "tipo": "image/svg+xml",
+        "dataUrl": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"420\" viewBox=\"0 0 600 420\"><rect width=\"100%\" height=\"100%\" fill=\"%23f0fdf4\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"390\" rx=\"12\" fill=\"white\" stroke=\"%2316a34a\" stroke-width=\"3\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"45\" fill=\"%2316a34a\"/><text x=\"300\" y=\"44\" font-family=\"sans-serif\" font-size=\"16\" fill=\"white\" font-weight=\"bold\" text-anchor=\"middle\">INFORME MEDICO CARDIOVASCULAR</text><text x=\"300\" y=\"120\" font-family=\"sans-serif\" font-size=\"18\" fill=\"%2315803d\" font-weight=\"bold\" text-anchor=\"middle\">EVALUACION DE APTITUD FISICA ESCOLAR</text><text x=\"300\" y=\"165\" font-family=\"sans-serif\" font-size=\"16\" fill=\"%231e293b\" font-weight=\"bold\" text-anchor=\"middle\">PACIENTE: Jesús David Gómez Blanco</text><text x=\"300\" y=\"195\" font-family=\"monospace\" font-size=\"14\" fill=\"%23475569\" text-anchor=\"middle\">DOC: CE-120555666</text><text x=\"300\" y=\"240\" font-family=\"sans-serif\" font-size=\"16\" fill=\"%2316a34a\" font-weight=\"bold\" text-anchor=\"middle\">DIAGNOSTICO: CARDIOVASCULARMENTE APTO</text><text x=\"300\" y=\"270\" font-family=\"sans-serif\" font-size=\"12\" fill=\"%2364748b\" text-anchor=\"middle\">Emision: San Francisco, Zulia • Validez: Periodo 2026-2027</text></svg>",
+        "fecha": "08/10/2026"
+      },
+      "3": {
+        "nombre": "partida_nacimiento.svg",
+        "tipo": "image/svg+xml",
+        "dataUrl": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"450\" viewBox=\"0 0 600 450\"><rect width=\"100%\" height=\"100%\" fill=\"%23fffbeb\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"420\" rx=\"12\" fill=\"white\" stroke=\"%23d97706\" stroke-width=\"3\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"45\" fill=\"%23d97706\"/><text x=\"300\" y=\"44\" font-family=\"sans-serif\" font-size=\"16\" fill=\"white\" font-weight=\"bold\" text-anchor=\"middle\">REGISTRO PRINCIPAL - PARTIDA DE NACIMIENTO</text><text x=\"300\" y=\"125\" font-family=\"sans-serif\" font-size=\"20\" fill=\"%23b45309\" font-weight=\"bold\" text-anchor=\"middle\">Jesús David Gómez Blanco</text><text x=\"300\" y=\"165\" font-family=\"monospace\" font-size=\"15\" fill=\"%231e293b\" text-anchor=\"middle\">IDENTIFICACION: CE-120555666</text><text x=\"300\" y=\"205\" font-family=\"sans-serif\" font-size=\"14\" fill=\"%23475569\" text-anchor=\"middle\">Lugar de Nacimiento: San Francisco, Estado Zulia</text><text x=\"300\" y=\"240\" font-family=\"sans-serif\" font-size=\"14\" fill=\"%23475569\" text-anchor=\"middle\">Filiacion Materna/Paterna: Carmen Elena Blanco de Gómez</text><rect x=\"150\" y=\"290\" width=\"300\" height=\"38\" rx=\"6\" fill=\"%23fef3c7\" stroke=\"%23fcd34d\"/><text x=\"300\" y=\"314\" font-family=\"sans-serif\" font-size=\"12\" fill=\"%2392400e\" font-weight=\"bold\" text-anchor=\"middle\">COPIA CERTIFICADA CONFORME AL ORIGINAL</text></svg>",
+        "fecha": "08/10/2026"
+      },
+      "4": {
+        "nombre": "foto_carnet.svg",
+        "tipo": "image/svg+xml",
+        "dataUrl": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"360\" viewBox=\"0 0 300 360\"><rect width=\"100%\" height=\"100%\" fill=\"%23e0f2fe\"/><rect x=\"15\" y=\"15\" width=\"270\" height=\"330\" rx=\"10\" fill=\"white\" stroke=\"%230284c7\" stroke-width=\"3\"/><circle cx=\"150\" cy=\"120\" r=\"50\" fill=\"%230284c7\"/><path d=\"M70 270 C70 190, 230 190, 230 270 Z\" fill=\"%230369a1\"/><rect x=\"30\" y=\"290\" width=\"240\" height=\"36\" rx=\"6\" fill=\"%230c4a6e\"/><text x=\"150\" y=\"313\" font-family=\"sans-serif\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\" font-weight=\"bold\">Jesús David Gómez Blanco</text></svg>",
+        "fecha": "08/10/2026"
+      }
+    },
+    "recaudosCount": "4/4",
+    "fecha": "08/10/2026"
+  },
+  {
+    "codigo": "PRE-2026-0002",
+    "alumno": "Sofia Valentina Rincón Morales",
+    "alumnoDoc": "CE-121888333",
+    "alumnoFechaNac": "2019-06-25",
+    "alumnoGenero": "FEMENINO",
+    "alumnoSangre": "A+",
+    "alumnoLugarNac": "San Francisco, Edo. Zulia",
+    "alumnoViveCon": "Madre",
+    "alumnoDireccion": "Urb. Coromoto, Calle 171, San Francisco, Edo. Zulia",
+    "alumnoAlergias": "Ninguna",
+    "representante": "Carlos Eduardo Rincón",
+    "repreDoc": "V-18456123",
+    "repreParentesco": "PADRE",
+    "repreTelefono": "0424-6123456",
+    "repreCorreo": "carlos.rincon@gmail.com",
+    "repreOcupacion": "Ingeniero en Computación",
+    "repreDireccion": "Urb. Coromoto, Calle 171, San Francisco, Edo. Zulia",
+    "instituto": "U.E. Fe y Alegría La Chinita",
+    "institutoCodigo": "DEA-FYA-CHINITA",
+    "institutoTipo": "SUBVENCIONADA_FE_Y_ALEGRIA",
+    "institutoCiudad": "San Francisco, Edo. Zulia",
+    "grado": "2do Grado de Educación Primaria",
+    "gradoId": "2",
+    "estado": "APROBADA",
+    "periodo": "2026-2027",
+    "operador": "Secretaría Académica",
+    "idUser": "2",
+    "documentos": {
+      "1": "APROBADO",
+      "2": "APROBADO",
+      "3": "APROBADO",
+      "4": "APROBADO"
+    },
+    "archivos": {
+      "1": {
+        "nombre": "cedula_representante.svg",
+        "tipo": "image/svg+xml",
+        "dataUrl": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"380\" viewBox=\"0 0 600 380\"><rect width=\"100%\" height=\"100%\" fill=\"%23f8fafc\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"350\" rx=\"12\" fill=\"white\" stroke=\"%23b91c1c\" stroke-width=\"3\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"45\" fill=\"%23b91c1c\"/><text x=\"300\" y=\"44\" font-family=\"sans-serif\" font-size=\"16\" fill=\"white\" font-weight=\"bold\" text-anchor=\"middle\">REPUBLICA BOLIVARIANA DE VENEZUELA</text><text x=\"300\" y=\"115\" font-family=\"monospace\" font-size=\"28\" fill=\"%23b91c1c\" font-weight=\"bold\" text-anchor=\"middle\">V-18456123</text><text x=\"300\" y=\"160\" font-family=\"sans-serif\" font-size=\"20\" fill=\"%231e293b\" font-weight=\"bold\" text-anchor=\"middle\">Carlos Eduardo Rincón</text><text x=\"300\" y=\"200\" font-family=\"sans-serif\" font-size=\"14\" fill=\"%2364748b\" text-anchor=\"middle\">CEDULA DE IDENTIDAD VIGENTE</text><rect x=\"150\" y=\"240\" width=\"300\" height=\"36\" rx=\"6\" fill=\"%23fee2e2\" stroke=\"%23fca5a5\"/><text x=\"300\" y=\"263\" font-family=\"sans-serif\" font-size=\"12\" fill=\"%23991b1b\" font-weight=\"bold\" text-anchor=\"middle\">CONSIGNADO PARA CONTROL DE ESTUDIOS</text></svg>",
+        "fecha": "08/10/2026"
+      },
+      "2": {
+        "nombre": "informe_cardiovascular.svg",
+        "tipo": "image/svg+xml",
+        "dataUrl": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"420\" viewBox=\"0 0 600 420\"><rect width=\"100%\" height=\"100%\" fill=\"%23f0fdf4\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"390\" rx=\"12\" fill=\"white\" stroke=\"%2316a34a\" stroke-width=\"3\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"45\" fill=\"%2316a34a\"/><text x=\"300\" y=\"44\" font-family=\"sans-serif\" font-size=\"16\" fill=\"white\" font-weight=\"bold\" text-anchor=\"middle\">INFORME MEDICO CARDIOVASCULAR</text><text x=\"300\" y=\"120\" font-family=\"sans-serif\" font-size=\"18\" fill=\"%2315803d\" font-weight=\"bold\" text-anchor=\"middle\">EVALUACION DE APTITUD FISICA ESCOLAR</text><text x=\"300\" y=\"165\" font-family=\"sans-serif\" font-size=\"16\" fill=\"%231e293b\" font-weight=\"bold\" text-anchor=\"middle\">PACIENTE: Sofia Valentina Rincón Morales</text><text x=\"300\" y=\"195\" font-family=\"monospace\" font-size=\"14\" fill=\"%23475569\" text-anchor=\"middle\">DOC: CE-121888333</text><text x=\"300\" y=\"240\" font-family=\"sans-serif\" font-size=\"16\" fill=\"%2316a34a\" font-weight=\"bold\" text-anchor=\"middle\">DIAGNOSTICO: CARDIOVASCULARMENTE APTO</text><text x=\"300\" y=\"270\" font-family=\"sans-serif\" font-size=\"12\" fill=\"%2364748b\" text-anchor=\"middle\">Emision: San Francisco, Zulia • Validez: Periodo 2026-2027</text></svg>",
+        "fecha": "08/10/2026"
+      },
+      "3": {
+        "nombre": "partida_nacimiento.svg",
+        "tipo": "image/svg+xml",
+        "dataUrl": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"450\" viewBox=\"0 0 600 450\"><rect width=\"100%\" height=\"100%\" fill=\"%23fffbeb\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"420\" rx=\"12\" fill=\"white\" stroke=\"%23d97706\" stroke-width=\"3\"/><rect x=\"15\" y=\"15\" width=\"570\" height=\"45\" fill=\"%23d97706\"/><text x=\"300\" y=\"44\" font-family=\"sans-serif\" font-size=\"16\" fill=\"white\" font-weight=\"bold\" text-anchor=\"middle\">REGISTRO PRINCIPAL - PARTIDA DE NACIMIENTO</text><text x=\"300\" y=\"125\" font-family=\"sans-serif\" font-size=\"20\" fill=\"%23b45309\" font-weight=\"bold\" text-anchor=\"middle\">Sofia Valentina Rincón Morales</text><text x=\"300\" y=\"165\" font-family=\"monospace\" font-size=\"15\" fill=\"%231e293b\" text-anchor=\"middle\">IDENTIFICACION: CE-121888333</text><text x=\"300\" y=\"205\" font-family=\"sans-serif\" font-size=\"14\" fill=\"%23475569\" text-anchor=\"middle\">Lugar de Nacimiento: San Francisco, Estado Zulia</text><text x=\"300\" y=\"240\" font-family=\"sans-serif\" font-size=\"14\" fill=\"%23475569\" text-anchor=\"middle\">Filiacion Materna/Paterna: Carlos Eduardo Rincón</text><rect x=\"150\" y=\"290\" width=\"300\" height=\"38\" rx=\"6\" fill=\"%23fef3c7\" stroke=\"%23fcd34d\"/><text x=\"300\" y=\"314\" font-family=\"sans-serif\" font-size=\"12\" fill=\"%2392400e\" font-weight=\"bold\" text-anchor=\"middle\">COPIA CERTIFICADA CONFORME AL ORIGINAL</text></svg>",
+        "fecha": "08/10/2026"
+      },
+      "4": {
+        "nombre": "foto_carnet.svg",
+        "tipo": "image/svg+xml",
+        "dataUrl": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"360\" viewBox=\"0 0 300 360\"><rect width=\"100%\" height=\"100%\" fill=\"%23e0f2fe\"/><rect x=\"15\" y=\"15\" width=\"270\" height=\"330\" rx=\"10\" fill=\"white\" stroke=\"%230284c7\" stroke-width=\"3\"/><circle cx=\"150\" cy=\"120\" r=\"50\" fill=\"%230284c7\"/><path d=\"M70 270 C70 190, 230 190, 230 270 Z\" fill=\"%230369a1\"/><rect x=\"30\" y=\"290\" width=\"240\" height=\"36\" rx=\"6\" fill=\"%230c4a6e\"/><text x=\"150\" y=\"313\" font-family=\"sans-serif\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\" font-weight=\"bold\">Sofia Valentina Rincón Mor</text></svg>",
+        "fecha": "08/10/2026"
+      }
+    },
+    "recaudosCount": "4/4",
+    "fecha": "08/10/2026"
+  },
+  {
+    "codigo": "PRE-2026-0003",
+    "alumno": "Mathias Alejandro Urdaneta Soto",
+    "alumnoDoc": "CE-122999111",
+    "alumnoFechaNac": "2018-11-04",
+    "alumnoGenero": "MASCULINO",
+    "alumnoSangre": "O+",
+    "alumnoLugarNac": "Maracaibo, Edo. Zulia",
+    "alumnoViveCon": "Ambos Padres",
+    "alumnoDireccion": "Sector El Manzanillo, Av. 5, Casa 22, San Francisco, Edo. Zulia",
+    "alumnoAlergias": "Rinitis alérgica",
+    "representante": "Mariángel Soto de Urdaneta",
+    "repreDoc": "V-20112345",
+    "repreParentesco": "MADRE",
+    "repreTelefono": "0412-5554321",
+    "repreCorreo": "mariangel.soto@hotmail.com",
+    "repreOcupacion": "Docente de Preescolar",
+    "repreDireccion": "Sector El Manzanillo, Av. 5, Casa 22, San Francisco, Edo. Zulia",
+    "instituto": "C.E.I. Simoncito El Manzanillo",
+    "institutoCodigo": "DEA-SIM-MANZ",
+    "institutoTipo": "PUBLICA",
+    "institutoCiudad": "San Francisco, Edo. Zulia",
+    "grado": "3er Grado de Educación Primaria",
+    "gradoId": "3",
+    "estado": "DOCUMENTOS_INCOMPLETOS",
+    "periodo": "2026-2027",
+    "operador": "Control de Estudios (Admin)",
+    "idUser": "1",
+    "documentos": {
+      "1": "APROBADO",
+      "2": "APROBADO",
+      "3": "NO_CONSIGNADO",
+      "4": "NO_CONSIGNADO"
+    },
+    "recaudosCount": "2/4",
+    "fecha": "08/10/2026"
+  },
+  {
+    "codigo": "PRE-2026-0004",
+    "alumno": "Isabella Coromoto Villalobos Pineda",
+    "alumnoDoc": "CE-123444555",
+    "alumnoFechaNac": "2016-08-19",
+    "alumnoGenero": "FEMENINO",
+    "alumnoSangre": "B+",
+    "alumnoLugarNac": "Maracaibo, Edo. Zulia",
+    "alumnoViveCon": "Ambos Padres",
+    "alumnoDireccion": "Sector Los Cortijos, San Francisco, Edo. Zulia",
+    "alumnoAlergias": "Ninguna",
+    "representante": "Roberto José Villalobos",
+    "repreDoc": "V-17890123",
+    "repreParentesco": "PADRE",
+    "repreTelefono": "0416-7890123",
+    "repreCorreo": "roberto.villalobos@outlook.com",
+    "repreOcupacion": "Técnico Electricista",
+    "repreDireccion": "Sector Los Cortijos, San Francisco, Edo. Zulia",
+    "instituto": "Colegio San Vicente de Paúl",
+    "institutoCodigo": "DEA-COL-SVP",
+    "institutoTipo": "PRIVADA",
+    "institutoCiudad": "Maracaibo, Edo. Zulia",
+    "grado": "5to Grado de Educación Primaria",
+    "gradoId": "5",
+    "estado": "APROBADA",
+    "periodo": "2026-2027",
+    "operador": "Control de Estudios (Admin)",
+    "idUser": "1",
+    "documentos": {
+      "1": "APROBADO",
+      "2": "APROBADO",
+      "3": "APROBADO",
+      "4": "APROBADO"
+    },
+    "recaudosCount": "4/4",
+    "fecha": "08/10/2026"
+  }
+]

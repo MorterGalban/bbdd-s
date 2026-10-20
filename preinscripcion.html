@@ -1639,7 +1639,7 @@
     <!-- ============================================================== -->
     <!-- MODAL: VISOR LIGHTBOX Y RECHAZO INDIVIDUAL DE RECAUDOS        -->
     <!-- ============================================================== -->
-    <div class="lightbox-modal-backdrop" id="modalLightboxRecaudos" style="display: none;">
+    <div class="lightbox-modal-backdrop" id="modalLightboxRecaudos">
         <div class="lightbox-dialog">
             <div class="lightbox-header">
                 <div>
@@ -1649,6 +1649,7 @@
                     <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #fecaca;" id="lightboxSubtituloEstudiante">
                         Expediente de Aspirante
                     </p>
+                    <div id="lightboxExpedienteInfo" style="font-size: 0.82rem; color: #fee2e2; margin-top: 0.25rem;"></div>
                 </div>
                 <button type="button" class="btn-close" id="btnCerrarLightbox" onclick="cerrarLightboxDocente()" style="filter: brightness(0) invert(1); font-size: 1.5rem; cursor: pointer;">&times;</button>
             </div>
@@ -1660,9 +1661,11 @@
                     <i class="fa-solid fa-shield-halved" style="color: var(--fya-red);"></i>
                     Si rechaza alguna foto, el expediente pasará obligatoriamente a <strong>DOCUMENTOS INCOMPLETOS</strong> y la aprobación quedará bloqueada.
                 </div>
-                <button type="button" class="btn btn-secondary" onclick="cerrarLightboxDocente()">
-                    <i class="fa-solid fa-xmark"></i> Cerrar Visor
-                </button>
+                <div id="lightboxFooterActionBtns" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarLightboxDocente()">
+                        <i class="fa-solid fa-xmark"></i> Cerrar Visor
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1670,7 +1673,7 @@
     <!-- ============================================================== -->
     <!-- MODAL: PORTAL DE CONSULTA Y SUBSANACIÓN PARA REPRESENTANTES    -->
     <!-- ============================================================== -->
-    <div class="modal-backdrop" id="modalConsultaRepresentante" style="display: none; z-index: 10040;">
+    <div class="modal-backdrop" id="modalConsultaRepresentante" style="z-index: 10040;">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: white;">
@@ -1712,7 +1715,7 @@
     <!-- ============================================================== -->
     <!-- MODAL: EMISIÓN DE CARNET ESTUDIANTIL PROVISIONAL CR80          -->
     <!-- ============================================================== -->
-    <div class="modal-backdrop" id="modalCarnetProvisional" style="display: none; z-index: 10060;">
+    <div class="modal-backdrop" id="modalCarnetProvisional" style="z-index: 10060;">
         <div class="modal-dialog" style="max-width: 600px;">
             <div class="modal-content">
                 <div class="modal-header" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: white;">
