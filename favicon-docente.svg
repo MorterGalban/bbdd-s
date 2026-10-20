@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="gradDoc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="goldDoc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#gradDoc)" stroke="url(#goldDoc)" stroke-width="3"/>
+  <polygon points="32,16 52,24 32,32 12,24" fill="#ffffff"/>
+  <polygon points="20,27.5 20,36 32,41 44,36 44,27.5 32,32.5" fill="#e2e8f0"/>
+  <path d="M32 24 L48 30 L48 38" fill="none" stroke="url(#goldDoc)" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="48" cy="39" r="2" fill="url(#goldDoc)"/>
+  <path d="M16 48 Q32 44 32 48 Q32 44 48 48 L48 51 Q32 47 32 51 Q32 47 16 51 Z" fill="url(#goldDoc)"/>
+</svg>

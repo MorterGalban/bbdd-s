@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="gradRoot" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="borderRoot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+    <linearGradient id="goldRoot" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <path d="M32 6 C48 6, 56 12, 56 26 C56 42, 44 54, 32 58 C20 54, 8 42, 8 26 C8 12, 16 6, 32 6 Z" 
+        fill="url(#gradRoot)" stroke="url(#borderRoot)" stroke-width="3"/>
+  <path d="M32 10 C45 10, 52 15, 52 26 C52 40, 42 49, 32 53 C22 49, 12 40, 12 26 C12 15, 19 10, 32 10 Z" 
+        fill="none" stroke="url(#goldRoot)" stroke-width="1.5" opacity="0.6"/>
+  <circle cx="32" cy="27" r="7" fill="url(#goldRoot)"/>
+  <polygon points="29,27 35,27 37,41 27,41" fill="url(#goldRoot)"/>
+  <circle cx="32" cy="26" r="2.5" fill="#09090b"/>
+  <polygon points="31,26 33,26 33.5,33 30.5,33" fill="#09090b"/>
+</svg>
