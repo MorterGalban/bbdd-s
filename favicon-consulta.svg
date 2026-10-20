@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e3a8a" />
+    </linearGradient>
+    <linearGradient id="lensGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eff6ff" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#bfdbfe" stop-opacity="0.85" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#bgGrad)" stroke="#3b82f6" stroke-width="1.5" />
+
+  <!-- Sheet/Document in background -->
+  <g filter="url(#shadow)">
+    <path d="M16 14 H38 L48 24 V50 C48 51.5 46.8 52 45 52 H16 C14.5 52 14 51 14 49 V17 C14 15 14.8 14 16 14 Z" fill="#ffffff" />
+    <path d="M38 14 V24 H48 Z" fill="#cbd5e1" />
+    <!-- Document lines -->
+    <rect x="18" y="22" width="14" height="3" rx="1.5" fill="#dc2626" />
+    <rect x="18" y="28" width="16" height="2" rx="1" fill="#94a3b8" />
+    <rect x="18" y="33" width="12" height="2" rx="1" fill="#cbd5e1" />
+  </g>
+
+  <!-- Magnifying Glass with Badge -->
+  <!-- Glass Handle -->
+  <line x1="42" y1="42" x2="55" y2="55" stroke="#f59e0b" stroke-width="5" stroke-linecap="round" />
+  <line x1="43" y1="43" x2="53" y2="53" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" />
+
+  <!-- Glass Rim -->
+  <circle cx="34" cy="34" r="14" fill="url(#lensGrad)" stroke="#f59e0b" stroke-width="3" filter="url(#shadow)" />
+  <circle cx="34" cy="34" r="11" fill="none" stroke="#60a5fa" stroke-width="0.8" opacity="0.6" />
+
+  <!-- Verification Checkmark inside Glass -->
+  <path d="M28 34 L32 38 L40 28" fill="none" stroke="#16a34a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

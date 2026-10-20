@@ -229,9 +229,9 @@
                         <label for="docentePassword" class="form-label" style="margin-bottom: 0;">Contraseña de Seguridad *</label>
                         <button type="button" class="btn-link-action" onclick="abrirModalRecuperacion()">¿Olvidó su clave?</button>
                     </div>
-                    <div style="position: relative;">
+                    <div class="input-group-password">
                         <input type="password" id="docentePassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
-                        <button type="button" onclick="togglePasswordLogin()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;" aria-label="Mostrar contraseña">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordLogin()" aria-label="Mostrar u ocultar contraseña" title="Mostrar u ocultar contraseña">
                             <i id="eyeIconLogin" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
@@ -301,9 +301,9 @@
 
                 <div class="form-group mb-2" style="text-align: left;">
                     <label for="recupNuevaPassword" class="form-label">Nueva Contraseña de Seguridad *</label>
-                    <div class="input-group-password" style="position: relative;">
+                    <div class="input-group-password">
                         <input type="password" id="recupNuevaPassword" class="form-control" placeholder="Mín. 8 caracteres (ej: Clave#2026)">
-                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('recupNuevaPassword', this)" aria-label="Mostrar contraseña" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('recupNuevaPassword', this)" aria-label="Mostrar u ocultar contraseña" title="Mostrar u ocultar contraseña">
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
@@ -311,9 +311,9 @@
 
                 <div class="form-group mb-2" style="text-align: left;">
                     <label for="recupConfirmPassword" class="form-label">Confirmar Nueva Contraseña *</label>
-                    <div class="input-group-password" style="position: relative;">
+                    <div class="input-group-password">
                         <input type="password" id="recupConfirmPassword" class="form-control" placeholder="Repita la nueva contraseña">
-                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('recupConfirmPassword', this)" aria-label="Mostrar contraseña" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('recupConfirmPassword', this)" aria-label="Mostrar u ocultar contraseña" title="Mostrar u ocultar contraseña">
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
@@ -398,26 +398,37 @@
         function togglePasswordLogin() {
             const pass = document.getElementById('docentePassword');
             const icon = document.getElementById('eyeIconLogin');
-            if (pass.type === 'password') {
-                pass.type = 'text';
-                icon.className = 'fa-solid fa-eye-slash';
-            } else {
-                pass.type = 'password';
-                icon.className = 'fa-solid fa-eye';
+            if (!pass) return;
+            const esPassword = pass.type === 'password';
+            pass.type = esPassword ? 'text' : 'password';
+            if (icon) {
+                if (esPassword) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
             }
+            pass.focus();
         }
 
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             if (!input) return;
-            const icon = btn.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
-            } else {
-                input.type = 'password';
-                if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+            const icon = btn ? btn.querySelector('i') : null;
+            const esPassword = input.type === 'password';
+            input.type = esPassword ? 'text' : 'password';
+            if (icon) {
+                if (esPassword) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
             }
+            input.focus();
         }
 
         // Gestión de Alertas en Login
@@ -533,9 +544,6 @@
                         window.location.href = 'preinscripcion.html?rol=docente';
                     }, 500);
                     return;
-                }
-
-                    window.location.href = 'preinscripcion.html?rol=docente';
                 } else {
                     mostrarAlertaLogin('error', 'Usuario o contraseña incorrectos, o servidor en reinicio. Verifique sus datos.');
                     btnSubmit.disabled = false;

@@ -674,9 +674,9 @@
                 </div>
                 <div class="form-group mb-4" style="text-align: left;">
                     <label for="gatePass" class="form-label" style="color: #cbd5e1; font-size: 0.85rem;">Contraseña de Alta Seguridad *</label>
-                    <div style="position: relative;">
-                        <input type="password" id="gatePass" class="form-control" placeholder="••••••••••••" required autocomplete="current-password" style="background: #27272a; border-color: #3f3f46; color: #ffffff; padding-right: 42px;">
-                        <button type="button" id="btnToggleGatePass" onclick="toggleVisibilidadGatePass()" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 6px;">
+                    <div class="input-group-password">
+                        <input type="password" id="gatePass" class="form-control" placeholder="••••••••••••" required autocomplete="current-password" style="background: #27272a; border-color: #3f3f46; color: #ffffff;">
+                        <button type="button" class="btn-toggle-eye" id="btnToggleGatePass" onclick="toggleVisibilidadGatePass()" aria-label="Mostrar u ocultar contraseña" title="Mostrar u ocultar contraseña">
                             <i class="fa-solid fa-eye" id="iconToggleGatePass"></i>
                         </button>
                     </div>
@@ -685,9 +685,9 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 0.75rem;">
-                    <button type="button" class="btn btn-secondary" style="flex: 1; background: #3f3f46; color: #ffffff; border: none;" onclick="bloquearYRedirigir()">
+                    <a href="index.html" class="btn btn-secondary" style="flex: 1; background: #3f3f46; color: #ffffff; border: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="bloquearYRedirigir()">
                         <i class="fa-solid fa-arrow-left"></i> Salir al Inicio
-                    </button>
+                    </a>
                     <button type="submit" class="btn btn-primary" style="flex: 1.5; background: #dc2626; border-color: #ef4444;" id="btnGateSubmit">
                         <i class="fa-solid fa-unlock-keyhole"></i> Autenticar
                     </button>
@@ -1046,9 +1046,9 @@
             <input type="hidden" id="resetDocenteUsuarioHidden">
             <div class="form-group mb-3">
                 <label class="form-label" style="color: #cbd5e1; font-size: 0.85rem;">Nueva Contraseña Temporal *</label>
-                <div style="position: relative;">
-                    <input type="password" id="inputResetPassword" class="form-control" placeholder="••••••••••••" style="background: #27272a; border-color: #3f3f46; color: #ffffff; padding-right: 40px;" oninput="validarResetPassEnVivo(this.value)">
-                    <button type="button" onclick="toggleVerResetPass()" style="position: absolute; right: 10px; top: 10px; background: none; border: none; color: #94a3b8; cursor: pointer;">
+                <div class="input-group-password">
+                    <input type="password" id="inputResetPassword" class="form-control" placeholder="••••••••••••" style="background: #27272a; border-color: #3f3f46; color: #ffffff;" oninput="validarResetPassEnVivo(this.value)">
+                    <button type="button" class="btn-toggle-eye" onclick="toggleVerResetPass()" aria-label="Mostrar u ocultar contraseña">
                         <i class="fa-solid fa-eye" id="iconVerResetPass"></i>
                     </button>
                 </div>
@@ -1144,14 +1144,19 @@
         function toggleVisibilidadGatePass() {
             const inp = document.getElementById('gatePass');
             const icon = document.getElementById('iconToggleGatePass');
-            if (!inp || !icon) return;
-            if (inp.type === 'password') {
-                inp.type = 'text';
-                icon.className = 'fa-solid fa-eye-slash';
-            } else {
-                inp.type = 'password';
-                icon.className = 'fa-solid fa-eye';
+            if (!inp) return;
+            const esPassword = inp.type === 'password';
+            inp.type = esPassword ? 'text' : 'password';
+            if (icon) {
+                if (esPassword) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
             }
+            inp.focus();
         }
 
         // Validación inicial estricta de sesión
@@ -1716,13 +1721,19 @@
         function toggleVerResetPass() {
             const input = document.getElementById('inputResetPassword');
             const icon = document.getElementById('iconVerResetPass');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fa-solid fa-eye-slash';
-            } else {
-                input.type = 'password';
-                icon.className = 'fa-solid fa-eye';
+            if (!input) return;
+            const esPassword = input.type === 'password';
+            input.type = esPassword ? 'text' : 'password';
+            if (icon) {
+                if (esPassword) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
             }
+            input.focus();
         }
 
         function validarResetPassEnVivo(val) {
@@ -1827,9 +1838,10 @@
         // CONTROL DE CUPOS POR GRADO Y ESTADO GLOBAL DE ADMISIÓN
         // ==============================================================================
         async function cargarControlCuposYAdmision() {
-            let data = null;
             try {
-                const res = await fetch('/api/proceso-admision/estado');
+                let data = null;
+                try {
+                    const res = await fetch('/api/proceso-admision/estado');
                 if (res.ok) {
                     const json = await res.json();
                     if (json && json.success) data = json;

@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Consulta y Subsanación de Expedientes | U.E. Fe y Alegría Nueva América</title>
+    <meta name="description"
+        content="Portal oficial para consultar el estatus del expediente escolar 2026-2027, revisar los datos registrados y subsanar recaudos observados por control de estudios.">
+    
+    <!-- Favicon dedicado del Portal de Consulta -->
+    <link rel="icon" type="image/svg+xml" href="favicon-consulta.svg">
+    <link rel="icon" type="image/png" href="favicon-consulta.png">
+    <link rel="apple-touch-icon" href="favicon-consulta.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .portal-consulta-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #311010 100%);
+            color: #ffffff;
+            padding: 2.75rem 1rem 2.25rem 1rem;
+            border-bottom: 2px solid #b91c1c;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-consulta-hero::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(220, 38, 38, 0.25) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .search-panel-container {
+            max-width: 820px;
+            margin: -30px auto 2rem auto;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-card {
+            background: var(--bg-surface, #ffffff);
+            border: 1.5px solid var(--border-color, #e2e8f0);
+            border-radius: 16px;
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12);
+            padding: 1.75rem;
+            transition: all 0.2s ease;
+        }
+
+        body.dark-mode .search-card {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input-field {
+            flex: 1;
+            min-width: 260px;
+            padding: 0.85rem 1.15rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            border: 1.5px solid #cbd5e1;
+            background: var(--bg-surface, #ffffff);
+            color: var(--text-primary, #0f172a);
+            transition: border-color 0.2s;
+        }
+
+        body.dark-mode .search-input-field {
+            background: #0f172a;
+            border-color: #475569;
+            color: #f8fafc;
+        }
+
+        .search-input-field:focus {
+            outline: none;
+            border-color: #b91c1c;
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.15);
+        }
+
+        .expediente-dossier {
+            background: var(--bg-surface, #ffffff);
+            border: 1.5px solid var(--border-color, #e2e8f0);
+            border-radius: 18px;
+            box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        body.dark-mode .expediente-dossier {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+        }
+
+        .dossier-header-bar {
+            background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
+            color: #ffffff;
+            padding: 1.5rem 1.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 3px solid #b91c1c;
+        }
+
+        .dossier-section-card {
+            background: var(--bg-alt, #f8fafc);
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        body.dark-mode .dossier-section-card {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .dossier-grid-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem 1.25rem;
+            margin-top: 0.75rem;
+        }
+
+        .dossier-field-item label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        body.dark-mode .dossier-field-item label {
+            color: #94a3b8;
+        }
+
+        .dossier-field-item .field-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary, #0f172a);
+            word-break: break-word;
+        }
+
+        body.dark-mode .dossier-field-item .field-value {
+            color: #f1f5f9;
+        }
+
+        .recaudo-dossier-card {
+            background: var(--bg-surface, #ffffff);
+            border: 1.5px solid var(--border-color, #e2e8f0);
+            border-radius: 12px;
+            padding: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .recaudo-dossier-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark-mode .recaudo-dossier-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .recaudo-denegado-card {
+            border: 2px solid #ef4444 !important;
+            background: #fff5f5 !important;
+        }
+
+        body.dark-mode .recaudo-denegado-card {
+            background: #2a1215 !important;
+            border-color: #ef4444 !important;
+        }
+
+        .recaudo-img-thumb {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .recaudo-img-thumb:hover {
+            transform: scale(1.02);
+        }
+
+        .upload-replacement-box {
+            background: #ffffff;
+            border: 2px dashed #dc2626;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 0.75rem;
+        }
+
+        body.dark-mode .upload-replacement-box {
+            background: #181216;
+            border-color: #f87171;
+        }
+
+        .badge-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-status-aprobada {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
+        }
+
+        .badge-status-revision {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+
+        .badge-status-observada {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+            animation: pulseObservada 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseObservada {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        }
+
+        .badge-status-pendiente {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Aviso Superior -->
+    <div class="top-notice-bar" id="announcementNoticeBar">
+        <i class="fa-solid fa-graduation-cap"></i> U.E. FE Y ALEGRÍA "NUEVA AMÉRICA" | <strong>Portal de Consulta y Seguimiento de Expedientes</strong>
+    </div>
+
+    <!-- Navegación Principal -->
+    <header class="navbar" id="mainHeader">
+        <div class="nav-container">
+            <a href="index.html" class="brand">
+                <img src="logo_feyalegria.png" alt="Logo Fe y Alegría Nueva América" class="brand-img-logo" width="50" height="50">
+                <div class="brand-info">
+                    <span class="brand-title">FE Y ALEGRÍA</span>
+                    <span class="brand-subtitle">U.E. Nueva América • Primaria</span>
+                </div>
+            </a>
+
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Inicio</a></li>
+                    <li><a href="index.html#institucion" class="nav-link">Nuestra Escuela</a></li>
+                    <li><a href="index.html#primaria" class="nav-link">Primaria (1° a 6°)</a></li>
+                    <li><a href="consulta.html" class="nav-link active"><i class="fa-solid fa-clipboard-check"></i> Consultar Expediente</a></li>
+                </ul>
+            </nav>
+
+            <div class="nav-actions">
+                <button type="button" class="btn-theme-toggle" id="btnToggleTheme" aria-label="Cambiar tema" title="Cambiar tema">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <a href="preinscripcion.html?rol=representante" class="btn btn-primary" id="btnNuevaPreinscripcion">
+                    <i class="fa-solid fa-user-pen"></i> Nueva Preinscripción
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero del Portal de Consulta -->
+    <section class="portal-consulta-hero">
+        <div class="container" style="max-width: 980px; margin: 0 auto; text-align: center;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(220, 38, 38, 0.25); border: 1px solid rgba(239, 68, 68, 0.5); padding: 0.35rem 0.95rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; color: #fca5a5;">
+                <i class="fa-solid fa-shield-halved"></i> MÓDULO OFICIAL DE REPRESENTANTES
+            </div>
+            <h1 style="font-size: 2.1rem; font-weight: 900; margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif;">
+                Consulta de Expediente & Subsanación
+            </h1>
+            <p style="font-size: 1rem; color: #cbd5e1; max-width: 720px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+                Consulte el estatus de admisión del aspirante, revise en detalle la información registrada en su solicitud y reemplace cualquier fotografía que haya sido observada por Control de Estudios.
+            </p>
+        </div>
+    </section>
+
+    <!-- Panel de Búsqueda -->
+    <div class="search-panel-container">
+        <div class="search-card">
+            <label for="inputConsultaIdentificacion" style="font-size: 0.92rem; font-weight: 700; display: block; margin-bottom: 0.6rem; color: var(--text-primary, #0f172a);">
+                <i class="fa-solid fa-magnifying-glass" style="color: #b91c1c;"></i> Ingrese la Cédula del Representante, Cédula / C.E. del Alumno o Folio:
+            </label>
+            <div class="search-input-group">
+                <input type="text" id="inputConsultaIdentificacion" class="search-input-field"
+                    placeholder="Ej: 19888777, CE-120555666 o PRE-2026-0001" autocomplete="off">
+                <button type="button" class="btn btn-primary" id="btnEjecutarConsulta" onclick="ejecutarConsultaPortal()"
+                    style="padding: 0.85rem 1.75rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.98rem;">
+                    <i class="fa-solid fa-magnifying-glass"></i> Consultar Expediente
+                </button>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
+                <span style="font-size: 0.78rem; color: #64748b;">
+                    <i class="fa-solid fa-circle-info"></i> Ingrese el documento sin puntos ni caracteres especiales (ej: 19888777). Presione <strong>Enter</strong> para buscar.
+                </span>
+                <span id="labelQuickHint" style="font-size: 0.78rem; color: #b91c1c; font-weight: 600; cursor: pointer; display: none;" onclick="usarCedulaDemo()">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Probar con cédula demo
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal de Resultados -->
+    <main class="container" style="max-width: 980px; margin: 0 auto; padding: 0 1rem 4rem 1rem;">
+        
+        <!-- Estado Inicial / Vacío -->
+        <div id="consultaEmptyState" style="text-align: center; padding: 3.5rem 1.5rem; background: var(--bg-surface, #ffffff); border: 2px dashed var(--border-color, #cbd5e1); border-radius: 16px;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: #fee2e2; color: #b91c1c; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem;">
+                <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary, #0f172a); margin-bottom: 0.4rem;">
+                Esperando número de identificación
+            </h3>
+            <p style="font-size: 0.92rem; color: #64748b; max-width: 500px; margin: 0 auto;">
+                Ingrese el número de cédula del representante, la cédula escolar del estudiante o el folio del expediente en el buscador superior para ver la información.
+            </p>
+        </div>
+
+        <!-- Spinner de Carga -->
+        <div id="consultaLoadingState" style="display: none; text-align: center; padding: 4rem 1.5rem;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2.75rem; color: #b91c1c; margin-bottom: 1rem;"></i>
+            <h4 style="font-weight: 700; color: var(--text-primary, #0f172a);">Consultando base de datos escolar...</h4>
+            <p style="font-size: 0.88rem; color: #64748b;">Recuperando expediente y estado de recaudos en tiempo real</p>
+        </div>
+
+        <!-- Contenedor dinámico con los expedientes encontrados -->
+        <div id="consultaResultadosList" style="display: none;">
+            <!-- Inyectado por JavaScript -->
+        </div>
+
+    </main>
+
+    <!-- Footer Institucional -->
+    <footer class="footer">
+        <div class="container footer-content" style="text-align: center; padding: 2rem 1rem;">
+            <p style="font-size: 0.88rem; color: #94a3b8; margin-bottom: 0.5rem;">
+                © 2026 U.E. Fe y Alegría "Nueva América" • Movimiento de Educación Popular Integral y Promoción Social.
+            </p>
+            <p style="font-size: 0.78rem; color: #64748b;">
+                San Francisco, Estado Zulia, Venezuela. Sistema de Gestión Escolar y Admisión 2026-2027.
+            </p>
+        </div>
+    </footer>
+
+    <!-- ============================================================== -->
+    <!-- MODAL: VISOR DE FOTOGRAFÍA / RECAUDO EN ALTA RESOLUCIÓN       -->
+    <!-- ============================================================== -->
+    <div class="modal-backdrop" id="modalVisorFoto" style="z-index: 10050; display: none;">
+        <div class="modal-dialog modal-lg" style="max-width: 750px;">
+            <div class="modal-content">
+                <div class="modal-header" style="background: #0f172a; color: white;">
+                    <h4 class="modal-title" id="visorFotoTitulo" style="color: white; font-size: 1.05rem; font-weight: 700;">
+                        <i class="fa-solid fa-image"></i> Inspección de Recaudo
+                    </h4>
+                    <button type="button" class="btn-close" onclick="cerrarVisorFoto()" style="filter: brightness(0) invert(1);">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem; text-align: center; background: #020617;">
+                    <img id="visorFotoImg" src="" alt="Recaudo del estudiante" style="max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+                </div>
+                <div class="modal-footer" style="background: #0f172a; display: flex; justify-content: space-between;">
+                    <span id="visorFotoInfo" style="font-size: 0.8rem; color: #94a3b8;"></span>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="cerrarVisorFoto()">Cerrar Visor</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODAL: EMISIÓN DE CARNET ESTUDIANTIL PROVISIONAL CR80          -->
+    <!-- ============================================================== -->
+    <div class="modal-backdrop" id="modalCarnetProvisional" style="z-index: 10060; display: none;">
+        <div class="modal-dialog" style="max-width: 620px;">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: white;">
+                    <h3 class="modal-title" style="color: white; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-id-badge"></i> Carnet Estudiantil Provisional (Formato CR80)
+                    </h3>
+                    <button type="button" class="btn-close" onclick="cerrarModalCarnetProvisional()" style="filter: brightness(0) invert(1);">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem; text-align: center;">
+                    <p style="font-size: 0.88rem; color: #475569; margin-bottom: 1rem;">
+                        Acreditación escolar provisional para estudiantes admitidos para el Periodo 2026 - 2027. Listo para imprimir o descargar en PDF.
+                    </p>
+                    <div class="carnet-cr80-preview-container">
+                        <div class="carnet-cr80-card" id="carnetCr80PrintArea">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalCarnetProvisional()">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btnDescargarCarnetPdf" onclick="descargarCarnetPdf()">
+                        <i class="fa-solid fa-file-pdf"></i> Descargar Carnet en PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificaciones -->
+    <div class="toast" id="toastNotification">
+        <div id="toastIcon" style="font-size: 1.3rem;"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+            <h5 id="toastTitle" style="font-size: 0.95rem; margin-bottom: 0.15rem;">Éxito</h5>
+            <p id="toastMessage" style="font-size: 0.82rem; color: #d4d4d8;">Operación completada.</p>
+        </div>
+    </div>
+
+    <!-- Librería html2pdf para generación fiel de carnet CR80 -->
+    <script src="html2pdf.bundle.min.js"></script>
+
+    <script>
+        // ==============================================================
+        // TEMA CLARO / OSCURO
+        // ==============================================================
+        const temaGuardado = localStorage.getItem('fya_theme') || 'light';
+        const btnToggleTheme = document.getElementById('btnToggleTheme');
+
+        function aplicarTema(tema) {
+            if (tema === 'dark') {
+                document.body.classList.add('dark-mode');
+                if (btnToggleTheme) btnToggleTheme.innerHTML = '<i class="fa-solid fa-sun" style="color: #facc15;"></i>';
+            } else {
+                document.body.classList.remove('dark-mode');
+                if (btnToggleTheme) btnToggleTheme.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
+        }
+        aplicarTema(temaGuardado);
+
+        if (btnToggleTheme) {
+            btnToggleTheme.addEventListener('click', () => {
+                const esOscuro = document.body.classList.contains('dark-mode');
+                const nuevoTema = esOscuro ? 'light' : 'dark';
+                localStorage.setItem('fya_theme', nuevoTema);
+                aplicarTema(nuevoTema);
+            });
+        }
+
+        // ==============================================================
+        // NOTIFICACIONES TOAST
+        // ==============================================================
+        function mostrarToast(titulo, mensaje, tipo = 'info') {
+            const t = document.getElementById('toastNotification');
+            if (!t) return;
+            const tTitle = document.getElementById('toastTitle');
+            const tMsg = document.getElementById('toastMessage');
+            const tIcon = document.getElementById('toastIcon');
+            if (tTitle) tTitle.textContent = titulo;
+            if (tMsg) tMsg.innerHTML = mensaje;
+            if (tIcon) {
+                if (tipo === 'success') tIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #16a34a;"></i>';
+                else if (tipo === 'error') tIcon.innerHTML = '<i class="fa-solid fa-circle-xmark" style="color: #dc2626;"></i>';
+                else if (tipo === 'warning') tIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i>';
+                else tIcon.innerHTML = '<i class="fa-solid fa-circle-info" style="color: #2563eb;"></i>';
+            }
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), 5000);
+        }
+
+        // ==============================================================
+        // MAPA OFICIAL DE RECAUDOS
+        // ==============================================================
+        const NOMBRES_RECAUDOS = {
+            '1': {
+                titulo: 'Cédula de Identidad del Representante',
+                icono: 'fa-id-card',
+                desc: 'Fotografía legible del documento de identidad del representante legal.'
+            },
+            '2': {
+                titulo: 'Partida de Nacimiento del Estudiante',
+                icono: 'fa-file-lines',
+                desc: 'Copia fotográfica clara de la partida de nacimiento venezolana o extranjera.'
+            },
+            '3': {
+                titulo: 'Boleta de Calificaciones / Constancia de Notas',
+                icono: 'fa-file-invoice',
+                desc: 'Constancia de promoción de grado o boleta informativa del plantel anterior.'
+            },
+            '4': {
+                titulo: 'Fotografía Tipo Carnet del Estudiante',
+                icono: 'fa-camera',
+                desc: 'Fotografía formal con fondo blanco, sin lentes ni accesorios.'
+            }
+        };
+
+        // Formateador limpio de documentos escolares (evita CE-CE o V-V)
+        function formatearDocumentoAlumno(doc) {
+            if (!doc) return 'S/N';
+            let str = String(doc).trim();
+            str = str.replace(/^CE[-_\s]*CE[-_\s]*/i, 'CE-');
+            str = str.replace(/^V[-_\s]*V[-_\s]*/i, 'V-');
+            str = str.replace(/^E[-_\s]*E[-_\s]*/i, 'E-');
+            if (/^CE[-_\s]*\d+/i.test(str)) {
+                str = 'CE-' + str.replace(/^CE[-_\s]*/i, '');
+            } else if (/^[VE][-_\s]*\d+/i.test(str)) {
+                const letra = str.charAt(0).toUpperCase();
+                str = letra + '-' + str.slice(1).replace(/^[-_\s]*/, '');
+            }
+            return str;
+        }
+
+        // Cache de registros encontrados para visualización y carnet
+        window._registrosConsultadosCache = [];
+        let carnetRegistroActivo = null;
+
+        // ==============================================================
+        // CONSULTA DE EXPEDIENTES
+        // ==============================================================
+        async function ejecutarConsultaPortal() {
+            const input = document.getElementById('inputConsultaIdentificacion');
+            if (!input) return;
+            const query = input.value.trim();
+
+            if (!query) {
+                mostrarToast('Campo Vacío', 'Por favor ingrese su número de cédula o código de preinscripción.', 'warning');
+                input.focus();
+                return;
+            }
+
+            const cleanDigits = query.replace(/\D/g, '');
+            const cleanQueryUpper = query.toUpperCase().replace(/\s+/g, '');
+
+            const emptyState = document.getElementById('consultaEmptyState');
+            const loadingState = document.getElementById('consultaLoadingState');
+            const resultsList = document.getElementById('consultaResultadosList');
+
+            if (emptyState) emptyState.style.display = 'none';
+            if (resultsList) resultsList.style.display = 'none';
+            if (loadingState) loadingState.style.display = 'block';
+
+            let registros = [];
+
+            // 1. Consulta al backend en MySQL / archivo nube
+            try {
+                const res = await fetch(`/api/preinscripciones/consulta/${encodeURIComponent(query)}`);
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && json.success && Array.isArray(json.data)) {
+                        registros = json.data;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Portal Consulta] Servidor fuera de línea, consultando almacenamiento local:', e);
+            }
+
+            // 2. Fallback / Merge con localStorage fya_preinscripciones_db
+            try {
+                const local = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+                const localMatches = local.filter(r => {
+                    if (!r) return false;
+                    const rRepDigits = (r.repreDoc || '').replace(/\D/g, '');
+                    const rAluDigits = (r.alumnoDoc || '').replace(/\D/g, '');
+                    const rAluUpper = (r.alumnoDoc || '').toUpperCase().replace(/\s+/g, '');
+                    const rCodigo = (r.codigo || '').toUpperCase();
+                    return (cleanDigits && (rRepDigits === cleanDigits || rAluDigits === cleanDigits)) ||
+                           (cleanQueryUpper && (rAluUpper.includes(cleanQueryUpper) || rCodigo.includes(cleanQueryUpper)));
+                });
+
+                localMatches.forEach(lr => {
+                    const idx = registros.findIndex(r => r.codigo === lr.codigo);
+                    if (idx === -1) {
+                        registros.push(lr);
+                    } else {
+                        registros[idx] = { ...lr, ...registros[idx] };
+                        if (lr.archivos) registros[idx].archivos = { ...registros[idx].archivos, ...lr.archivos };
+                        if (lr.rechazos) registros[idx].rechazos = { ...registros[idx].rechazos, ...lr.rechazos };
+                        if (lr.documentos) registros[idx].documentos = { ...registros[idx].documentos, ...lr.documentos };
+                    }
+                });
+            } catch (e) {
+                console.warn('[Portal Consulta] Error en merge local:', e);
+            }
+
+            if (loadingState) loadingState.style.display = 'none';
+
+            window._registrosConsultadosCache = registros;
+
+            if (registros.length === 0) {
+                if (resultsList) {
+                    resultsList.style.display = 'block';
+                    resultsList.innerHTML = `
+                        <div style="text-align: center; padding: 3rem 1.5rem; background: var(--bg-surface, #ffffff); border: 1.5px solid var(--border-color, #e2e8f0); border-radius: 16px;">
+                            <div style="width: 64px; height: 64px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 1rem;">
+                                <i class="fa-solid fa-circle-question"></i>
+                            </div>
+                            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary, #0f172a); margin-bottom: 0.5rem;">
+                                No se encontraron expedientes
+                            </h3>
+                            <p style="font-size: 0.92rem; color: #64748b; max-width: 540px; margin: 0 auto 1.5rem auto;">
+                                No se hallaron solicitudes con la identificación o código <strong>"${query}"</strong>. Verifique que la cédula esté escrita correctamente o registre una nueva preinscripción.
+                            </p>
+                            <a href="preinscripcion.html?rol=representante" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa-solid fa-user-pen"></i> Iniciar Nueva Preinscripción
+                            </a>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            // Renderizar los expedientes con detalle completo ampliado (SOLO LECTURA) y módulo de subsanación
+            renderExpedientesDossier(registros);
+        }
+
+        // ==============================================================
+        // RENDERIZADO DETALLADO DEL DOSSIER (SOLO LECTURA + SUBSANACIÓN)
+        // ==============================================================
+        function renderExpedientesDossier(registros) {
+            const resultsList = document.getElementById('consultaResultadosList');
+            if (!resultsList) return;
+
+            let html = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary, #0f172a); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-folder-closed" style="color: #b91c1c;"></i>
+                        Expedientes Encontrados (${registros.length})
+                    </h2>
+                    <span style="font-size: 0.8rem; color: #64748b;">
+                        Haga clic en los recaudos para inspeccionarlos o use el botón de reemplazo si fueron observados.
+                    </span>
+                </div>
+            `;
+
+            registros.forEach(r => {
+                const estado = (r.estado || 'PENDIENTE').toUpperCase();
+                let badgeClass = 'badge-status-pendiente';
+                let badgeLabel = 'PENDIENTE';
+                let badgeIcon = 'fa-clock';
+                let estadoExplicacion = 'Su solicitud está registrada en espera de asignación de revisor académico.';
+
+                if (estado === 'APROBADA' || estado === 'APROBADO') {
+                    badgeClass = 'badge-status-aprobada';
+                    badgeLabel = 'SOLICITUD APROBADA';
+                    badgeIcon = 'fa-circle-check';
+                    estadoExplicacion = '¡Felicitaciones! El cupo escolar ha sido formalmente otorgado y aprobado por el plantel.';
+                } else if (estado === 'DOCUMENTOS_INCOMPLETOS' || estado === 'OBSERVADO' || estado === 'RECHAZADO') {
+                    badgeClass = 'badge-status-observada';
+                    badgeLabel = 'DOCUMENTOS OBSERVADOS';
+                    badgeIcon = 'fa-triangle-exclamation';
+                    estadoExplicacion = 'Atención: Uno o más recaudos han sido observados por el docente. Reemplácelos a continuación.';
+                } else if (estado === 'EN_REVISION' || estado === 'REVISION') {
+                    badgeClass = 'badge-status-revision';
+                    badgeLabel = 'EN REVISIÓN ACADÉMICA';
+                    badgeIcon = 'fa-glasses';
+                    estadoExplicacion = 'Su expediente y recaudos están siendo revisados por el equipo docente de admisiones.';
+                }
+
+                // Evaluar si hay recaudos denegados
+                const rechazos = r.rechazos || {};
+                const keysRechazos = Object.keys(rechazos).filter(k => rechazos[k] && rechazos[k].rechazada !== false);
+                const tieneObservaciones = keysRechazos.length > 0;
+
+                const docAlumnoFormateado = formatearDocumentoAlumno(r.alumnoDoc);
+
+                // Tarjeta Principal del Expediente
+                html += `
+                    <div class="expediente-dossier" id="dossier_${r.codigo}">
+                        
+                        <!-- Barra de Encabezado Superior -->
+                        <div class="dossier-header-bar">
+                            <div>
+                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; background: rgba(255,255,255,0.12); padding: 0.2rem 0.6rem; border-radius: 6px; letter-spacing: 0.5px;">
+                                    FOLIO: ${r.codigo}
+                                </span>
+                                <h3 style="font-size: 1.35rem; font-weight: 800; color: #ffffff; margin: 0.35rem 0 0.15rem 0; font-family: 'Outfit', sans-serif;">
+                                    ${r.alumno}
+                                </h3>
+                                <span style="font-size: 0.85rem; color: #cbd5e1;">
+                                    ${r.grado || 'Educación Primaria'} • Periodo Escolar ${r.periodo || '2026-2027'}
+                                </span>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <span class="badge-status-pill ${badgeClass}">
+                                    <i class="fa-solid ${badgeIcon}"></i> ${badgeLabel}
+                                </span>
+
+                                ${estado === 'APROBADA' || estado === 'APROBADO' ? `
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="emitirCarnetProvisional('${r.codigo}')" style="box-shadow: 0 4px 12px rgba(220,38,38,0.4); font-weight: 700;">
+                                        <i class="fa-solid fa-id-badge"></i> Ver Carnet CR80
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Notificación de Alerta de Subsanación si tiene rechazos -->
+                        ${tieneObservaciones ? `
+                            <div class="alerta-subsanar-destacada" style="margin: 1.25rem 1.5rem 0 1.5rem;">
+                                <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.4rem; color: #e11d48; margin-top: 2px;"></i>
+                                    <div>
+                                        <strong style="display: block; font-size: 0.98rem; margin-bottom: 0.2rem; color: #9f1239;">
+                                            Atención Requerida: Se detectaron recaudos observados (${keysRechazos.length})
+                                        </strong>
+                                        <span style="font-size: 0.86rem; line-height: 1.4; display: block;">
+                                            El docente evaluador ha dejado indicaciones específicas. Examine los recaudos marcados en rojo a continuación y cargue una nueva fotografía clara para reanudar el proceso.
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div style="padding: 1.5rem;">
+
+                            <!-- SECCIÓN 1: DATOS DETALLADOS DEL ESTUDIANTE (SOLO LECTURA) -->
+                            <div class="dossier-section-card">
+                                <div style="display: flex; align-items: center; gap: 0.6rem; border-bottom: 1.5px solid var(--border-color, #e2e8f0); padding-bottom: 0.6rem; margin-bottom: 0.75rem;">
+                                    <i class="fa-solid fa-user-graduate" style="color: #b91c1c; font-size: 1.15rem;"></i>
+                                    <h4 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: var(--text-primary, #0f172a);">
+                                        1. Datos del Estudiante / Aspirante (Solo Lectura)
+                                    </h4>
+                                </div>
+                                <div class="dossier-grid-fields">
+                                    <div class="dossier-field-item">
+                                        <label>Nombre y Apellidos:</label>
+                                        <div class="field-value">${r.alumno || 'No especificado'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Cédula / C.E.:</label>
+                                        <div class="field-value" style="font-family: 'JetBrains Mono', monospace; color: #b91c1c; font-weight: 700;">
+                                            ${docAlumnoFormateado}
+                                        </div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Grado Solicitado:</label>
+                                        <div class="field-value">${r.grado || 'Educación Primaria'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Fecha de Nacimiento:</label>
+                                        <div class="field-value">${r.alumnoFechaNac || 'No especificada'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Género / Sexo:</label>
+                                        <div class="field-value">${r.alumnoGenero || 'No especificado'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Grupo Sanguíneo:</label>
+                                        <div class="field-value">${r.alumnoSangre || 'O+'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Lugar de Nacimiento:</label>
+                                        <div class="field-value">${r.alumnoLugarNac || 'San Francisco, Zulia'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Con Quién Vive:</label>
+                                        <div class="field-value">${r.alumnoViveCon || 'Ambos Padres'}</div>
+                                    </div>
+                                    <div class="dossier-field-item" style="grid-column: 1 / -1;">
+                                        <label>Dirección de Habitación:</label>
+                                        <div class="field-value">${r.alumnoDireccion || 'No registrada'}</div>
+                                    </div>
+                                    <div class="dossier-field-item" style="grid-column: 1 / -1;">
+                                        <label>Condiciones Médicas / Alergias:</label>
+                                        <div class="field-value" style="color: #64748b;">${r.alumnoAlergias || 'Ninguna conocida / Sin alergias'}</div>
+                                    </div>
+                                    <div class="dossier-field-item" style="grid-column: 1 / -1;">
+                                        <label>Plantel de Procedencia:</label>
+                                        <div class="field-value">${r.instituto || 'No registrado'} ${r.institutoCodigo ? `(DEA: ${r.institutoCodigo})` : ''}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECCIÓN 2: DATOS DEL REPRESENTANTE LEGAL Y PADRES (SOLO LECTURA) -->
+                            <div class="dossier-section-card">
+                                <div style="display: flex; align-items: center; gap: 0.6rem; border-bottom: 1.5px solid var(--border-color, #e2e8f0); padding-bottom: 0.6rem; margin-bottom: 0.75rem;">
+                                    <i class="fa-solid fa-people-roof" style="color: #b91c1c; font-size: 1.15rem;"></i>
+                                    <h4 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: var(--text-primary, #0f172a);">
+                                        2. Datos del Representante Legal y Familiares (Solo Lectura)
+                                    </h4>
+                                </div>
+                                <div class="dossier-grid-fields">
+                                    <div class="dossier-field-item">
+                                        <label>Representante Legal:</label>
+                                        <div class="field-value">${r.representante || 'No registrado'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Cédula del Representante:</label>
+                                        <div class="field-value" style="font-family: 'JetBrains Mono', monospace; font-weight: 700;">
+                                            ${r.repreDoc || 'No registrada'}
+                                        </div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Parentesco:</label>
+                                        <div class="field-value">${r.repreParentesco || 'REPRESENTANTE'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Teléfono Principal:</label>
+                                        <div class="field-value">${r.repreTelefono || 'No registrado'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Correo Electrónico:</label>
+                                        <div class="field-value">${r.repreCorreo || 'No registrado'}</div>
+                                    </div>
+                                    <div class="dossier-field-item">
+                                        <label>Ocupación / Oficio:</label>
+                                        <div class="field-value">${r.repreOcupacion || 'No registrada'}</div>
+                                    </div>
+                                    <div class="dossier-field-item" style="grid-column: 1 / -1;">
+                                        <label>Dirección del Representante:</label>
+                                        <div class="field-value">${r.repreDireccion || r.alumnoDireccion || 'No registrada'}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECCIÓN 3: RECAUDOS DIGITALES & SUBSANACIÓN DIRECTA -->
+                            <div style="margin-top: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                        <i class="fa-solid fa-camera-retro" style="color: #b91c1c; font-size: 1.25rem;"></i>
+                                        <h4 style="font-size: 1.15rem; font-weight: 800; margin: 0; color: var(--text-primary, #0f172a);">
+                                            3. Recaudos Fotográficos & Módulo de Subsanación
+                                        </h4>
+                                    </div>
+                                    <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; background: var(--bg-alt, #f1f5f9); padding: 0.25rem 0.75rem; border-radius: 999px;">
+                                        Cargados: ${r.recaudosCount || '4/4'}
+                                    </span>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.15rem;">
+                                    ${renderRecaudosCards(r)}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsList.innerHTML = html;
+            resultsList.style.display = 'block';
+        }
+
+        // Renderiza las 4 tarjetas de recaudos individuales
+        function renderRecaudosCards(r) {
+            let cardsHtml = '';
+            const docs = r.documentos || {};
+            const rechazos = r.rechazos || {};
+            const archivos = r.archivos || {};
+
+            for (let i = 1; i <= 4; i++) {
+                const k = String(i);
+                const info = NOMBRES_RECAUDOS[k];
+                const docStatus = (docs[k] || 'CONSIGNADO').toUpperCase();
+                const rechazoInfo = rechazos[k];
+                const esRechazado = Boolean(rechazoInfo && rechazoInfo.rechazada !== false);
+                const archivoObj = archivos[k];
+                const tieneFoto = Boolean(archivoObj && archivoObj.dataUrl);
+
+                let badgeRecaudo = `<span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:700;"><i class="fa-solid fa-clock"></i> Consignado</span>`;
+                if (docStatus === 'APROBADO') {
+                    badgeRecaudo = `<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Aprobado</span>`;
+                } else if (esRechazado) {
+                    badgeRecaudo = `<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:800;"><i class="fa-solid fa-circle-xmark"></i> DENEGADO / OBSERVADO</span>`;
+                }
+
+                cardsHtml += `
+                    <div class="recaudo-dossier-card ${esRechazado ? 'recaudo-denegado-card' : ''}" id="cardRecaudo_${r.codigo}_${k}">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem; gap: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="fa-solid ${info.icono}" style="color: ${esRechazado ? '#dc2626' : '#64748b'}; font-size: 1rem;"></i>
+                                    <strong style="font-size: 0.88rem; color: var(--text-primary, #0f172a);">${info.titulo}</strong>
+                                </div>
+                                ${badgeRecaudo}
+                            </div>
+                            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem; min-height: 28px;">
+                                ${info.desc}
+                            </p>
+
+                            <!-- Miniatura de la fotografía -->
+                            ${tieneFoto ? `
+                                <div style="position: relative; margin-bottom: 0.75rem;">
+                                    <img src="${archivoObj.dataUrl}" alt="${info.titulo}" class="recaudo-img-thumb"
+                                        onclick="abrirVisorFoto('${encodeURIComponent(info.titulo)}', '${archivoObj.dataUrl}', '${archivoObj.nombre || 'recaudo.jpg'}')">
+                                    <span style="position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.65); color: #fff; font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; pointer-events: none;">
+                                        <i class="fa-solid fa-magnifying-glass-plus"></i> Ver ampliado
+                                    </span>
+                                </div>
+                            ` : `
+                                <div style="background: var(--bg-alt, #f1f5f9); border: 1px dashed #cbd5e1; border-radius: 8px; height: 120px; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #94a3b8; margin-bottom: 0.75rem;">
+                                    <i class="fa-regular fa-image" style="font-size: 1.8rem; margin-bottom: 0.25rem;"></i>
+                                    <span style="font-size: 0.75rem;">Sin fotografía cargada</span>
+                                </div>
+                            `}
+
+                            <!-- Cuadro de Observación del Docente si fue Rechazado -->
+                            ${esRechazado ? `
+                                <div style="background: #ffffff; border-left: 3px solid #dc2626; padding: 0.65rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: #dc2626; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.2rem;">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> MOTIVO DE OBSERVACIÓN DOCENTE:
+                                    </div>
+                                    <div style="font-size: 0.82rem; color: #7f1d1d; font-style: italic; line-height: 1.35;">
+                                        "${rechazoInfo.motivo || 'Fotografía ilegible, cortada o no conforme con los requisitos oficiales.'}"
+                                    </div>
+                                    ${rechazoInfo.fecha ? `
+                                        <div style="font-size: 0.68rem; color: #991b1b; margin-top: 0.25rem;">Fecha: ${rechazoInfo.fecha}</div>
+                                    ` : ''}
+                                </div>
+
+                                <!-- Módulo de Reemplazo / Subsanación -->
+                                <div class="upload-replacement-box">
+                                    <div style="font-size: 0.78rem; font-weight: 700; color: #b91c1c; margin-bottom: 0.4rem;">
+                                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Reemplazar Fotografía Denegada:
+                                    </div>
+                                    <input type="file" id="fileSubsanar_${r.codigo}_${k}" accept="image/jpeg,image/png,image/webp"
+                                        style="font-size: 0.78rem; width: 100%; margin-bottom: 0.5rem;"
+                                        onchange="previsualizarReemplazo('${r.codigo}', '${k}')">
+                                    
+                                    <div id="previewReemplazo_${r.codigo}_${k}" style="display: none; margin: 0.4rem 0;">
+                                        <img id="imgPrev_${r.codigo}_${k}" src="" style="width: 100%; height: 90px; object-fit: cover; border-radius: 6px; border: 1.5px solid #22c55e;">
+                                    </div>
+
+                                    <button type="button" class="btn btn-primary btn-sm" id="btnSubir_${r.codigo}_${k}"
+                                        onclick="ejecutarSubsanacionFoto('${r.codigo}', '${k}')"
+                                        style="width: 100%; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Enviar Fotografía Subsanada
+                                    </button>
+                                </div>
+                            ` : `
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                                    <span>${archivoObj && archivoObj.nombre ? archivoObj.nombre : 'Archivo conforme'}</span>
+                                    ${docStatus === 'APROBADO' ? `
+                                        <span style="color: #16a34a; font-weight: 600;"><i class="fa-solid fa-check-double"></i> Verificado</span>
+                                    ` : `
+                                        <span style="color: #0284c7; font-weight: 600;"><i class="fa-solid fa-spinner fa-spin-pulse"></i> Por evaluar</span>
+                                    `}
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+            return cardsHtml;
+        }
+
+        // ==============================================================
+        // PREVISUALIZACIÓN Y COMPRESIÓN DE LA FOTO SUBSANADA
+        // ==============================================================
+        window.previsualizarReemplazo = function(codigo, docId) {
+            const input = document.getElementById(`fileSubsanar_${codigo}_${docId}`);
+            const previewBox = document.getElementById(`previewReemplazo_${codigo}_${docId}`);
+            const imgPrev = document.getElementById(`imgPrev_${codigo}_${docId}`);
+
+            if (input && input.files && input.files[0]) {
+                const file = input.files[0];
+                if (!file.type.startsWith('image/')) {
+                    mostrarToast('Formato Inválido', 'Debe seleccionar un archivo de imagen (JPG o PNG).', 'error');
+                    input.value = '';
+                    if (previewBox) previewBox.style.display = 'none';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (imgPrev) imgPrev.src = e.target.result;
+                    if (previewBox) previewBox.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // Compresor canvas de alto rendimiento (garantiza tamaño ligero y máxima nitidez)
+        function comprimirImagenCanvas(file, maxWidth = 900, quality = 0.75) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
+        }
+
+        // ==============================================================
+        // ENVIAR FOTOGRAFÍA SUBSANADA AL SERVIDOR Y LOCALSTORAGE
+        // ==============================================================
+        window.ejecutarSubsanacionFoto = async function(codigo, docId) {
+            const fileInput = document.getElementById(`fileSubsanar_${codigo}_${docId}`);
+            const btnSubir = document.getElementById(`btnSubir_${codigo}_${docId}`);
+
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                mostrarToast('Foto requerida', 'Seleccione una fotografía corregida antes de enviar.', 'warning');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (!file.type.startsWith('image/')) {
+                mostrarToast('Formato Inválido', 'Debe seleccionar una imagen en formato JPG o PNG.', 'error');
+                return;
+            }
+
+            if (btnSubir) {
+                btnSubir.disabled = true;
+                btnSubir.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando fotografía...';
+            }
+
+            try {
+                mostrarToast('Comprimiendo', 'Optimizando imagen para transmisión segura...', 'info');
+                const maxWidth = (docId === '4') ? 350 : 900;
+                const base64Comprimida = await comprimirImagenCanvas(file, maxWidth, 0.75);
+
+                // 1. Enviar al Servidor Backend API
+                let serverExito = false;
+                try {
+                    const res = await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/recaudo`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            docId: docId,
+                            archivoBase64: base64Comprimida,
+                            nombreArchivo: file.name,
+                            usuario: 'Representante (Subsanación)'
+                        })
+                    });
+                    if (res.ok) serverExito = true;
+                } catch (e) {
+                    console.warn('[Subsanación Portal] Fallback offline a almacenamiento local:', e);
+                }
+
+                // 2. Actualizar en almacenamiento local (fya_preinscripciones_db)
+                try {
+                    const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+                    let idx = localData.findIndex(r => r.codigo === codigo);
+                    let reg = idx !== -1 ? localData[idx] : null;
+
+                    if (!reg) {
+                        reg = { codigo: codigo, archivos: {}, documentos: {}, rechazos: {} };
+                        localData.push(reg);
+                        idx = localData.length - 1;
+                    }
+
+                    if (!reg.archivos) reg.archivos = {};
+                    if (!reg.documentos) reg.documentos = {};
+                    if (reg.rechazos) delete reg.rechazos[docId];
+
+                    reg.archivos[docId] = {
+                        nombre: file.name,
+                        dataUrl: base64Comprimida,
+                        tipo: 'image/jpeg',
+                        fecha: new Date().toLocaleDateString('es-VE')
+                    };
+                    reg.documentos[docId] = 'CONSIGNADO';
+
+                    // Si ya no quedan recaudos rechazados, el expediente vuelve formalmente a EN_REVISION
+                    const keysRestantes = Object.keys(reg.rechazos || {}).filter(k => reg.rechazos[k] && reg.rechazos[k].rechazada !== false);
+                    if (keysRestantes.length === 0) {
+                        reg.estado = 'EN_REVISION';
+                    }
+
+                    // Recalcular conteo
+                    let entregados = 0;
+                    for (let i = 1; i <= 4; i++) {
+                        if (reg.archivos && reg.archivos[String(i)] && reg.archivos[String(i)].dataUrl) entregados++;
+                    }
+                    reg.recaudosCount = `${entregados}/4`;
+
+                    localData[idx] = reg;
+                    localStorage.setItem('fya_preinscripciones_db', JSON.stringify(localData));
+
+                    // Actualizar en cache de memoria
+                    if (window._registrosConsultadosCache) {
+                        const cIdx = window._registrosConsultadosCache.findIndex(r => r.codigo === codigo);
+                        if (cIdx !== -1) {
+                            window._registrosConsultadosCache[cIdx] = { ...window._registrosConsultadosCache[cIdx], ...reg };
+                        }
+                    }
+                } catch (e) {
+                    console.error('[Error actualización local]', e);
+                }
+
+                mostrarToast(
+                    '¡Fotografía Subsanada!',
+                    'El documento ha sido reemplazado con éxito. Su expediente ha vuelto al estado <strong>EN REVISIÓN</strong> para validación del docente.',
+                    'success'
+                );
+
+                // Volver a consultar para refrescar la pantalla en vivo
+                await ejecutarConsultaPortal();
+
+            } catch (err) {
+                console.error('[Subsanar Error]', err);
+                mostrarToast('Error al Subsanar', 'Ocurrió un error al procesar o guardar la fotografía.', 'error');
+                if (btnSubir) {
+                    btnSubir.disabled = false;
+                    btnSubir.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Reintentar Envío';
+                }
+            }
+        };
+
+        // ==============================================================
+        // MODAL VISOR DE FOTOGRAFÍA EN ALTA RESOLUCIÓN
+        // ==============================================================
+        window.abrirVisorFoto = function(titulo, dataUrl, nombre) {
+            const modal = document.getElementById('modalVisorFoto');
+            const img = document.getElementById('visorFotoImg');
+            const h4 = document.getElementById('visorFotoTitulo');
+            const info = document.getElementById('visorFotoInfo');
+
+            if (modal && img) {
+                img.src = dataUrl;
+                if (h4) h4.innerHTML = `<i class="fa-solid fa-image"></i> ${decodeURIComponent(titulo)}`;
+                if (info) info.textContent = nombre || 'Archivo fotográfico consignado';
+                modal.style.display = 'flex';
+            }
+        };
+
+        window.cerrarVisorFoto = function() {
+            const modal = document.getElementById('modalVisorFoto');
+            if (modal) modal.style.display = 'none';
+        };
+
+        // ==============================================================
+        // MODAL DE CARNET ESTUDIANTIL PROVISIONAL CR80
+        // ==============================================================
+        window.emitirCarnetProvisional = function(codigo) {
+            let reg = (window._registrosConsultadosCache || []).find(r => r.codigo === codigo);
+            if (!reg) {
+                try {
+                    const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+                    reg = localData.find(r => r.codigo === codigo);
+                } catch (e) {}
+            }
+
+            if (!reg) {
+                mostrarToast('Expediente no encontrado', 'No se pudo cargar la información para generar el carnet.', 'error');
+                return;
+            }
+
+            carnetRegistroActivo = reg;
+            const printArea = document.getElementById('carnetCr80PrintArea');
+            if (!printArea) return;
+
+            const fotoCarnet = (reg.archivos && reg.archivos['4'] && reg.archivos['4'].dataUrl) ?
+                reg.archivos['4'].dataUrl :
+                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="260" viewBox="0 0 200 260"><rect width="100%" height="100%" fill="%23f1f5f9"/><circle cx="100" cy="90" r="45" fill="%23cbd5e1"/><path d="M30 240 C30 170, 170 170, 170 240 Z" fill="%2394a3b8"/></svg>';
+
+            const sangre = reg.alumnoSangre || 'O+';
+            const alergias = reg.alumnoAlergias || 'Ninguna conocida / Sin alergias';
+            const emTel = reg.repreTelefono || '0414-0000000';
+            const contactoEm = `${reg.representante || 'Representante'} (${emTel})`;
+            const docLimpio = formatearDocumentoAlumno(reg.alumnoDoc);
+
+            printArea.innerHTML = `
+                <!-- Marca de agua de fondo institucional -->
+                <div class="carnet-cr80-watermark">
+                    <img src="logo_feyalegria.png" alt="Marca de Agua Institucional" crossOrigin="anonymous">
+                </div>
+
+                <div class="carnet-cr80-header">
+                    <img src="logo_feyalegria.png" alt="Logo Fe y Alegría" class="carnet-cr80-header-logo" crossOrigin="anonymous">
+                    <div class="carnet-cr80-header-titles">
+                        <h4>U.E. FE Y ALEGRÍA "NUEVA AMÉRICA"</h4>
+                        <p>CARNET ESTUDIANTIL PROVISIONAL • PERIODO 2026 - 2027</p>
+                    </div>
+                    <div class="carnet-cr80-header-badge">PRIMARIA</div>
+                </div>
+
+                <div class="carnet-cr80-body">
+                    <div class="carnet-cr80-photo-col">
+                        <div class="carnet-cr80-photo-wrap">
+                            <img src="${fotoCarnet}" alt="Foto Estudiante" class="carnet-cr80-photo" crossOrigin="anonymous">
+                        </div>
+                        <div class="carnet-cr80-blood-badge">
+                            <i class="fa-solid fa-droplet"></i> SANGRE: ${sangre}
+                        </div>
+                    </div>
+
+                    <div class="carnet-cr80-details">
+                        <div class="carnet-cr80-student-name">${reg.alumno}</div>
+
+                        <div class="carnet-cr80-field-row">
+                            <span class="carnet-cr80-field-label">C.I. / C.E.:</span>
+                            <strong class="carnet-cr80-field-value highlight-cedula">${docLimpio}</strong>
+                        </div>
+
+                        <div class="carnet-cr80-field-row">
+                            <span class="carnet-cr80-field-label">GRADO:</span>
+                            <span class="carnet-cr80-field-value carnet-grado-highlight">${reg.grado || 'Educación Primaria'}</span>
+                        </div>
+
+                        <div class="carnet-cr80-field-row">
+                            <span class="carnet-cr80-field-label">COND./ALERGIAS:</span>
+                            <span class="carnet-cr80-field-value text-truncate-custom">${alergias}</span>
+                        </div>
+
+                        <div class="carnet-emergency-box">
+                            <div style="font-size: 0.60rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Contacto de Emergencia / Representante:</div>
+                            <div style="font-size: 0.68rem; font-weight: 700; color: #1e293b;" class="text-truncate-custom">
+                                ${contactoEm}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="carnet-cr80-footer">
+                    <div class="carnet-cr80-footer-left">MUNICIPIO SAN FRANCISCO, ESTADO ZULIA • CONTROL DE ESTUDIOS</div>
+                    <div>
+                        <span class="carnet-folio-label">FOLIO:</span>
+                        <span class="carnet-folio-code">${reg.codigo}</span>
+                    </div>
+                </div>
+            `;
+
+            const modal = document.getElementById('modalCarnetProvisional');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        };
+
+        window.cerrarModalCarnetProvisional = function() {
+            const modal = document.getElementById('modalCarnetProvisional');
+            if (modal) modal.style.display = 'none';
+        };
+
+        window.descargarCarnetPdf = async function() {
+            if (!carnetRegistroActivo) return;
+            const origElem = document.getElementById('carnetCr80PrintArea');
+            if (!origElem) return;
+
+            try {
+                mostrarToast('Generando Carnet', 'Generando carnet CR80 en alta resolución...', 'info');
+
+                const clone = origElem.cloneNode(true);
+                const container = document.createElement('div');
+                container.id = 'tempCarnetPdfContainer';
+                container.style.cssText = 'position: fixed; top: 0; left: 0; width: 500px; height: 315px; z-index: 999999; margin: 0; padding: 0; background: #ffffff; display: block; overflow: hidden;';
+
+                clone.style.width = '500px';
+                clone.style.height = '315px';
+                clone.style.minWidth = '500px';
+                clone.style.minHeight = '315px';
+                clone.style.maxWidth = '500px';
+                clone.style.maxHeight = '315px';
+                clone.style.margin = '0';
+                clone.style.boxShadow = 'none';
+                clone.style.borderRadius = '0';
+
+                container.appendChild(clone);
+                document.body.appendChild(container);
+
+                const imgs = Array.from(container.querySelectorAll('img'));
+                await Promise.all(imgs.map(img => {
+                    if (img.complete) return Promise.resolve();
+                    return new Promise(res => {
+                        img.onload = res;
+                        img.onerror = res;
+                        setTimeout(res, 800);
+                    });
+                }));
+
+                await new Promise(r => setTimeout(r, 150));
+
+                const codigoLimpio = (carnetRegistroActivo.alumnoDoc || carnetRegistroActivo.codigo).replace(/\D/g, '');
+                const opt = {
+                    margin: 0,
+                    filename: `Carnet_Provisional_${codigoLimpio}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 3,
+                        useCORS: true,
+                        allowTaint: true,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: 500,
+                        windowHeight: 315
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: [85.6, 54],
+                        orientation: 'landscape'
+                    }
+                };
+
+                if (typeof html2pdf !== 'undefined') {
+                    await html2pdf().set(opt).from(container).save();
+                    mostrarToast('Carnet Descargado', 'El carnet estudiantil CR80 ha sido generado y descargado.', 'success');
+                } else {
+                    mostrarToast('Error de Librería', 'La librería html2pdf no está disponible.', 'error');
+                }
+
+                if (container.parentNode) container.parentNode.removeChild(container);
+            } catch (err) {
+                console.error('[Carnet PDF Error]', err);
+                const cont = document.getElementById('tempCarnetPdfContainer');
+                if (cont && cont.parentNode) cont.parentNode.removeChild(cont);
+                mostrarToast('Error al Descargar', 'No se pudo generar el PDF del carnet.', 'error');
+            }
+        };
+
+        // ==============================================================
+        // DEMO HINT Y AUTOCONSULTA DESDE URL
+        // ==============================================================
+        window.usarCedulaDemo = function() {
+            const input = document.getElementById('inputConsultaIdentificacion');
+            if (input) {
+                input.value = '19888777';
+                ejecutarConsultaPortal();
+            }
+        };
+
+        // Detectar si hay parámetros en la URL (ej: ?cedula=19888777 o ?codigo=PRE-2026-0001)
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const queryParam = params.get('cedula') || params.get('ci') || params.get('codigo') || params.get('id');
+            const input = document.getElementById('inputConsultaIdentificacion');
+            if (queryParam && input) {
+                input.value = queryParam;
+                ejecutarConsultaPortal();
+            }
+
+            if (input) {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        ejecutarConsultaPortal();
+                    }
+                });
+            }
+
+            // Mostrar sugerencia demo si existe
+            const hint = document.getElementById('labelQuickHint');
+            if (hint) hint.style.display = 'inline';
+        });
+    </script>
+</body>
+
+</html>

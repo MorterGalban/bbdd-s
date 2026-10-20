@@ -1,5 +1,50 @@
 [
   {
+    "id": 1792514008701,
+    "timestamp": "2026-10-20T16:33:28.701Z",
+    "usuario": "manteca",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente Profesor Manteca (@manteca).",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792514008694,
+    "timestamp": "2026-10-20T16:33:28.694Z",
+    "usuario": "mantecosadmin",
+    "rol": "SUPERROOT",
+    "accion": "LOGIN_SUPERROOT",
+    "descripcion": "Acceso autenticado al Panel Maestro Superroot.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792513955784,
+    "timestamp": "2026-10-20T16:32:35.784Z",
+    "usuario": "desconocido",
+    "rol": "ANONIMO",
+    "accion": "FALLO_LOGIN_SUPERROOT",
+    "descripcion": "Intento de acceso inválido con usuario: ",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792513454720,
+    "timestamp": "2026-10-20T16:24:14.720Z",
+    "usuario": "mantecosadmin",
+    "rol": "SUPERROOT",
+    "accion": "LOGIN_SUPERROOT",
+    "descripcion": "Acceso autenticado al Panel Maestro Superroot.",
+    "ip_address": "::1"
+  },
+  {
+    "id": 1792513040022,
+    "timestamp": "2026-10-20T16:17:20.022Z",
+    "usuario": "manteca",
+    "rol": "DOCENTE",
+    "accion": "LOGIN_DOCENTE",
+    "descripcion": "Inicio de sesión exitoso del docente Profesor Manteca (@manteca).",
+    "ip_address": "::1"
+  },
+  {
     "id": 1792319880257,
     "timestamp": "2026-10-18T10:38:00.257Z",
     "usuario": "manteca",

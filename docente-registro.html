@@ -112,20 +112,6 @@
             border: 1.5px solid #fecaca;
             color: #b91c1c;
         }
-        .input-group-password {
-            position: relative;
-        }
-        .btn-toggle-eye {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 4px;
-        }
         .register-footer {
             margin-top: 1.75rem;
             padding-top: 1.25rem;
@@ -338,14 +324,19 @@
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             if (!input) return;
-            const icon = btn.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
-            } else {
-                input.type = 'password';
-                if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+            const icon = btn ? btn.querySelector('i') : null;
+            const esPassword = input.type === 'password';
+            input.type = esPassword ? 'text' : 'password';
+            if (icon) {
+                if (esPassword) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
             }
+            input.focus();
         }
 
         // Manejador del Formulario

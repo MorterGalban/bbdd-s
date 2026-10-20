@@ -4888,5 +4888,50 @@ body.dark-mode .docente-admision-alert {
     }
 }
 
-
-
+/* ==============================================================================
+   COMPONENTES DE ENTRADA DE CONTRASEÑA CON VISOR DE OJO MODERNO
+   ============================================================================== */
+.input-group-password {
+    position: relative;
+    width: 100%;
+}
+.input-group-password input.form-control {
+    padding-right: 44px !important;
+}
+.btn-toggle-eye {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #94a3b8;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    z-index: 5;
+}
+.btn-toggle-eye:hover {
+    color: #e2e8f0;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.btn-toggle-eye:focus-visible {
+    outline: 2px solid #3b82f6;
+}
+.btn-toggle-eye i {
+    pointer-events: none;
+    font-size: 0.95rem;
+}
+body:not(.dark-mode) .btn-toggle-eye {
+    color: #64748b;
+}
+body:not(.dark-mode) .btn-toggle-eye:hover {
+    color: #0f172a;
+    background-color: rgba(0, 0, 0, 0.05);
+}
