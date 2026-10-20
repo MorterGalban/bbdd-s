@@ -53,6 +53,9 @@
                     aria-label="Cambiar tema claro / oscuro" title="Cambiar tema claro / oscuro">
                     <i class="fa-solid fa-moon"></i>
                 </button>
+                <button type="button" class="btn btn-outline-red" id="btnConsultarEstatusNav" onclick="abrirModalConsultaRepresentante()">
+                    <i class="fa-solid fa-file-circle-exclamation"></i> Consultar Estatus
+                </button>
                 <a href="preinscripcion.html?rol=representante" class="btn btn-primary" id="btnIrPreinscripcionHeader">
                     <i class="fa-solid fa-user-pen"></i> Representante
                 </a>
@@ -84,6 +87,9 @@
                         id="btnIniciarPreinscripcionHero">
                         <i class="fa-solid fa-user-pen"></i> Ingresar como Representante
                     </a>
+                    <button type="button" class="btn btn-outline-red btn-lg" id="btnConsultarEstatusHero" onclick="abrirModalConsultaRepresentante()">
+                        <i class="fa-solid fa-file-circle-exclamation"></i> Consultar Estatus / Subsanar
+                    </button>
                     <a href="docente-login.html" class="btn btn-secondary btn-lg" id="btnAccesoDocenteHero">
                         <i class="fa-solid fa-chalkboard-user"></i> Acceso a control de estudios
                     </a>
@@ -399,6 +405,90 @@
         </div>
     </footer>
 
+    <!-- ============================================================== -->
+    <!-- MODAL: PORTAL DE CONSULTA Y SUBSANACIÓN PARA REPRESENTANTES    -->
+    <!-- ============================================================== -->
+    <div class="modal-backdrop" id="modalConsultaRepresentante" style="display: none; z-index: 10040;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: white;">
+                    <h3 class="modal-title" style="color: white; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-clipboard-check"></i> Consulta de Estatus y Subsanación de Recaudos
+                    </h3>
+                    <button type="button" class="btn-close" onclick="cerrarModalConsultaRepresentante()" style="filter: brightness(0) invert(1);">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                        <label for="inputConsultaCedula" class="form-label" style="font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">
+                            <i class="fa-solid fa-id-card"></i> Ingrese la Cédula del Representante o Cédula/CE del Alumno:
+                        </label>
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <input type="text" id="inputConsultaCedula" class="form-control" placeholder="Ej: 19888777 o CE119018456123" style="flex: 1; min-width: 220px;">
+                            <button type="button" class="btn btn-primary" id="btnEjecutarConsulta" onclick="ejecutarConsultaRepresentante()">
+                                <i class="fa-solid fa-magnifying-glass"></i> Consultar Estatus
+                            </button>
+                        </div>
+                        <span style="font-size: 0.75rem; color: #64748b; margin-top: 0.35rem; display: block;">
+                            Podrá verificar el estado de la solicitud y cargar fotos corregidas en caso de haber sido observadas por el docente.
+                        </span>
+                    </div>
+
+                    <div id="consultaResultadosWrapper">
+                        <div style="text-align: center; padding: 2rem 1rem; color: #94a3b8;">
+                            <i class="fa-solid fa-folder-open" style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem; color: #cbd5e1;"></i>
+                            Ingrese su número de identificación para consultar los expedientes de sus hijos.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalConsultaRepresentante()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODAL: EMISIÓN DE CARNET ESTUDIANTIL PROVISIONAL CR80          -->
+    <!-- ============================================================== -->
+    <div class="modal-backdrop" id="modalCarnetProvisional" style="display: none; z-index: 10060;">
+        <div class="modal-dialog" style="max-width: 600px;">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: white;">
+                    <h3 class="modal-title" style="color: white; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-id-badge"></i> Carnet Estudiantil Provisional (Formato CR80)
+                    </h3>
+                    <button type="button" class="btn-close" onclick="cerrarModalCarnetProvisional()" style="filter: brightness(0) invert(1);">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem; text-align: center;">
+                    <p style="font-size: 0.88rem; color: #475569; margin-bottom: 1rem;">
+                        Acreditación escolar provisional para estudiantes con estatus <strong>APROBADO</strong>. Listo para descargar en formato estándar CR80 (85.6mm x 54mm).
+                    </p>
+                    <div class="carnet-cr80-preview-container">
+                        <div class="carnet-cr80-card" id="carnetCr80PrintArea">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalCarnetProvisional()">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btnDescargarCarnetPdf" onclick="descargarCarnetPdf()">
+                        <i class="fa-solid fa-file-pdf"></i> Descargar Carnet en PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificaciones -->
+    <div class="toast" id="toastNotification">
+        <div id="toastIcon" style="font-size: 1.3rem;"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+            <h5 id="toastTitle" style="font-size: 0.95rem; margin-bottom: 0.15rem;">Éxito</h5>
+            <p id="toastMessage" style="font-size: 0.82rem; color: #d4d4d8;">Operación completada.</p>
+        </div>
+    </div>
+
+    <script src="html2pdf.bundle.min.js"></script>
     <script>
         // Inicialización de Tema Claro / Oscuro (Por defecto claro)
         const temaGuardado = localStorage.getItem('fya_theme') || 'light';
@@ -424,6 +514,420 @@
                 aplicarTema(nuevoTema);
             });
         }
+
+        // ==============================================================
+        // PORTAL DE CONSULTA Y SUBSANACIÓN RÁPIDA (INDEX)
+        // ==============================================================
+        const RECAUDOS_NOMBRES = {
+            '1': 'Foto de Cédula del Representante',
+            '2': 'Foto del Informe Cardiovascular',
+            '3': 'Foto de Partida de Nacimiento',
+            '4': 'Foto Tipo Carnet del Estudiante'
+        };
+
+        function mostrarToast(titulo, mensaje, tipo = 'info') {
+            const t = document.getElementById('toastNotification');
+            if (!t) return;
+            const tTitle = document.getElementById('toastTitle');
+            const tMsg = document.getElementById('toastMessage');
+            const tIcon = document.getElementById('toastIcon');
+            if (tTitle) tTitle.textContent = titulo;
+            if (tMsg) tMsg.innerHTML = mensaje;
+            if (tIcon) {
+                if (tipo === 'success') tIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #16a34a;"></i>';
+                else if (tipo === 'error') tIcon.innerHTML = '<i class="fa-solid fa-circle-xmark" style="color: #dc2626;"></i>';
+                else if (tipo === 'warning') tIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i>';
+                else tIcon.innerHTML = '<i class="fa-solid fa-circle-info" style="color: #2563eb;"></i>';
+            }
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), 4500);
+        }
+
+        window.abrirModalConsultaRepresentante = function() {
+            const m = document.getElementById('modalConsultaRepresentante');
+            if (m) {
+                m.style.display = 'flex';
+                const inp = document.getElementById('inputConsultaCedula');
+                if (inp) inp.focus();
+            }
+        };
+
+        window.cerrarModalConsultaRepresentante = function() {
+            const m = document.getElementById('modalConsultaRepresentante');
+            if (m) m.style.display = 'none';
+        };
+
+        // Compresión automática en memoria con Canvas
+        function comprimirImagenCanvas(file, maxWidth = 800, quality = 0.7) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            let width = img.width;
+                            let height = img.height;
+                            if (width > maxWidth) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            }
+                            const canvas = document.createElement('canvas');
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            resolve(canvas.toDataURL('image/jpeg', quality));
+                        };
+                        img.onerror = reject;
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+
+        window.ejecutarConsultaRepresentante = async function() {
+            const val = (document.getElementById('inputConsultaCedula')?.value || '').trim();
+            const wrapper = document.getElementById('consultaResultadosWrapper');
+            if (!val) {
+                mostrarToast('Identificación requerida', 'Por favor ingrese su número de cédula o la de su representado.', 'warning');
+                return;
+            }
+
+            wrapper.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #64748b;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: #b91c1c; display: block; margin-bottom: 0.5rem;"></i>
+                    Buscando solicitudes registradas...
+                </div>
+            `;
+
+            let registros = [];
+            // 1. Intentar desde backend
+            try {
+                const res = await fetch(`/api/preinscripciones/consulta/${encodeURIComponent(val)}`);
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.success && Array.isArray(json.data)) {
+                        registros = json.data;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Consulta] Fallback a almacenamiento local:', e);
+            }
+
+            // 2. Si no encontró en backend o falló, buscar en localStorage
+            if (registros.length === 0) {
+                try {
+                    const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+                    const cleanDigits = val.replace(/\D/g, '');
+                    const cleanUpper = val.toUpperCase().replace(/\s+/g, '');
+                    registros = localData.filter(r => {
+                        if (!r) return false;
+                        const rRepDigits = (r.repreDoc || '').replace(/\D/g, '');
+                        const rAlDigits = (r.alumnoDoc || '').replace(/\D/g, '');
+                        const rAlUpper = (r.alumnoDoc || '').toUpperCase().replace(/\s+/g, '');
+                        const rCodigo = (r.codigo || '').toUpperCase();
+                        return (cleanDigits && (rRepDigits === cleanDigits || rAlDigits === cleanDigits)) ||
+                               (cleanUpper && (rAlUpper.includes(cleanUpper) || rCodigo.includes(cleanUpper)));
+                    });
+                } catch (e) {}
+            }
+
+            if (registros.length === 0) {
+                wrapper.innerHTML = `
+                    <div style="text-align: center; padding: 2.5rem 1rem; color: #64748b;">
+                        <i class="fa-solid fa-folder-xmark" style="font-size: 2.5rem; color: #94a3b8; display: block; margin-bottom: 0.75rem;"></i>
+                        <strong style="color: #1e293b; font-size: 1.05rem;">No se encontraron solicitudes registradas</strong>
+                        <p style="font-size: 0.88rem; margin: 0.35rem 0 1rem 0;">Verifique el número ingresado o realice una nueva preinscripción.</p>
+                        <a href="preinscripcion.html?rol=representante" class="btn btn-primary btn-sm">
+                            <i class="fa-solid fa-pen-to-square"></i> Realizar Preinscripción Ahora
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            registros.forEach(r => {
+                const rechazos = r.rechazos || {};
+                const keysRechazos = Object.keys(rechazos).filter(k => rechazos[k] && rechazos[k].rechazada);
+                const tieneRechazos = keysRechazos.length > 0;
+
+                const badgeColor = {
+                    'APROBADA': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
+                    'APROBADO': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
+                    'EN_REVISION': 'background: #fef3c7; color: #b45309; border: 1px solid #fde68a;',
+                    'DOCUMENTOS_INCOMPLETOS': 'background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;',
+                    'PENDIENTE': 'background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;'
+                }[r.estado] || 'background: #f1f5f9; color: #475569;';
+
+                const estadoLabel = {
+                    'APROBADA': 'APROBADA / EN REGLA',
+                    'APROBADO': 'APROBADA / EN REGLA',
+                    'EN_REVISION': 'EN REVISIÓN EN TAQUILLA',
+                    'DOCUMENTOS_INCOMPLETOS': 'DOCUMENTOS INCOMPLETOS',
+                    'PENDIENTE': 'PENDIENTE'
+                }[r.estado] || r.estado;
+
+                html += `
+                    <div class="consulta-card" id="cardConsulta_${r.codigo}">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem;">
+                            <div>
+                                <span style="font-family: monospace; font-size: 0.82rem; font-weight: 800; color: #b91c1c; background: #fee2e2; padding: 2px 8px; border-radius: 4px;">
+                                    ${r.codigo}
+                                </span>
+                                <h4 style="margin: 0.4rem 0 0.15rem 0; font-size: 1.1rem; color: #0f172a;">${r.alumno}</h4>
+                                <span style="font-size: 0.82rem; color: #64748b;">
+                                    C.I./C.E: <strong>${r.alumnoDoc || 'S/N'}</strong> • Grado: <strong>${r.grado || 'Primaria'}</strong>
+                                </span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 0.76rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 999px; display: inline-block; ${badgeColor}">
+                                    ${estadoLabel}
+                                </span>
+                                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Recaudos: ${r.recaudosCount || '4/4'}</div>
+                            </div>
+                        </div>
+                `;
+
+                if (tieneRechazos) {
+                    html += `
+                        <div class="alerta-subsanar-destacada">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.35rem;">
+                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.15rem; color: #e11d48;"></i>
+                                Atención: Fotografías Observadas por el Docente
+                            </div>
+                            <p style="font-size: 0.84rem; margin: 0 0 0.75rem 0; color: #9f1239;">
+                                El personal de admisiones ha observado los siguientes recaudos. Puede adjuntar una nueva fotografía nítida para subsanar el expediente y retornarlo a <strong>EN REVISIÓN</strong>:
+                            </p>
+                    `;
+
+                    keysRechazos.forEach(docId => {
+                        const recInfo = rechazos[docId];
+                        const docNombre = RECAUDOS_NOMBRES[docId] || `Recaudo #${docId}`;
+                        html += `
+                            <div style="background: white; border: 1px solid #fda4af; border-radius: 8px; padding: 0.85rem; margin-top: 0.5rem;">
+                                <div style="font-weight: 700; font-size: 0.88rem; color: #9f1239;">
+                                    <i class="fa-solid fa-camera"></i> ${docNombre}
+                                </div>
+                                <div style="font-size: 0.8rem; color: #b91c1c; margin: 0.25rem 0 0.6rem 0; font-style: italic;">
+                                    Observación del docente: "${recInfo.motivo || 'Documento no legible o no conforme'}"
+                                </div>
+                                <div class="subsanar-upload-row">
+                                    <input type="file" accept="image/*" id="subsanarInput_${r.codigo}_${docId}" class="form-control" style="font-size: 0.8rem; flex: 1; min-width: 200px;">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="subsanarRecaudoRepresentante('${r.codigo}', '${docId}')" style="font-size: 0.8rem;">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Subir Documento Corregido
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `</div>`;
+                }
+
+                if (r.estado === 'APROBADA' || r.estado === 'APROBADO') {
+                    html += `
+                        <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <span style="font-size: 0.82rem; color: #15803d; font-weight: 700;">
+                                <i class="fa-solid fa-circle-check"></i> Solicitud formalmente aprobada para el Año Escolar 2026 - 2027
+                            </span>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="emitirCarnetProvisional('${r.codigo}')" style="font-size: 0.82rem; font-weight: 700;">
+                                <i class="fa-solid fa-id-badge"></i> Emitir Carnet Provisional
+                            </button>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            });
+
+            wrapper.innerHTML = html;
+        };
+
+        window.subsanarRecaudoRepresentante = async function(codigo, docId) {
+            const fileInput = document.getElementById(`subsanarInput_${codigo}_${docId}`);
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                mostrarToast('Archivo Requerido', 'Por favor seleccione la nueva fotografía corregida antes de enviar.', 'warning');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (!file.type.startsWith('image/')) {
+                mostrarToast('Formato Inválido', 'Debe seleccionar un archivo de imagen (JPG, PNG).', 'error');
+                return;
+            }
+
+            try {
+                mostrarToast('Procesando Imagen', 'Comprimiendo y asegurando calidad de la fotografía...', 'info');
+                const maxWidth = (docId === '4') ? 300 : 800;
+                const base64Comprimida = await comprimirImagenCanvas(file, maxWidth, 0.7);
+
+                // Enviar al servidor
+                let actualizadoServer = false;
+                try {
+                    const res = await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/recaudo`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            docId: docId,
+                            archivoBase64: base64Comprimida,
+                            nombreArchivo: file.name
+                        })
+                    });
+                    if (res.ok) actualizadoServer = true;
+                } catch (e) {
+                    console.warn('[Subsanar] Servidor offline, persistiendo localmente:', e);
+                }
+
+                // Actualizar en localStorage
+                try {
+                    const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+                    const idx = localData.findIndex(r => r.codigo === codigo);
+                    if (idx !== -1) {
+                        const reg = localData[idx];
+                        if (!reg.archivos) reg.archivos = {};
+                        if (!reg.documentos) reg.documentos = {};
+                        if (reg.rechazos) delete reg.rechazos[docId];
+
+                        reg.archivos[docId] = {
+                            nombre: file.name,
+                            dataUrl: base64Comprimida,
+                            tipo: 'image/jpeg',
+                            fecha: new Date().toLocaleDateString('es-VE')
+                        };
+                        reg.documentos[docId] = 'CONSIGNADO';
+
+                        // Evaluar estado
+                        const keysRech = Object.keys(reg.rechazos || {});
+                        if (keysRech.length === 0) {
+                            reg.estado = 'EN_REVISION';
+                        }
+                        localData[idx] = reg;
+                        localStorage.setItem('fya_preinscripciones_db', JSON.stringify(localData));
+                    }
+                } catch (e) {}
+
+                mostrarToast('Documento Corregido', 'La fotografía fue reemplazada con éxito. El expediente vuelve a EN REVISIÓN para validación docente.', 'success');
+                ejecutarConsultaRepresentante();
+            } catch (err) {
+                console.error('[Subsanar Error]', err);
+                mostrarToast('Error al Subsanar', 'Ocurrió un error al procesar la fotografía. Inténtelo de nuevo.', 'error');
+            }
+        };
+
+        // ==============================================================
+        // EMISOR DE CARNET ESTUDIANTIL PROVISIONAL CR80 (HORIZONTAL)
+        // ==============================================================
+        let carnetRegistroActivo = null;
+
+        window.emitirCarnetProvisional = function(codigo) {
+            let reg = null;
+            try {
+                const localData = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+                reg = localData.find(r => r.codigo === codigo);
+            } catch (e) {}
+
+            if (!reg) {
+                mostrarToast('Registro no encontrado', 'No se pudo cargar la información para el carnet.', 'error');
+                return;
+            }
+
+            carnetRegistroActivo = reg;
+
+            const printArea = document.getElementById('carnetCr80PrintArea');
+            if (!printArea) return;
+
+            const fotoCarnet = (reg.archivos && reg.archivos['4'] && reg.archivos['4'].dataUrl) ?
+                reg.archivos['4'].dataUrl :
+                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="260" viewBox="0 0 200 260"><rect width="100%" height="100%" fill="%23f1f5f9"/><circle cx="100" cy="90" r="45" fill="%23cbd5e1"/><path d="M30 240 C30 170, 170 170, 170 240 Z" fill="%2394a3b8"/></svg>';
+
+            printArea.innerHTML = `
+                <div class="carnet-cr80-header">
+                    <img src="logo_feyalegria.png" alt="Logo Fe y Alegría" class="carnet-cr80-header-logo">
+                    <div class="carnet-cr80-header-titles">
+                        <h4>U.E. FE Y ALEGRÍA "NUEVA AMÉRICA"</h4>
+                        <p>PERIODO ESCOLAR 2026 - 2027 • SAN FRANCISCO, EDO. ZULIA</p>
+                    </div>
+                    <div class="carnet-cr80-header-badge">PROVISIONAL</div>
+                </div>
+                <div class="carnet-cr80-body">
+                    <div class="carnet-cr80-photo-wrap">
+                        <img src="${fotoCarnet}" alt="Foto Estudiante" class="carnet-cr80-photo" crossOrigin="anonymous">
+                    </div>
+                    <div class="carnet-cr80-details">
+                        <div>
+                            <div class="carnet-cr80-student-name">${reg.alumno}</div>
+                            <div class="carnet-cr80-field-row">
+                                <span class="carnet-cr80-field-label">C.I. / C.E.:</span>
+                                <span class="carnet-cr80-field-value highlight-cedula">${reg.alumnoDoc || 'S/N'}</span>
+                            </div>
+                            <div class="carnet-cr80-field-row">
+                                <span class="carnet-cr80-field-label">Grado:</span>
+                                <span class="carnet-cr80-field-value" style="color: #b91c1c; font-weight: 700;">${reg.grado || 'Educación Primaria'}</span>
+                            </div>
+                            <div class="carnet-cr80-field-row">
+                                <span class="carnet-cr80-field-label">Tipo Sangre:</span>
+                                <span class="carnet-cr80-field-value">${reg.alumnoSangre || 'O+'}</span>
+                            </div>
+                            <div class="carnet-cr80-field-row">
+                                <span class="carnet-cr80-field-label">Alergias/Cond:</span>
+                                <span class="carnet-cr80-field-value" style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    ${reg.alumnoAlergias || 'Ninguna conocida'}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="background: #fdf2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 3px 6px; font-size: 0.65rem;">
+                            <strong>Emergencia / Repre:</strong> ${reg.representante} • <strong>Tel:</strong> ${reg.repreTelefono || 'N/A'}
+                        </div>
+                    </div>
+                </div>
+                <div class="carnet-cr80-footer">
+                    <span>Folio: <strong>${reg.codigo}</strong></span>
+                    <span>VÁLIDO COMO IDENTIFICACIÓN ESTUDIANTIL PROVISIONAL</span>
+                    <span>DEA-FYA-00921</span>
+                </div>
+            `;
+
+            const modal = document.getElementById('modalCarnetProvisional');
+            if (modal) modal.style.display = 'flex';
+        };
+
+        window.cerrarModalCarnetProvisional = function() {
+            const modal = document.getElementById('modalCarnetProvisional');
+            if (modal) modal.style.display = 'none';
+        };
+
+        window.descargarCarnetPdf = async function() {
+            if (!carnetRegistroActivo) return;
+            const elem = document.getElementById('carnetCr80PrintArea');
+            if (!elem) return;
+
+            try {
+                mostrarToast('Generando Carnet', 'Exportando carnet CR80 en PDF...', 'info');
+                const opt = {
+                    margin: 0,
+                    filename: `Carnet_Provisional_${(carnetRegistroActivo.alumnoDoc || carnetRegistroActivo.codigo).replace(/\D/g, '')}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 3, useCORS: true },
+                    jsPDF: { unit: 'mm', format: [85.6, 54], orientation: 'landscape' }
+                };
+
+                if (typeof html2pdf !== 'undefined') {
+                    await html2pdf().set(opt).from(elem).save();
+                    mostrarToast('Carnet Descargado', 'El carnet estudiantil CR80 ha sido generado y descargado.', 'success');
+                } else {
+                    mostrarToast('Error de Librería', 'La librería html2pdf no está disponible.', 'error');
+                }
+            } catch (err) {
+                console.error('[Carnet PDF Error]', err);
+                mostrarToast('Error al Descargar', 'No se pudo generar el PDF del carnet.', 'error');
+            }
+        };
     </script>
 </body>
 

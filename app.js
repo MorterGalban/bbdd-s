@@ -561,6 +561,72 @@ function initMascarasValidacion() {
             }
             actualizarEstadoBotonImprimir();
         });
+
+        // MÓDULO 2: AUTOCOMPLETADO INTELIGENTE DE REPRESENTANTE PARA HERMANOS (PASO 2)
+        const verificarYAutocompletarRepresentante = () => {
+            const rawCed = (cedRepre.value || '').replace(/\D/g, '');
+            if (!rawCed || rawCed.length < 5) return;
+
+            const db = (Array.isArray(AppState.registros) && AppState.registros.length > 0)
+                ? AppState.registros
+                : JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+
+            const hermano = db.find(r => {
+                if (!r) return false;
+                const rCed = (r.repreDoc || '').replace(/\D/g, '');
+                return rCed === rawCed;
+            });
+
+            if (hermano) {
+                let repNombres = hermano.repreNombres || '';
+                let repApellidos = hermano.repreApellidos || '';
+                if (!repNombres && hermano.representante) {
+                    const partes = hermano.representante.trim().split(/\s+/);
+                    if (partes.length === 1) {
+                        repNombres = partes[0];
+                    } else {
+                        const mitad = Math.ceil(partes.length / 2);
+                        repNombres = partes.slice(0, mitad).join(' ');
+                        repApellidos = partes.slice(mitad).join(' ');
+                    }
+                }
+
+                const inNom = document.getElementById('repreNombres');
+                const inApe = document.getElementById('repreApellidos');
+                const inPar = document.getElementById('repreParentesco');
+                const inTel = document.getElementById('repreTelefono');
+                const inCor = document.getElementById('repreCorreo');
+                const inOcu = document.getElementById('repreOcupacion');
+                const inDir = document.getElementById('repreDireccion');
+
+                if (inNom && repNombres) inNom.value = repNombres;
+                if (inApe && repApellidos) inApe.value = repApellidos;
+                if (inPar && hermano.repreParentesco) inPar.value = hermano.repreParentesco;
+                if (inTel && hermano.repreTelefono) inTel.value = hermano.repreTelefono;
+                if (inCor && hermano.repreCorreo) inCor.value = hermano.repreCorreo;
+                if (inOcu && hermano.repreOcupacion) inOcu.value = hermano.repreOcupacion;
+                if (inDir && (hermano.repreDireccion || hermano.alumnoDireccion)) {
+                    inDir.value = hermano.repreDireccion || hermano.alumnoDireccion;
+                }
+
+                const notice = document.getElementById('repreAutofillNotice');
+                if (notice) {
+                    notice.style.display = 'block';
+                    notice.textContent = 'Datos del representante cargados automáticamente';
+                }
+
+                mostrarToast('Representante Encontrado', 'Datos del representante cargados automáticamente por registro previo de un hermano.', 'info');
+
+                // Si está marcada la Cédula Escolar, reensamblar de inmediato con la cédula del representante
+                const chkCe = document.getElementById('chkGenerarCedulaEscolar');
+                if (chkCe && chkCe.checked && typeof window.ensamblarCedulaEscolarDiferida === 'function') {
+                    window.ensamblarCedulaEscolarDiferida();
+                }
+            }
+        };
+
+        cedRepre.addEventListener('blur', verificarYAutocompletarRepresentante);
+        cedRepre.addEventListener('change', verificarYAutocompletarRepresentante);
     }
 
     // Escuchar todos los inputs requeridos para condicionar el botón de imprimir
@@ -706,37 +772,152 @@ function validarCamposObligatoriosPlanilla() {
 }
 
 function actualizarEstadoBotonImprimir() {
-    const btnImprimir = document.getElementById('btnGenerarPlanilla');
-    if (!btnImprimir) return;
-    btnImprimir.disabled = false;
-    btnImprimir.style.opacity = '1';
-    btnImprimir.style.cursor = 'pointer';
-    btnImprimir.title = 'Vista previa de la planilla oficial de preinscripción';
+    const btnVistaPrevia = document.getElementById('btnGenerarPlanilla');
+    const btnGuardar = document.getElementById('btnGuardarPreinscripcion');
+    const tieneLasCuatro = typeof validarCuatroFotosObligatorias === 'function' ? validarCuatroFotosObligatorias(false) : true;
+
+    if (btnVistaPrevia) {
+        if (!tieneLasCuatro) {
+            btnVistaPrevia.disabled = true;
+            btnVistaPrevia.style.opacity = '0.5';
+            btnVistaPrevia.style.cursor = 'not-allowed';
+            btnVistaPrevia.title = 'Requiere consignar las 4 fotografías obligatorias en el Paso 5';
+        } else {
+            btnVistaPrevia.disabled = false;
+            btnVistaPrevia.style.opacity = '1';
+            btnVistaPrevia.style.cursor = 'pointer';
+            btnVistaPrevia.title = 'Vista previa de la planilla oficial de preinscripción';
+        }
+    }
+
+    if (btnGuardar) {
+        if (!tieneLasCuatro) {
+            btnGuardar.disabled = true;
+            btnGuardar.style.opacity = '0.5';
+            btnGuardar.style.cursor = 'not-allowed';
+            btnGuardar.title = 'Requiere consignar las 4 fotografías obligatorias en el Paso 5';
+        } else {
+            btnGuardar.disabled = false;
+            btnGuardar.style.opacity = '1';
+            btnGuardar.style.cursor = 'pointer';
+            btnGuardar.title = 'Enviar preinscripción y descargar planilla en PDF';
+        }
+    }
 }
 
 /* ==============================================================================
-   4.1. GENERADOR AUTOMÁTICO DE CÉDULA ESCOLAR (PASO 1)
+   4.1. GENERADOR DE CÉDULA ESCOLAR EN CASCADA (PASO 1) & CAMPOS CONDICIONALES
    ============================================================================== */
 function initCedulaEscolarGenerator() {
     const chk = document.getElementById('chkGenerarCedulaEscolar');
     const panel = document.getElementById('panelGeneradorCedulaEscolar');
+    const groupParto = document.getElementById('groupCeTipoParto');
+    const groupOrden = document.getElementById('groupCeOrdenNacimiento');
+    const selParto = document.getElementById('ceTipoParto');
+    const selOrden = document.getElementById('ceOrdenNacimiento');
     const inputCedula = document.getElementById('alumnoNumDoc');
     const tipoDoc = document.getElementById('alumnoTipoDoc');
-    const ceNac = document.getElementById('ceNacionalidad');
-    const ceParto = document.getElementById('ceTipoParto');
-    const ceCedRep = document.getElementById('ceCedulaRepresentante');
-    const repreCed = document.getElementById('repreNumDoc');
-    const fechaNac = document.getElementById('alumnoFechaNac');
 
     if (!chk || !inputCedula) return;
 
-    function recalcularYEnsamblarCedula() {
-        if (!chk.checked) return;
+    // Al cargar el Paso 1, oculta por defecto ('display: none;') selectores de "Tipo de parto" y "Orden de nacimiento"
+    // y jamás solicites la cédula del representante en este paso.
+    if (groupParto) groupParto.style.display = 'none';
+    if (groupOrden) groupOrden.style.display = 'none';
+    if (panel) panel.style.display = 'none';
 
-        const nac = (ceNac?.value || 'V').trim().toUpperCase();
-        const parto = (ceParto?.value || '1').trim();
+    // Nivel 2: Si elige "Parto sencillo", mantén oculto "Orden de nacimiento" y fija '1'.
+    // Si elige "Mellizos / Gemelos" o "Trillizos", revela ('display: block;') "Orden de nacimiento".
+    function actualizarNivel2Cascada() {
+        const valParto = selParto ? selParto.value : 'sencillo';
+        if (valParto === 'sencillo') {
+            if (groupOrden) groupOrden.style.display = 'none';
+            if (selOrden) selOrden.value = '1';
+        } else if (valParto === 'mellizos') {
+            if (groupOrden) groupOrden.style.display = 'block';
+            if (selOrden) {
+                const opt3 = selOrden.querySelector('option[value="3"]');
+                if (opt3) opt3.style.display = 'none';
+                if (selOrden.value === '3') selOrden.value = '1';
+            }
+        } else if (valParto === 'trillizos') {
+            if (groupOrden) groupOrden.style.display = 'block';
+            if (selOrden) {
+                const opt3 = selOrden.querySelector('option[value="3"]');
+                if (opt3) opt3.style.display = 'block';
+            }
+        }
+    }
 
-        // 3er y 4to carácter: dos últimos dígitos del año de nacimiento
+    if (selParto) {
+        selParto.addEventListener('change', actualizarNivel2Cascada);
+    }
+
+    chk.addEventListener('change', () => {
+        if (chk.checked) {
+            // Nivel 1: Al marcar la casilla, deshabilita el input de cédula del alumno mostrando el aviso
+            // "Se generará automáticamente al finalizar", habilita el pase de validación del Paso 1 sin exigir cédula escrita
+            // y revela ('display: block;') únicamente el selector "Tipo de parto".
+            inputCedula.setAttribute('disabled', 'disabled');
+            inputCedula.setAttribute('readonly', 'readonly');
+            inputCedula.classList.add('input-readonly');
+            inputCedula.placeholder = 'Se generará automáticamente al finalizar';
+            inputCedula.value = '';
+            inputCedula.classList.remove('input-invalid');
+
+            if (tipoDoc) tipoDoc.value = 'CE';
+            if (panel) panel.style.display = 'block';
+            if (groupParto) groupParto.style.display = 'block';
+
+            actualizarNivel2Cascada();
+
+            const badge = document.getElementById('ceBadgeVisual');
+            if (badge) badge.textContent = 'CE-PENDIENTE';
+        } else {
+            // Truco 3: Si desmarca la casilla, re-habilitar y limpiar por completo las variables temporales
+            inputCedula.removeAttribute('disabled');
+            inputCedula.removeAttribute('readonly');
+            inputCedula.classList.remove('input-readonly');
+            inputCedula.placeholder = 'Número de Cédula';
+            if (inputCedula.value.startsWith('CE')) {
+                inputCedula.value = '';
+            }
+            if (tipoDoc) tipoDoc.value = 'V';
+
+            if (panel) panel.style.display = 'none';
+            if (groupParto) groupParto.style.display = 'none';
+            if (groupOrden) groupOrden.style.display = 'none';
+
+            // Limpieza estricta de memoria y variables temporales
+            if (selParto) selParto.value = 'sencillo';
+            if (selOrden) selOrden.value = '1';
+
+            const badge = document.getElementById('ceBadgeVisual');
+            if (badge) badge.textContent = 'CE-PENDIENTE';
+
+            sincronizarDatosPlanilla();
+        }
+    });
+
+    // FÓRMULA DIFERIDA AL FINAL:
+    // Al llegar al Paso 5, pulsar "Vista Previa" o "Enviar Planilla y Descargar", ensambla el código iniciando
+    // únicamente con las letras "CE" (sin letras V ni E, ni letras en el medio), seguidas por el dígito de orden
+    // de nacimiento ('1', '2' o '3'), los 2 últimos dígitos del año de nacimiento del niño y los 8 dígitos numéricos
+    // de la cédula del representante tomada del Paso 2 (.replace(/\D/g, "").padStart(8, "0")). Ej: "CE119018456123".
+    window.ensamblarCedulaEscolarDiferida = function() {
+        if (!chk.checked) return inputCedula.value;
+
+        // 1. Dígito de orden de nacimiento
+        const valParto = selParto ? selParto.value : 'sencillo';
+        let orden = '1';
+        if (valParto === 'sencillo') {
+            orden = '1';
+        } else {
+            orden = selOrden ? (selOrden.value || '1') : '1';
+        }
+
+        // 2. Dos últimos dígitos del año de nacimiento del niño
+        const fechaNac = document.getElementById('alumnoFechaNac');
         let dosDigitosAno = '20';
         if (fechaNac && fechaNac.value) {
             const fechaStr = fechaNac.value.trim();
@@ -751,79 +932,26 @@ function initCedulaEscolarGenerator() {
             }
         }
 
-        // 8 dígitos de cédula del representante aplicando padStart(8, "0")
-        const rawRepCed = (ceCedRep?.value || repreCed?.value || '').replace(/\D/g, '');
+        // 3. 8 dígitos numéricos de la cédula del representante tomada del Paso 2
+        const repreCed = document.getElementById('repreNumDoc');
+        const rawRepCed = (repreCed?.value || '').replace(/\D/g, '');
         const cedulaRepPadded = rawRepCed ? rawRepCed.padStart(8, '0') : '00000000';
 
-        // Estructura normativa: Nacionalidad (V/E) + Parto (1/2/3) + Año Nacimiento (2 dígitos) + CE + Cédula Repre (8 dígitos)
-        const cedulaGenerada = `${nac}${parto}${dosDigitosAno}CE${cedulaRepPadded}`;
+        const cedulaEscolar = `CE${orden}${dosDigitosAno}${cedulaRepPadded}`;
 
-        inputCedula.value = cedulaGenerada;
+        inputCedula.value = cedulaEscolar;
         if (tipoDoc) tipoDoc.value = 'CE';
 
         const badge = document.getElementById('ceBadgeVisual');
-        if (badge) badge.textContent = cedulaGenerada;
+        if (badge) badge.textContent = cedulaEscolar;
 
-        inputCedula.classList.remove('input-invalid');
-        sincronizarDatosPlanilla();
-    }
+        const planDoc = document.getElementById('planAlumnoDoc');
+        if (planDoc) planDoc.textContent = cedulaEscolar;
 
-    chk.addEventListener('change', () => {
-        if (chk.checked) {
-            inputCedula.setAttribute('readonly', 'readonly');
-            inputCedula.classList.add('input-readonly');
-            if (tipoDoc) tipoDoc.value = 'CE';
-            if (panel) panel.style.display = 'block';
+        return cedulaEscolar;
+    };
 
-            // Sincronizar cédula de representante si ya fue digitada en Paso 2
-            if (repreCed && repreCed.value && ceCedRep && !ceCedRep.value) {
-                ceCedRep.value = repreCed.value.replace(/\D/g, '');
-            } else if (ceCedRep && ceCedRep.value && repreCed && !repreCed.value) {
-                repreCed.value = ceCedRep.value.replace(/\D/g, '');
-            }
-
-            recalcularYEnsamblarCedula();
-        } else {
-            inputCedula.removeAttribute('readonly');
-            inputCedula.classList.remove('input-readonly');
-            if (panel) panel.style.display = 'none';
-            sincronizarDatosPlanilla();
-        }
-    });
-
-    // Sincronización bidireccional en tiempo real entre ceCedulaRepresentante y repreNumDoc
-    if (ceCedRep) {
-        ceCedRep.addEventListener('input', () => {
-            const soloDigitos = ceCedRep.value.replace(/\D/g, '');
-            ceCedRep.value = soloDigitos;
-            if (repreCed) {
-                repreCed.value = soloDigitos;
-                repreCed.classList.remove('input-invalid');
-            }
-            recalcularYEnsamblarCedula();
-        });
-    }
-
-    if (repreCed) {
-        repreCed.addEventListener('input', () => {
-            const soloDigitos = repreCed.value.replace(/\D/g, '');
-            if (ceCedRep && ceCedRep.value !== soloDigitos) {
-                ceCedRep.value = soloDigitos;
-            }
-            if (chk.checked) {
-                recalcularYEnsamblarCedula();
-            }
-        });
-    }
-
-    if (ceNac) ceNac.addEventListener('change', recalcularYEnsamblarCedula);
-    if (ceParto) ceParto.addEventListener('change', recalcularYEnsamblarCedula);
-    if (fechaNac) {
-        fechaNac.addEventListener('input', recalcularYEnsamblarCedula);
-        fechaNac.addEventListener('change', recalcularYEnsamblarCedula);
-    }
-
-    window.generarCedulaEscolar = recalcularYEnsamblarCedula;
+    window.generarCedulaEscolar = window.ensamblarCedulaEscolarDiferida;
 }
 
 
@@ -907,6 +1035,14 @@ function irAlPaso(numPaso) {
 
     AppState.pasoActual = numPaso;
     AppState.bloqueActual = numPaso <= 2 ? 1 : (numPaso <= 4 ? 2 : 3);
+
+    // Al llegar al Paso 5, ensamblar automáticamente la Cédula Escolar Diferida
+    if (numPaso === 5) {
+        if (typeof window.ensamblarCedulaEscolarDiferida === 'function') {
+            window.ensamblarCedulaEscolarDiferida();
+        }
+    }
+
     actualizarEstadoBotonImprimir();
     actualizarTimestampEmision();
     window.scrollTo({ top: 180, behavior: 'smooth' });
@@ -926,23 +1062,8 @@ function validarPaso(numPaso) {
     }
 
     if (numPaso === 1) {
-        const chkGen = document.getElementById('chkGenerarCedulaEscolar');
-        if (chkGen && chkGen.checked) {
-            const ceCed = document.getElementById('ceCedulaRepresentante');
-            const rawRepCed = (ceCed?.value || '').replace(/\D/g, '');
-            if (!rawRepCed) {
-                ceCed?.classList.add('input-invalid');
-                ceCed?.focus();
-                ceCed?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                mostrarToast('Cédula Representante Requerida', 'Ingresa la Cédula del Representante en el generador de Cédula Escolar.', 'error');
-                return false;
-            } else {
-                ceCed?.classList.remove('input-invalid');
-                if (typeof window.generarCedulaEscolar === 'function') {
-                    window.generarCedulaEscolar();
-                }
-            }
-        }
+        // Si no posee Cédula (Cédula Escolar marcada), habilita el pase de validación del Paso 1 sin exigir cédula escrita
+        // y jamás solicites la cédula del representante en este paso.
     }
 
     const stepElem = document.getElementById(`stepContent${numPaso}`);
@@ -955,6 +1076,12 @@ function validarPaso(numPaso) {
     camposRequeridos.forEach(campo => {
         // Eximir campos ocultos o deshabilitados
         if (campo.offsetParent === null || campo.disabled) return;
+
+        // Si es cédula de alumno y tiene activada Cédula Escolar, omitir validación en Paso 1
+        if (campo.id === 'alumnoNumDoc') {
+            const chkGen = document.getElementById('chkGenerarCedulaEscolar');
+            if (chkGen && chkGen.checked) return;
+        }
 
         // Si es primer ingreso, ignorar plantel de procedencia
         const chkPrimerIngreso = document.getElementById('chkPrimerIngreso');
@@ -1774,44 +1901,51 @@ function initUploadRecaudos() {
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const dataUrl = event.target.result;
-                if (!AppState.archivosCargados) AppState.archivosCargados = {};
-                AppState.archivosCargados[docId] = {
-                    nombre: file.name,
-                    tamano: file.size,
-                    tipo: file.type,
-                    dataUrl: dataUrl,
-                    fecha: new Date().toLocaleDateString('es-VE')
-                };
+            // TRUCO 1: COMPRESIÓN AUTOMÁTICA EN CANVAS EN MEMORIA
+            (async () => {
+                try {
+                    const maxWidth = (docId === '4') ? 300 : 800;
+                    const dataUrl = await comprimirImagenCanvas(file, maxWidth, 0.7);
 
-                // Actualizar thumbnail con miniatura de la imagen cargada
-                const thumbBox = document.getElementById(`thumbBoxDoc${docId}`);
-                if (thumbBox) {
-                    thumbBox.innerHTML = `<img src="${dataUrl}" alt="Vista previa ${docId}" class="recaudo-thumb-img" />`;
+                    if (!AppState.archivosCargados) AppState.archivosCargados = {};
+                    AppState.archivosCargados[docId] = {
+                        nombre: file.name,
+                        tamano: Math.round(dataUrl.length * 0.75),
+                        tipo: 'image/jpeg',
+                        dataUrl: dataUrl,
+                        fecha: new Date().toLocaleDateString('es-VE')
+                    };
+
+                    // Actualizar thumbnail con miniatura de la imagen cargada
+                    const thumbBox = document.getElementById(`thumbBoxDoc${docId}`);
+                    if (thumbBox) {
+                        thumbBox.innerHTML = `<img src="${dataUrl}" alt="Vista previa ${docId}" class="recaudo-thumb-img" />`;
+                    }
+
+                    // Inyección Inmediata en Planilla Oficial si es la Foto Tipo Carnet (Doc 4)
+                    if (docId === '4') {
+                        inyectarFotoCarnetEnPlanilla(dataUrl);
+                    }
+
+                    // Quitar indicador de error de la tarjeta
+                    if (card) {
+                        card.classList.remove('recaudo-card-error');
+                    }
+
+                    renderizarChipArchivoCargado(docId, file.name, Math.round(dataUrl.length * 0.75));
+
+                    const sel = document.getElementById(`estadoDoc${docId}`);
+                    if (sel) sel.value = 'CONSIGNADO';
+
+                    sincronizarRecaudosPlanilla();
+                    actualizarEstadoBotonImprimir();
+
+                    mostrarToast('Fotografía Optimizada', `"${file.name}" comprimida y cargada correctamente.`);
+                } catch (err) {
+                    console.error('[Canvas Compression Error]', err);
+                    mostrarToast('Error al procesar foto', 'No se pudo optimizar la imagen seleccionada.', 'error');
                 }
-
-                // Inyección Inmediata en Planilla Oficial si es la Foto Tipo Carnet (Doc 4)
-                if (docId === '4') {
-                    inyectarFotoCarnetEnPlanilla(dataUrl);
-                }
-
-                // Quitar indicador de error de la tarjeta
-                if (card) {
-                    card.classList.remove('recaudo-card-error');
-                }
-
-                renderizarChipArchivoCargado(docId, file.name, file.size);
-
-                const sel = document.getElementById(`estadoDoc${docId}`);
-                if (sel) sel.value = 'CONSIGNADO';
-
-                sincronizarRecaudosPlanilla();
-
-                mostrarToast('Fotografía Cargada', `"${file.name}" cargada correctamente.`);
-            };
-            reader.readAsDataURL(file);
+            })();
         });
     });
 }
@@ -2435,6 +2569,11 @@ function filtrarYRenderizarHistorial() {
 async function manejarEnvioPreinscripcion(e) {
     e.preventDefault();
 
+    // Ensamblaje diferido de Cédula Escolar
+    if (typeof window.ensamblarCedulaEscolarDiferida === 'function') {
+        window.ensamblarCedulaEscolarDiferida();
+    }
+
     // 1. Bloqueo estricto e innegociable si faltan las 4 fotografías obligatorias
     if (!validarCuatroFotosObligatorias(true)) {
         irAlPaso(5);
@@ -2792,7 +2931,7 @@ function cargarRegistroSemillaSiVacio() {
 }
 
 function cargarAspiranteEjemplo() {
-    // Alumno
+    // 1. Alumno
     document.getElementById('alumnoNombres').value = 'Jesús David';
     document.getElementById('alumnoApellidos').value = 'Gómez Blanco';
     document.getElementById('alumnoFechaNac').value = '2020-03-12';
@@ -2804,7 +2943,7 @@ function cargarAspiranteEjemplo() {
     document.getElementById('alumnoDireccion').value = 'Barrio 24 de Julio, Av. 49B entre Calles 176 y 177, San Francisco, Edo. Zulia';
     document.getElementById('alumnoAlergias').value = 'Ninguna conocida / Sin alergias';
 
-    // Representante
+    // 2. Representante
     document.getElementById('repreTipoDoc').value = 'V';
     document.getElementById('repreNumDoc').value = '19888777';
     document.getElementById('repreParentesco').value = 'MADRE';
@@ -2817,30 +2956,41 @@ function cargarAspiranteEjemplo() {
     document.getElementById('repreLugarTrabajo').value = 'Sector San Francisco Centro';
     document.getElementById('repreDireccion').value = 'Barrio 24 de Julio, Av. 49B entre Calles 176 y 177, San Francisco, Edo. Zulia';
 
-    // Generador Automático de Cédula Escolar (Paso 1)
+    // 3. Generador Automático de Cédula Escolar en Cascada (Truco 2)
     const chkCe = document.getElementById('chkGenerarCedulaEscolar');
     if (chkCe) {
         chkCe.checked = true;
         const panel = document.getElementById('panelGeneradorCedulaEscolar');
         if (panel) panel.style.display = 'block';
+        const groupParto = document.getElementById('groupCeTipoParto');
+        if (groupParto) groupParto.style.display = 'block';
+        const groupOrden = document.getElementById('groupCeOrdenNacimiento');
+        if (groupOrden) groupOrden.style.display = 'none';
+
         const numDoc = document.getElementById('alumnoNumDoc');
         if (numDoc) {
+            numDoc.disabled = true;
             numDoc.readOnly = true;
             numDoc.classList.add('input-readonly');
+            numDoc.placeholder = 'Se generará automáticamente al finalizar';
         }
         document.getElementById('alumnoTipoDoc').value = 'CE';
-        document.getElementById('ceNacionalidad').value = 'V';
-        document.getElementById('ceTipoParto').value = '1';
-        document.getElementById('ceCedulaRepresentante').value = '19888777';
-        if (typeof generarCedulaEscolarAutomatica === 'function') {
-            generarCedulaEscolarAutomatica();
+
+        const selParto = document.getElementById('ceTipoParto');
+        if (selParto) selParto.value = 'sencillo';
+        const selOrden = document.getElementById('ceOrdenNacimiento');
+        if (selOrden) selOrden.value = '1';
+
+        // Disparar ensamblaje diferido con fórmula normativa (CE + 1 + 20 + 19888777 -> CE12019888777)
+        if (typeof window.ensamblarCedulaEscolarDiferida === 'function') {
+            window.ensamblarCedulaEscolarDiferida();
         }
     } else {
         document.getElementById('alumnoTipoDoc').value = 'CE';
-        document.getElementById('alumnoNumDoc').value = 'V120CE19888777';
+        document.getElementById('alumnoNumDoc').value = 'CE12019888777';
     }
 
-    // Instituto de Procedencia
+    // 4. Plantel de Procedencia
     document.getElementById('chkPrimerIngreso').checked = false;
     const instWrapper = document.getElementById('institutoFieldsWrapper');
     if (instWrapper) {
@@ -2852,13 +3002,13 @@ function cargarAspiranteEjemplo() {
     document.getElementById('institutoTipo').value = 'PUBLICA';
     document.getElementById('institutoCiudad').value = 'San Francisco, Edo. Zulia';
 
-    // Grado Primaria
+    // 5. Oferta Académica (Grado Primaria)
     document.getElementById('selectGrado').value = '1';
     actualizarResumenGrado();
 
-    // 4 Recaudos Fotográficos Obligatorios de Demostración
-    const samplePhotoDataUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400"><rect width="100%" height="100%" fill="%23e0f2fe"/><circle cx="150" cy="140" r="65" fill="%230284c7"/><path d="M60 360 C60 250, 240 250, 240 360 Z" fill="%230369a1"/><text x="150" y="385" font-family="sans-serif" font-size="14" fill="%230c4a6e" text-anchor="middle" font-weight="bold">FOTO CARNET ALUMNO</text></svg>';
-    const sampleDocDataUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280" viewBox="0 0 400 280"><rect width="100%" height="100%" fill="%23f8fafc" stroke="%2316a34a" stroke-width="6"/><text x="200" y="140" font-family="sans-serif" font-size="18" fill="%2315803d" text-anchor="middle" font-weight="bold">CONSIGNADO Y VERIFICADO</text></svg>';
+    // 6. Carga automática de las 4 fotografías obligatorias con imágenes ligeras en Base64 (Truco 2)
+    const samplePhotoCarnetDataUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="360" viewBox="0 0 300 360"><rect width="100%" height="100%" fill="%23e0f2fe"/><circle cx="150" cy="130" r="60" fill="%230284c7"/><path d="M50 330 C50 220, 250 220, 250 330 Z" fill="%230369a1"/><text x="150" y="348" font-family="sans-serif" font-size="13" fill="%230c4a6e" text-anchor="middle" font-weight="bold">FOTO CARNET ALUMNO</text></svg>';
+    const sampleDocDataUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280" viewBox="0 0 400 280"><rect width="100%" height="100%" fill="%23f8fafc" stroke="%2316a34a" stroke-width="6"/><text x="200" y="140" font-family="sans-serif" font-size="18" fill="%2315803d" text-anchor="middle" font-weight="bold">DOCUMENTO CONSIGNADO</text></svg>';
 
     if (!AppState.archivosCargados) AppState.archivosCargados = {};
     const nombresDocs = [
@@ -2869,11 +3019,11 @@ function cargarAspiranteEjemplo() {
     ];
 
     ['1', '2', '3', '4'].forEach((id, idx) => {
-        const isPhotoCarnet = id === '4';
-        const dUrl = isPhotoCarnet ? samplePhotoDataUrl : sampleDocDataUrl;
+        const isPhotoCarnet = (id === '4');
+        const dUrl = isPhotoCarnet ? samplePhotoCarnetDataUrl : sampleDocDataUrl;
         AppState.archivosCargados[id] = {
             nombre: nombresDocs[idx],
-            tamano: 450000,
+            tamano: 15000,
             tipo: 'image/jpeg',
             dataUrl: dUrl,
             fecha: new Date().toLocaleDateString('es-VE')
@@ -2886,19 +3036,20 @@ function cargarAspiranteEjemplo() {
         const card = document.getElementById(`cardRecaudo${id}`);
         if (card) card.classList.remove('recaudo-card-error');
 
-        renderizarChipArchivoCargado(id, nombresDocs[idx], 450000);
+        renderizarChipArchivoCargado(id, nombresDocs[idx], 15000);
 
         const sel = document.getElementById(`estadoDoc${id}`);
         if (sel) sel.value = 'CONSIGNADO';
     });
 
     // Inyección de Foto Tipo Carnet en la Planilla Oficial y PDF
-    inyectarFotoCarnetEnPlanilla(samplePhotoDataUrl);
+    inyectarFotoCarnetEnPlanilla(samplePhotoCarnetDataUrl);
 
     document.querySelectorAll('.input-invalid').forEach(el => el.classList.remove('input-invalid'));
     sincronizarRecaudosPlanilla();
+    sincronizarDatosPlanilla();
     actualizarEstadoBotonImprimir();
-    mostrarToast('Ejemplo Cargado', 'Formulario autocompletado con Cédula Escolar generada y 4 fotografías obligatorias consignadas.');
+    mostrarToast('Ejemplo Cargado con Éxito', 'Formulario completo con Cédula Escolar diferida y 4 fotografías obligatorias consignadas. ¡Listo para Vista Previa y PDF!');
 }
 
 /* ==============================================================================
@@ -2927,8 +3078,13 @@ function initEventListeners() {
     const btnGenerarPlanilla = document.getElementById('btnGenerarPlanilla');
     if (btnGenerarPlanilla) {
         btnGenerarPlanilla.addEventListener('click', () => {
+            // Disparar ensamblaje diferido si corresponde
+            if (typeof window.ensamblarCedulaEscolarDiferida === 'function') {
+                window.ensamblarCedulaEscolarDiferida();
+            }
             // Bloqueo estricto e innegociable: exige las 4 fotos obligatorias
             if (!validarCuatroFotosObligatorias(true)) {
+                irAlPaso(5);
                 return;
             }
             sincronizarDatosPlanilla();
@@ -3336,3 +3492,823 @@ window.volverAlInicioDesdeExito = function() {
     localStorage.removeItem('fya_preinscripcion_draft');
     window.location.href = 'index.html';
 };
+
+
+/* ==============================================================================
+   TRUCO 1: COMPRESOR AUTOMÁTICO EN CANVAS EN MEMORIA
+   ============================================================================== */
+async function comprimirImagenCanvas(file, maxWidth = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        try {
+            if (!file) return reject(new Error('Archivo inexistente'));
+            if (!file.type || !file.type.startsWith('image/')) {
+                return reject(new Error('El archivo no es una imagen válida'));
+            }
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('Error al leer el archivo'));
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onerror = () => reject(new Error('Error al cargar la imagen'));
+                img.onload = () => {
+                    try {
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        resolve(dataUrl);
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+window.comprimirImagenCanvas = comprimirImagenCanvas;
+
+/* ==============================================================================
+   MÓDULO 4: VISOR LIGHTBOX, RECHAZO INDIVIDUAL DE FOTOS Y MÁQUINA DE ESTADOS (PANEL DOCENTE)
+   ============================================================================== */
+window.abrirLightboxDocente = function(codigo) {
+    const reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    if (!reg) {
+        mostrarToast('Error', 'Expediente no encontrado.', 'error');
+        return;
+    }
+
+    const modal = document.getElementById('modalLightboxRecaudos');
+    const info = document.getElementById('lightboxExpedienteInfo');
+    const grid = document.getElementById('lightboxGrid');
+    if (!modal || !grid) return;
+
+    if (info) {
+        info.innerHTML = `
+            <strong>Aspirante:</strong> ${reg.alumno} &nbsp;|&nbsp;
+            <strong>C.I./C.E.:</strong> ${reg.alumnoDoc || 'S/N'} &nbsp;|&nbsp;
+            <strong>Folio:</strong> ${reg.codigo} &nbsp;|&nbsp;
+            <strong>Grado:</strong> ${reg.grado} &nbsp;|&nbsp;
+            <strong>Estatus:</strong> <span class="badge-status ${reg.estado}">${reg.estado}</span>
+        `;
+    }
+
+    const catalogo = [
+        { id: '1', titulo: 'Foto de Cédula del Representante', icon: 'fa-id-card' },
+        { id: '2', titulo: 'Foto de Informe Cardiovascular', icon: 'fa-heart-pulse' },
+        { id: '3', titulo: 'Foto de Partida de Nacimiento', icon: 'fa-certificate' },
+        { id: '4', titulo: 'Foto Tipo Carnet del Estudiante', icon: 'fa-camera' }
+    ];
+
+    let html = '';
+    catalogo.forEach(doc => {
+        const fileInfo = reg.archivos ? reg.archivos[doc.id] : null;
+        const rechazoInfo = reg.rechazos ? reg.rechazos[doc.id] : null;
+        const tieneFoto = Boolean(fileInfo && fileInfo.dataUrl);
+
+        html += `
+            <div class="lightbox-card" id="lightboxCardDoc_${doc.id}">
+                <div class="lightbox-card-header">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid ${doc.icon}" style="color: var(--fya-red);"></i>
+                        <h4 style="font-size: 0.95rem; margin: 0; color: var(--text-primary);">${doc.titulo}</h4>
+                    </div>
+                    <div>
+                        ${rechazoInfo ? `
+                            <span class="lightbox-status-pill status-rechazado">
+                                <i class="fa-solid fa-circle-xmark"></i> RECHAZADA
+                            </span>
+                        ` : (tieneFoto ? `
+                            <span class="lightbox-status-pill status-consignado">
+                                <i class="fa-solid fa-circle-check"></i> CONSIGNADA
+                            </span>
+                        ` : `
+                            <span class="lightbox-status-pill status-faltante">
+                                <i class="fa-solid fa-circle-exclamation"></i> FALTANTE
+                            </span>
+                        `)}
+                    </div>
+                </div>
+
+                <div class="lightbox-img-wrapper" id="lightboxImgWrap_${doc.id}">
+                    ${tieneFoto ? `
+                        <div class="lightbox-zoom-toolbar">
+                            <button type="button" class="lightbox-zoom-btn" onclick="window.zoomInLightbox('lightboxImg_${doc.id}')" title="Acercar">
+                                <i class="fa-solid fa-magnifying-glass-plus"></i>
+                            </button>
+                            <button type="button" class="lightbox-zoom-btn" onclick="window.zoomOutLightbox('lightboxImg_${doc.id}')" title="Alejar">
+                                <i class="fa-solid fa-magnifying-glass-minus"></i>
+                            </button>
+                        </div>
+                        <img src="${fileInfo.dataUrl}" id="lightboxImg_${doc.id}" alt="${doc.titulo}" class="lightbox-img" onclick="window.toggleZoomLightbox(this)" title="Haga clic para alternar zoom" />
+                    ` : `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); padding: 2rem;">
+                            <i class="fa-solid fa-image-slash" style="font-size: 3rem; margin-bottom: 0.75rem; opacity: 0.5;"></i>
+                            <span>Fotografía no consignada en el expediente</span>
+                        </div>
+                    `}
+                </div>
+
+                <div style="margin-top: 0.75rem;">
+                    ${rechazoInfo ? `
+                        <div class="lightbox-reject-box active">
+                            <strong style="color: #b91c1c; display: block; font-size: 0.85rem; margin-bottom: 0.25rem;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Fotografía Rechazada:
+                            </strong>
+                            <p style="font-size: 0.82rem; margin: 0 0 0.5rem; color: var(--text-primary); font-style: italic;">
+                                "${rechazoInfo.motivo}"
+                            </p>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="window.quitarRechazoFoto('${reg.codigo}', '${doc.id}')" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;">
+                                <i class="fa-solid fa-rotate-left"></i> Levantar Rechazo / Revalidar
+                            </button>
+                        </div>
+                    ` : (tieneFoto ? `
+                        <div id="lightboxRejectForm_${doc.id}" style="display: none; background: #fff1f2; border: 1px solid #fecdd3; border-radius: var(--radius-sm); padding: 0.65rem;">
+                            <label style="font-size: 0.78rem; font-weight: 700; color: #9f1239; display: block; margin-bottom: 0.35rem;">
+                                Motivo exacto del rechazo para el representante:
+                            </label>
+                            <textarea id="lightboxObsInput_${doc.id}" class="form-control form-control-sm" rows="2" placeholder="Ej: Partida de nacimiento ilegible, cortada o borrosa"></textarea>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('lightboxRejectForm_${doc.id}').style.display = 'none'; document.getElementById('btnShowReject_${doc.id}').style.display = 'inline-block';">
+                                    Cancelar
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm" style="background: #dc2626; border-color: #dc2626;" onclick="window.guardarRechazoFoto('${reg.codigo}', '${doc.id}')">
+                                    Confirmar Rechazo
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" id="btnShowReject_${doc.id}" class="btn btn-outline-red btn-sm" style="width: 100%; font-size: 0.8rem;" onclick="document.getElementById('lightboxRejectForm_${doc.id}').style.display = 'block'; this.style.display = 'none';">
+                            <i class="fa-solid fa-ban"></i> Rechazar Foto con Observación
+                        </button>
+                    ` : '')}
+                </div>
+            </div>
+        `;
+    });
+
+    grid.innerHTML = html;
+    modal.classList.add('active');
+};
+
+window.cerrarLightboxDocente = function() {
+    const modal = document.getElementById('modalLightboxRecaudos');
+    if (modal) modal.classList.remove('active');
+};
+
+window.toggleZoomLightbox = function(imgElem) {
+    if (!imgElem) return;
+    imgElem.classList.toggle('zoomed');
+};
+
+window.zoomInLightbox = function(imgId) {
+    const img = document.getElementById(imgId);
+    if (img) img.classList.add('zoomed');
+};
+
+window.zoomOutLightbox = function(imgId) {
+    const img = document.getElementById(imgId);
+    if (img) img.classList.remove('zoomed');
+};
+
+window.guardarRechazoFoto = async function(codigo, docId) {
+    const reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    if (!reg) return;
+
+    const obsInput = document.getElementById(`lightboxObsInput_${docId}`);
+    const motivo = (obsInput?.value || '').trim();
+    if (!motivo) {
+        mostrarToast('Observación Requerida', 'Por favor especifique la observación del rechazo para que el representante pueda subsanar.', 'error');
+        if (obsInput) obsInput.focus();
+        return;
+    }
+
+    if (!reg.rechazos) reg.rechazos = {};
+    reg.rechazos[docId] = {
+        motivo: motivo,
+        fecha: new Date().toLocaleDateString('es-VE')
+    };
+
+    if (!reg.documentos) reg.documentos = {};
+    reg.documentos[docId] = 'RECHAZADO';
+
+    // MÁQUINA DE ESTADOS ESTRICTA:
+    // Si el docente marca al menos una foto como rechazada, el estatus del expediente
+    // cambia forzosa y automáticamente a "DOCUMENTOS INCOMPLETOS" y el selector de aprobación queda bloqueado ('disabled').
+    reg.estado = 'DOCUMENTOS_INCOMPLETOS';
+
+    // Guardar en almacenamiento local
+    localStorage.setItem('fya_preinscripciones_db', JSON.stringify(AppState.registros));
+
+    // Sincronizar en la base de datos MySQL & system_logs
+    try {
+        const usuarioSesion = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('fya_docente_auth'))
+            ? JSON.parse(sessionStorage.getItem('fya_docente_auth')).usuario
+            : 'Docente / Control de Estudios';
+
+        await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/recaudo`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                docId,
+                nuevoEstado: 'RECHAZADO',
+                rechazada: true,
+                motivoRechazo: motivo,
+                estadoFinal: 'DOCUMENTOS_INCOMPLETOS',
+                usuario: usuarioSesion
+            })
+        });
+    } catch (err) {
+        console.warn('[Cloud Sync Rechazo Warning]', err.message);
+    }
+
+    actualizarKpisDocente();
+    filtrarYRenderizarPanelDocente();
+    window.abrirLightboxDocente(codigo);
+    mostrarToast('Fotografía Rechazada', 'La foto fue marcada como rechazada y el expediente pasó a DOCUMENTOS INCOMPLETOS.', 'warning');
+};
+
+window.quitarRechazoFoto = async function(codigo, docId) {
+    const reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    if (!reg) return;
+
+    if (reg.rechazos) {
+        delete reg.rechazos[docId];
+    }
+    if (reg.documentos) {
+        reg.documentos[docId] = 'CONSIGNADO';
+    }
+
+    // Comprobar estado de los 4 recaudos
+    const tieneLasCuatro = [1, 2, 3, 4].every(i => reg.archivos && reg.archivos[String(i)] && reg.archivos[String(i)].dataUrl);
+    const tieneRechazos = reg.rechazos && Object.keys(reg.rechazos).length > 0;
+
+    if (tieneLasCuatro && !tieneRechazos) {
+        reg.estado = 'EN_REVISION';
+    } else {
+        reg.estado = 'DOCUMENTOS_INCOMPLETOS';
+    }
+
+    localStorage.setItem('fya_preinscripciones_db', JSON.stringify(AppState.registros));
+
+    try {
+        const usuarioSesion = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('fya_docente_auth'))
+            ? JSON.parse(sessionStorage.getItem('fya_docente_auth')).usuario
+            : 'Docente / Control de Estudios';
+
+        await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/recaudo`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                docId,
+                nuevoEstado: 'CONSIGNADO',
+                rechazada: false,
+                motivoRechazo: null,
+                estadoFinal: reg.estado,
+                usuario: usuarioSesion
+            })
+        });
+    } catch (err) {
+        console.warn('[Cloud Sync Quitar Rechazo Warning]', err.message);
+    }
+
+    actualizarKpisDocente();
+    filtrarYRenderizarPanelDocente();
+    window.abrirLightboxDocente(codigo);
+    mostrarToast('Rechazo Levantado', `La fotografía ha sido revalidada. Estatus actual: ${reg.estado}.`, 'success');
+};
+
+/* ==============================================================================
+   MÓDULO 5: PORTAL PÚBLICO DE CONSULTA Y SUBSANACIÓN RÁPIDA PARA EL REPRESENTANTE
+   ============================================================================== */
+window.abrirModalConsultaRepresentante = function() {
+    const modal = document.getElementById('modalConsultaRepresentante');
+    if (modal) modal.classList.add('active');
+};
+
+window.cerrarModalConsultaRepresentante = function() {
+    const modal = document.getElementById('modalConsultaRepresentante');
+    if (modal) modal.classList.remove('active');
+};
+
+window.ejecutarConsultaRepresentante = async function() {
+    const input = document.getElementById('inputConsultaCedula');
+    const container = document.getElementById('consultaResultadosContainer');
+    if (!input || !container) return;
+
+    const queryRaw = input.value.trim().toUpperCase();
+    const queryDigits = queryRaw.replace(/\D/g, '');
+
+    if (!queryRaw) {
+        mostrarToast('Identificación Requerida', 'Ingrese su Cédula de Identidad o el documento del alumno.', 'warning');
+        input.focus();
+        return;
+    }
+
+    container.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--fya-red);"></i>
+            <p>Buscando expedientes asociados...</p>
+        </div>
+    `;
+
+    // 1. Buscar en registros locales y sincronizados
+    let db = AppState.registros || [];
+    if (!Array.isArray(db) || db.length === 0) {
+        db = JSON.parse(localStorage.getItem('fya_preinscripciones_db') || '[]');
+    }
+
+    // 2. Intentar consultar también en el backend si hay conexión
+    try {
+        const res = await fetch(`/api/preinscripciones/consulta/${encodeURIComponent(queryRaw)}`);
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+                json.data.forEach(servReg => {
+                    const idx = db.findIndex(r => r.codigo === servReg.codigo);
+                    if (idx !== -1) {
+                        db[idx] = { ...db[idx], ...servReg };
+                    } else {
+                        db.push(servReg);
+                    }
+                });
+            }
+        }
+    } catch (e) {
+        // Modo local silencioso
+    }
+
+    const encontrados = db.filter(r => {
+        if (!r) return false;
+        const repCed = (r.repreDoc || '').replace(/\D/g, '');
+        const aluDoc = (r.alumnoDoc || '').toUpperCase();
+        const aluDigits = aluDoc.replace(/\D/g, '');
+
+        return (queryDigits && repCed.includes(queryDigits)) ||
+               aluDoc.includes(queryRaw) ||
+               (queryDigits && aluDigits.includes(queryDigits)) ||
+               (r.codigo && r.codigo.toUpperCase() === queryRaw);
+    });
+
+    if (encontrados.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem 1.5rem; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px dashed var(--border-color);">
+                <i class="fa-solid fa-user-xmark" style="font-size: 2.5rem; color: #94a3b8; margin-bottom: 0.75rem;"></i>
+                <h4 style="font-size: 1.05rem; margin-bottom: 0.35rem; color: var(--text-primary);">No se encontraron expedientes</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto;">
+                    No existen solicitudes de preinscripción registradas con el número de cédula o folio <strong>"${queryRaw}"</strong>. Verifique el número ingresado.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    const catalogoDocs = {
+        '1': 'Foto de la Cédula del Representante',
+        '2': 'Foto del Informe Cardiovascular',
+        '3': 'Foto de la Partida de Nacimiento',
+        '4': 'Foto Tipo Carnet del Estudiante'
+    };
+
+    let html = '';
+    encontrados.forEach(r => {
+        const estadoNorm = (r.estado || 'EN_REVISION').toUpperCase();
+        const badgeColor = {
+            'APROBADA': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
+            'EN_REVISION': 'background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;',
+            'DOCUMENTOS_INCOMPLETOS': 'background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;'
+        }[estadoNorm] || 'background: #f1f5f9; color: #475569;';
+
+        const rechazosObj = r.rechazos || {};
+        const tieneRechazos = Object.keys(rechazosObj).length > 0;
+
+        html += `
+            <div class="consulta-card">
+                <div class="consulta-card-header">
+                    <div>
+                        <h4 style="font-size: 1.1rem; margin: 0 0 0.25rem; color: var(--text-primary); font-weight: 700;">
+                            <i class="fa-solid fa-graduation-cap" style="color: var(--fya-red);"></i> ${r.alumno}
+                        </h4>
+                        <span style="font-size: 0.82rem; color: var(--text-muted); display: block;">
+                            <strong>Folio:</strong> ${r.codigo} &nbsp;•&nbsp; 
+                            <strong>Doc:</strong> ${r.alumnoDoc || 'S/N'} &nbsp;•&nbsp; 
+                            <strong>Grado:</strong> ${r.grado}
+                        </span>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 999px; ${badgeColor}">
+                            ${estadoNorm}
+                        </span>
+                    </div>
+                </div>
+
+                ${tieneRechazos ? `
+                    <div class="alerta-subsanar-destacada">
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.4rem; color: #b91c1c; margin-top: 0.15rem;"></i>
+                            <div style="flex: 1;">
+                                <h5 style="margin: 0 0 0.35rem; color: #991b1b; font-size: 0.95rem; font-weight: 700;">
+                                    Recaudos con Observaciones Docentes (Subsanación Inmediata Requerida)
+                                </h5>
+                                <p style="font-size: 0.82rem; color: #7f1d1d; margin-bottom: 0.75rem;">
+                                    El docente evaluador ha solicitado la corrección de los siguientes recaudos. Puede cargar la nueva fotografía directamente aquí para que su expediente vuelva a revisión:
+                                </p>
+
+                                ${Object.keys(rechazosObj).map(docId => `
+                                    <div style="background: #ffffff; border: 1px solid #fca5a5; border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 0.75rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                                            <strong style="font-size: 0.88rem; color: var(--text-primary);">
+                                                <i class="fa-solid fa-paperclip"></i> ${catalogoDocs[docId] || 'Documento ' + docId}
+                                            </strong>
+                                            <span style="font-size: 0.72rem; background: #fee2e2; color: #dc2626; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 999px;">
+                                                RECHAZADA
+                                            </span>
+                                        </div>
+                                        <p style="font-size: 0.82rem; color: #4b5563; margin: 0 0 0.65rem; background: #fff5f5; padding: 0.4rem 0.6rem; border-radius: 4px; border-left: 3px solid #dc2626; font-style: italic;">
+                                            <strong>Observación del docente:</strong> "${rechazosObj[docId].motivo}"
+                                        </p>
+                                        <div class="subsanar-upload-row">
+                                            <input type="file" id="subsanarInput_${r.codigo}_${docId}" accept="image/*" class="form-control form-control-sm" style="flex: 1;" />
+                                            <button type="button" class="btn btn-primary btn-sm" onclick="window.subsanarRecaudoRepresentante('${r.codigo}', '${docId}')">
+                                                <i class="fa-solid fa-cloud-arrow-up"></i> Subir Documento Corregido
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                ` : `
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 0.85rem; margin: 0.75rem 0;">
+                        <span style="font-size: 0.85rem; color: #334155; display: block;">
+                            <i class="fa-solid fa-circle-info" style="color: #0284c7;"></i>
+                            ${estadoNorm === 'APROBADA'
+                                ? 'El expediente ha sido APROBADO por Control de Estudios. Puede emitir el Carnet Estudiantil Provisional a continuación.'
+                                : 'Todos los recaudos fotográficos obligatorios se encuentran debidamente consignados y en proceso de verificación física.'}
+                        </span>
+                    </div>
+                `}
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.75rem; flex-wrap: wrap;">
+                    ${estadoNorm === 'APROBADA' ? `
+                        <button type="button" class="btn btn-primary btn-sm" onclick="window.emitirCarnetProvisional('${r.codigo}')" style="background: #16a34a; border-color: #16a34a;">
+                            <i class="fa-solid fa-id-badge"></i> Emitir Carnet Provisional
+                        </button>
+                    ` : ''}
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="window.descargarPlanillaDesdeConsulta('${r.codigo}')">
+                        <i class="fa-solid fa-file-pdf"></i> Ver Planilla Oficial
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+};
+
+window.subsanarRecaudoRepresentante = async function(codigo, docId) {
+    const input = document.getElementById(`subsanarInput_${codigo}_${docId}`);
+    const file = input?.files ? input.files[0] : null;
+
+    if (!file) {
+        mostrarToast('Archivo Requerido', 'Seleccione la fotografía corregida antes de presionar Subir Documento Corregido.', 'warning');
+        return;
+    }
+
+    if (!file.type || !file.type.startsWith('image/')) {
+        mostrarToast('Formato Inválido', 'Debe seleccionar un archivo de imagen válido (JPG, PNG).', 'error');
+        return;
+    }
+
+    try {
+        mostrarToast('Optimizando Documento', 'Comprimiendo y cargando fotografía...', 'info');
+
+        const maxWidth = (docId === '4') ? 300 : 800;
+        const dataUrl = await comprimirImagenCanvas(file, maxWidth, 0.7);
+
+        const db = AppState.registros || [];
+        const reg = db.find(r => r.codigo === codigo);
+        if (!reg) throw new Error('Expediente no encontrado en memoria.');
+
+        if (!reg.archivos) reg.archivos = {};
+        reg.archivos[docId] = {
+            nombre: file.name,
+            tamano: Math.round(dataUrl.length * 0.75),
+            tipo: 'image/jpeg',
+            dataUrl: dataUrl,
+            fecha: new Date().toLocaleDateString('es-VE')
+        };
+
+        // Eliminar la marca de rechazo para este documento
+        if (reg.rechazos) {
+            delete reg.rechazos[docId];
+        }
+        if (reg.documentos) {
+            reg.documentos[docId] = 'CONSIGNADO';
+        }
+
+        // Si ya no quedan fotos rechazadas y tiene las 4 fotos, el estatus pasa automáticamente a EN_REVISION
+        const tieneRechazosRestantes = reg.rechazos && Object.keys(reg.rechazos).length > 0;
+        const tieneLasCuatro = [1, 2, 3, 4].every(i => reg.archivos && reg.archivos[String(i)] && reg.archivos[String(i)].dataUrl);
+
+        if (!tieneRechazosRestantes && tieneLasCuatro) {
+            reg.estado = 'EN_REVISION';
+        } else {
+            reg.estado = 'DOCUMENTOS_INCOMPLETOS';
+        }
+
+        localStorage.setItem('fya_preinscripciones_db', JSON.stringify(db));
+
+        // Enviar a la nube / MySQL con logging en system_logs
+        await fetch(`/api/preinscripciones/${encodeURIComponent(codigo)}/recaudo`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                docId,
+                archivoBase64: dataUrl,
+                nombreArchivo: file.name,
+                accion: 'subsanar',
+                estadoFinal: reg.estado,
+                usuario: `Representante (${reg.representante || 'Portal'})`
+            })
+        });
+
+        actualizarKpisDocente();
+        filtrarYRenderizarPanelDocente();
+        await window.ejecutarConsultaRepresentante();
+
+        mostrarToast('Documento Subsanado con Éxito', 'La fotografía corregida ha sido cargada y el expediente escolar volvió automáticamente a EN REVISIÓN.', 'success');
+    } catch (err) {
+        console.error('[Subsanar Error]', err);
+        mostrarToast('Error al subsanar', err.message || 'No se pudo procesar el documento.', 'error');
+    }
+};
+
+window.descargarPlanillaDesdeConsulta = function(codigo) {
+    const reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    if (!reg) return;
+    sincronizarDatosPlanillaDesdeRegistro(reg);
+    abrirModal('modalPlanillaBackdrop');
+};
+
+/* ==============================================================================
+   MÓDULO 6: EMISOR DE CARNET ESTUDIANTIL PROVISIONAL CR80 & CLASIFICADOR DEMOGRÁFICO
+   ============================================================================== */
+window.emitirCarnetProvisional = function(codigo) {
+    const reg = (AppState.registros || []).find(r => r.codigo === codigo);
+    if (!reg) {
+        mostrarToast('Error', 'Expediente no encontrado para emitir carnet.', 'error');
+        return;
+    }
+
+    const modal = document.getElementById('modalCarnetProvisional');
+    const container = document.getElementById('carnetCr80Content');
+    if (!modal || !container) return;
+
+    modal.setAttribute('data-carnet-codigo', codigo);
+
+    const fotoCarnet = (reg.archivos && reg.archivos['4'] && reg.archivos['4'].dataUrl)
+        ? reg.archivos['4'].dataUrl
+        : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="360" viewBox="0 0 300 360"><rect width="100%" height="100%" fill="%23e0f2fe"/><circle cx="150" cy="130" r="60" fill="%230284c7"/><path d="M50 330 C50 220, 250 220, 250 330 Z" fill="%230369a1"/><text x="150" y="348" font-family="sans-serif" font-size="13" fill="%230c4a6e" text-anchor="middle" font-weight="bold">FOTO ESTUDIANTE</text></svg>';
+
+    const sangre = reg.alumnoSangre || 'O+';
+    const alergias = reg.alumnoAlergias || 'Ninguna conocida / Sin alergias';
+    const emTel = reg.repreTelefono || '0414-0000000';
+    const contactoEm = `${reg.representante || 'Representante'} (${emTel})`;
+
+    container.innerHTML = `
+        <div id="carnetCr80Card" class="carnet-cr80-card">
+            <div class="carnet-cr80-header">
+                <div class="carnet-cr80-logo-title">
+                    <div class="carnet-cr80-school">U.E. FE Y ALEGRÍA "NUEVA AMÉRICA"</div>
+                    <div class="carnet-cr80-sub">CARNET ESTUDIANTIL PROVISIONAL • PERIODO 2026 - 2027</div>
+                </div>
+                <div class="carnet-cr80-badge">PRIMARIA</div>
+            </div>
+
+            <div class="carnet-cr80-body">
+                <div class="carnet-cr80-photo-col">
+                    <div class="carnet-cr80-photo-wrap">
+                        <img src="${fotoCarnet}" alt="Foto ${reg.alumno}" class="carnet-cr80-img" crossOrigin="anonymous" />
+                    </div>
+                    <div class="carnet-cr80-blood-pill">SANGRE: ${sangre}</div>
+                </div>
+
+                <div class="carnet-cr80-info-col">
+                    <div class="carnet-cr80-student-name">${reg.alumno}</div>
+
+                    <div class="carnet-cr80-doc-row">
+                        <span class="carnet-cr80-doc-label">C.I. / C.E.:</span>
+                        <strong class="carnet-cr80-doc-val">${reg.alumnoDoc || 'S/N'}</strong>
+                    </div>
+
+                    <div class="carnet-cr80-grade-row">
+                        <span class="carnet-cr80-grade-label">GRADO:</span>
+                        <strong class="carnet-cr80-grade-val">${reg.grado}</strong>
+                    </div>
+
+                    <div class="carnet-cr80-med-row">
+                        <span class="carnet-cr80-med-label">COND./ALERGIAS:</span>
+                        <span class="carnet-cr80-med-val">${alergias}</span>
+                    </div>
+
+                    <div class="carnet-cr80-emergency-row">
+                        <span class="carnet-cr80-em-label">CONTACTO EMERGENCIA:</span>
+                        <strong class="carnet-cr80-em-val">${contactoEm}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carnet-cr80-footer">
+                <span>MUNICIPIO SAN FRANCISCO, ESTADO ZULIA • CONTROL DE ESTUDIOS</span>
+                <span class="carnet-cr80-folio">FOLIO: ${reg.codigo}</span>
+            </div>
+        </div>
+    `;
+
+    modal.classList.add('active');
+};
+
+window.cerrarModalCarnetProvisional = function() {
+    const modal = document.getElementById('modalCarnetProvisional');
+    if (modal) modal.classList.remove('active');
+};
+
+window.descargarCarnetPdf = async function() {
+    const elem = document.getElementById('carnetCr80Card');
+    const modal = document.getElementById('modalCarnetProvisional');
+    const codigo = modal ? modal.getAttribute('data-carnet-codigo') : 'ESTUDIANTE';
+
+    if (!elem) {
+        mostrarToast('Error', 'Elemento de carnet no encontrado.', 'error');
+        return;
+    }
+
+    try {
+        mostrarToast('Generando Carnet', 'Descargando carnet formato CR80...', 'info');
+
+        const opt = {
+            margin: 0,
+            filename: `Carnet_Estudiantil_${codigo}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+            jsPDF: { unit: 'mm', format: [85.6, 54], orientation: 'landscape' }
+        };
+
+        if (typeof html2pdf !== 'undefined') {
+            await html2pdf().set(opt).from(elem).save();
+            mostrarToast('Carnet Descargado', 'El Carnet Estudiantil Provisional CR80 se descargó exitosamente.', 'success');
+        } else {
+            window.print();
+        }
+    } catch (err) {
+        console.error('[Carnet PDF Error]', err);
+        mostrarToast('Error al descargar', 'No se pudo generar el PDF del carnet.', 'error');
+    }
+};
+
+window.calcularYRenderizarDemografiaDocente = function(registros) {
+    const container = document.getElementById('demografiaGradosGrid');
+    if (!container) return;
+
+    const data = Array.isArray(registros) ? registros : (AppState.registros || []);
+    const anioActual = 2026;
+
+    let html = '';
+    const gradosMeta = [
+        { id: '1', nombre: '1er Grado' },
+        { id: '2', nombre: '2do Grado' },
+        { id: '3', nombre: '3er Grado' },
+        { id: '4', nombre: '4to Grado' },
+        { id: '5', nombre: '5to Grado' },
+        { id: '6', nombre: '6to Grado' }
+    ];
+
+    gradosMeta.forEach(g => {
+        const alumnosGrado = data.filter(r => {
+            if (!r || !r.grado) return false;
+            return r.grado.includes(`${g.id}°`) ||
+                   r.grado.includes(`${g.id}er`) ||
+                   r.grado.includes(`${g.id}do`) ||
+                   r.grado.includes(`${g.id}to`) ||
+                   r.grado.includes(`${g.id}mo`) ||
+                   r.gradoId === g.id;
+        });
+
+        const total = alumnosGrado.length;
+        let masc = 0;
+        let fem = 0;
+        let sumaEdades = 0;
+        let conteoEdades = 0;
+
+        alumnosGrado.forEach(r => {
+            const gen = (r.alumnoGenero || '').toUpperCase();
+            if (gen === 'MASCULINO') masc++;
+            else if (gen === 'FEMENINO') fem++;
+
+            if (r.alumnoFechaNac) {
+                const anyo = new Date(r.alumnoFechaNac).getFullYear();
+                if (!isNaN(anyo)) {
+                    const edad = anioActual - anyo;
+                    if (edad > 0 && edad < 20) {
+                        sumaEdades += edad;
+                        conteoEdades++;
+                    }
+                }
+            }
+        });
+
+        const pctMasc = total > 0 ? Math.round((masc / total) * 100) : 0;
+        const pctFem = total > 0 ? Math.round((fem / total) * 100) : 0;
+        const edadProm = conteoEdades > 0 ? (sumaEdades / conteoEdades).toFixed(1) : (parseInt(g.id, 10) + 5).toFixed(1);
+
+        html += `
+            <div class="demografia-grade-card">
+                <div class="demografia-grade-header">
+                    <span class="demografia-grade-title">${g.nombre}</span>
+                    <span class="demografia-total-badge">${total} inscritos</span>
+                </div>
+
+                <div class="demografia-stats-row">
+                    <div class="demografia-stat-pill masc">
+                        <i class="fa-solid fa-mars"></i> ${masc} Niños (${pctMasc}%)
+                    </div>
+                    <div class="demografia-stat-pill fem">
+                        <i class="fa-solid fa-venus"></i> ${fem} Niñas (${pctFem}%)
+                    </div>
+                </div>
+
+                <div class="demografia-split-bar" title="${pctMasc}% Niños | ${pctFem}% Niñas">
+                    <div class="demografia-bar-masc" style="width: ${pctMasc}%;"></div>
+                    <div class="demografia-bar-fem" style="width: ${pctFem}%;"></div>
+                </div>
+
+                <div class="demografia-age-stat">
+                    <i class="fa-solid fa-cake-candles" style="color: #f59e0b;"></i>
+                    <span>Edad Promedio: <strong>${edadProm} años</strong></span>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+};
+
+// Event Listeners adicionales para los nuevos componentes
+document.addEventListener('DOMContentLoaded', () => {
+    // Botón Consultar Estatus en Sidebar
+    const linkConsultaSidebar = document.getElementById('sidebarLinkConsultarEstatus');
+    if (linkConsultaSidebar) {
+        linkConsultaSidebar.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.abrirModalConsultaRepresentante();
+        });
+    }
+
+    // Botones de búsqueda en modal de consulta
+    const btnEjecutarConsulta = document.getElementById('btnEjecutarConsulta');
+    if (btnEjecutarConsulta) {
+        btnEjecutarConsulta.addEventListener('click', window.ejecutarConsultaRepresentante);
+    }
+
+    const inputConsulta = document.getElementById('inputConsultaCedula');
+    if (inputConsulta) {
+        inputConsulta.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                window.ejecutarConsultaRepresentante();
+            }
+        });
+    }
+
+    const btnCerrarConsultaModal = document.getElementById('btnCerrarModalConsultaRepresentante');
+    if (btnCerrarConsultaModal) {
+        btnCerrarConsultaModal.addEventListener('click', window.cerrarModalConsultaRepresentante);
+    }
+
+    // Modal Lightbox
+    const btnCerrarLightbox = document.getElementById('btnCerrarLightbox');
+    if (btnCerrarLightbox) {
+        btnCerrarLightbox.addEventListener('click', window.cerrarLightboxDocente);
+    }
+
+    // Modal Carnet
+    const btnCerrarCarnet = document.getElementById('btnCerrarModalCarnetProvisional');
+    if (btnCerrarCarnet) {
+        btnCerrarCarnet.addEventListener('click', window.cerrarModalCarnetProvisional);
+    }
+
+    const btnDescargarCarnet = document.getElementById('btnDescargarCarnetPdf');
+    if (btnDescargarCarnet) {
+        btnDescargarCarnet.addEventListener('click', window.descargarCarnetPdf);
+    }
+});

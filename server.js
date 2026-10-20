@@ -605,6 +605,10 @@ async function inicializarEsquemaMySQL(poolInstance) {
                 id_documento INT UNSIGNED NOT NULL,
                 estado VARCHAR(50) NOT NULL DEFAULT 'NO_CONSIGNADO',
                 fecha_entrega DATETIME NULL,
+                ruta_archivo LONGTEXT NULL,
+                archivo_base64 LONGTEXT NULL,
+                observaciones TEXT NULL,
+                motivo_rechazo TEXT NULL,
                 INDEX idx_rpd_pre (id_pre)
             ) ENGINE=InnoDB;
         `);
@@ -2329,32 +2333,70 @@ app.put('/api/preinscripciones/:codigo/estado', async (req, res) => {
     }
 });
 
-// 18. Actualizar verificación de recaudo en la nube
+// 18. Actualizar verificación o subsanación de recaudo en la nube
 app.put('/api/preinscripciones/:codigo/recaudo', async (req, res) => {
     try {
         const codigo = req.params.codigo;
-        const { docId, nuevoEstado } = req.body;
+        const { docId, nuevoEstado, motivoRechazo, rechazada, archivoBase64, nombreArchivo, usuario } = req.body;
 
         const registros = leerRegistrosArchivo();
         const reg = registros.find(r => r.codigo === codigo);
         if (reg) {
             if (!reg.documentos) reg.documentos = {};
-            reg.documentos[String(docId)] = nuevoEstado;
+            if (!reg.rechazos) reg.rechazos = {};
+            if (!reg.archivos) reg.archivos = {};
 
+            const idStr = String(docId);
+            let esSubsanacion = Boolean(archivoBase64);
+            let esRechazo = Boolean(rechazada || nuevoEstado === 'RECHAZADO');
+
+            if (esRechazo) {
+                reg.rechazos[idStr] = {
+                    rechazada: true,
+                    motivo: (motivoRechazo || 'Documento no legible o no conforme').trim(),
+                    fecha: new Date().toLocaleDateString('es-VE')
+                };
+                reg.documentos[idStr] = 'RECHAZADO';
+            } else if (esSubsanacion) {
+                reg.archivos[idStr] = {
+                    nombre: nombreArchivo || `recaudo_${idStr}_corregido.jpg`,
+                    dataUrl: archivoBase64,
+                    tipo: 'image/jpeg',
+                    fecha: new Date().toLocaleDateString('es-VE')
+                };
+                delete reg.rechazos[idStr];
+                reg.documentos[idStr] = 'CONSIGNADO';
+            } else if (nuevoEstado) {
+                reg.documentos[idStr] = nuevoEstado;
+                if (nuevoEstado === 'APROBADO' || nuevoEstado === 'CONSIGNADO') {
+                    delete reg.rechazos[idStr];
+                }
+            }
+
+            // Conteo estricto de recaudos cargados
             let entregados = 0;
             for (let i = 1; i <= 4; i++) {
-                const e = reg.documentos[String(i)] || (reg.archivos && reg.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
-                if (e === 'APROBADO' || e === 'CONSIGNADO') entregados++;
+                const k = String(i);
+                const hasArch = Boolean(reg.archivos && reg.archivos[k] && reg.archivos[k].dataUrl);
+                const docSt = reg.documentos[k] || (hasArch ? 'CONSIGNADO' : 'NO_CONSIGNADO');
+                if (docSt === 'APROBADO' || docSt === 'CONSIGNADO' || hasArch) {
+                    entregados++;
+                }
             }
             reg.recaudosCount = `${entregados}/4`;
 
+            const totalRechazos = Object.keys(reg.rechazos || {}).length;
             const estadoAnterior = reg.estado;
-            if (entregados === 4) {
+
+            // Máquina de estados estricta:
+            // Si faltan fotos (< 4) o hay al menos un rechazo activo -> DOCUMENTOS_INCOMPLETOS
+            // Si 4 fotos cargadas y 0 rechazos -> EN_REVISION (o APROBADA si docente ya aprobó)
+            if (entregados < 4 || totalRechazos > 0) {
+                reg.estado = 'DOCUMENTOS_INCOMPLETOS';
+            } else if (entregados === 4 && totalRechazos === 0) {
                 if (reg.estado === 'DOCUMENTOS_INCOMPLETOS' || !reg.estado) {
                     reg.estado = 'EN_REVISION';
                 }
-            } else {
-                reg.estado = 'DOCUMENTOS_INCOMPLETOS';
             }
 
             guardarRegistrosArchivo(registros);
@@ -2373,27 +2415,70 @@ app.put('/api/preinscripciones/:codigo/recaudo', async (req, res) => {
                 }
             }
 
-            const detalleLog = (entregados === 4 && estadoAnterior === 'DOCUMENTOS_INCOMPLETOS')
-                ? `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo}. 100% consignado (4/4): Expediente DESBLOQUEADO y pasado a EN_REVISION.`
-                : (entregados < 4 && estadoAnterior !== 'DOCUMENTOS_INCOMPLETOS'
-                    ? `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo}. Incompleto (${entregados}/4): Expediente BLOQUEADO AUTOMÁTICAMENTE a DOCUMENTOS_INCOMPLETOS.`
-                    : `Recaudo ${docId} marcado como ${nuevoEstado} en expediente ${codigo} (${entregados}/4 recaudos). Estado: ${reg.estado}.`);
+            let detalleLog = '';
+            let accionLog = 'VERIFICACION_RECAUDO';
+            let rolLog = 'DOCENTE';
+            let userLog = usuario || 'Docente / Control de Estudios';
 
-            await registrarLog(
-                req.body.usuario || 'Docente / Control de Estudios',
-                'DOCENTE',
-                'VERIFICACION_RECAUDO',
-                detalleLog,
-                req
-            );
+            if (esRechazo) {
+                accionLog = 'RECHAZO_RECAUDO';
+                detalleLog = `Recaudo #${idStr} rechazado en expediente ${codigo}. Motivo: "${reg.rechazos[idStr]?.motivo}". Estado forzado a DOCUMENTOS_INCOMPLETOS.`;
+            } else if (esSubsanacion) {
+                accionLog = 'SUBSANACION_RECAUDO';
+                rolLog = 'REPRESENTANTE';
+                userLog = reg.representante || 'Representante Legal';
+                detalleLog = `Representante subsanó la fotografía #${idStr} para el alumno ${reg.alumno} (Folio ${codigo}). Marca de rechazo retirada. Estado actual: ${reg.estado}.`;
+            } else {
+                detalleLog = `Recaudo #${idStr} actualizado a ${nuevoEstado} en expediente ${codigo}. Estado actual: ${reg.estado}.`;
+            }
+
+            await registrarLog(userLog, rolLog, accionLog, detalleLog, req);
+
+            return res.json({
+                success: true,
+                message: esSubsanacion ? 'Recaudo subsanado exitosamente' : `Recaudo ${idStr} actualizado en la nube.`,
+                data: reg
+            });
         }
+
+        res.status(404).json({ success: false, error: 'Registro de preinscripción no encontrado.' });
+    } catch (error) {
+        console.error('[PUT /api/preinscripciones/:codigo/recaudo]', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 18.1. Consulta Pública de Solicitudes por Cédula (Representante o Alumno)
+app.get('/api/preinscripciones/consulta/:identificacion', async (req, res) => {
+    try {
+        const rawId = (req.params.identificacion || '').trim();
+        const cleanDigits = rawId.replace(/\D/g, '');
+        const cleanUpper = rawId.toUpperCase().replace(/\s+/g, '');
+
+        if (!cleanDigits && cleanUpper.length < 3) {
+            return res.status(400).json({ success: false, error: 'Debe ingresar un número de cédula o código válido.' });
+        }
+
+        const registros = leerRegistrosArchivo();
+        const resultados = registros.filter(r => {
+            if (!r) return false;
+            const rRepreDocDigits = (r.repreDoc || '').replace(/\D/g, '');
+            const rAlumnoDocDigits = (r.alumnoDoc || '').replace(/\D/g, '');
+            const rAlumnoDocUpper = (r.alumnoDoc || '').toUpperCase().replace(/\s+/g, '');
+            const rCodigo = (r.codigo || '').toUpperCase();
+
+            // Coincidencia con cédula del representante, cédula del alumno, Cédula Escolar o folio
+            return (cleanDigits && (rRepreDocDigits === cleanDigits || rAlumnoDocDigits === cleanDigits)) ||
+                   (cleanUpper && (rAlumnoDocUpper.includes(cleanUpper) || rCodigo.includes(cleanUpper)));
+        });
 
         res.json({
             success: true,
-            message: `Recaudo ${docId} actualizado en la nube.`
+            total: resultados.length,
+            data: resultados
         });
     } catch (error) {
-        console.error('[PUT /api/preinscripciones/:codigo/recaudo]', error);
+        console.error('[GET /api/preinscripciones/consulta/:identificacion]', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });

@@ -150,19 +150,24 @@
         filtrados.forEach(r => {
             // Contar recaudos y evaluar máquina de estados automática
             let entregados = 0;
-            if (r.documentos) {
-                for (let i = 1; i <= 4; i++) {
-                    const docVal = r.documentos[String(i)] || (r.archivos && r.archivos[String(i)] ? 'CONSIGNADO' : 'NO_CONSIGNADO');
-                    if (docVal === 'APROBADO' || docVal === 'CONSIGNADO') entregados++;
+            let tieneRechazos = false;
+            for (let i = 1; i <= 4; i++) {
+                const k = String(i);
+                const hasArch = Boolean(r.archivos && r.archivos[k] && r.archivos[k].dataUrl);
+                const docVal = r.documentos ? r.documentos[k] : null;
+                const isRechazado = Boolean(r.rechazos && r.rechazos[k] && r.rechazos[k].rechazada) || (docVal === 'RECHAZADO');
+                if (isRechazado) tieneRechazos = true;
+                if ((docVal === 'APROBADO' || docVal === 'CONSIGNADO' || hasArch) && !isRechazado) {
+                    entregados++;
                 }
-            } else if (r.recaudosCount) {
-                entregados = parseInt(r.recaudosCount.split('/')[0] || '0', 10);
             }
             r.recaudosCount = `${entregados}/4`;
 
-            // Máquina de estados: si faltan recaudos (< 4), se bloquea automáticamente en DOCUMENTOS_INCOMPLETOS.
-            // Si tiene 100% (4/4) y estaba en DOCUMENTOS_INCOMPLETOS, pasa a EN_REVISION (habilitando el control docente).
-            const estaIncompleto = (entregados < 4);
+            // Máquina de estados estricta:
+            // Si faltan fotos (< 4) o el docente marcó al menos una foto como rechazada,
+            // el estatus cambia forzosa y automáticamente a DOCUMENTOS INCOMPLETOS y el selector queda bloqueado.
+            // Cuando las 4 fotos estén cargadas y sin rechazos activos, pasa automáticamente a EN REVISIÓN y desbloquea aprobación.
+            const estaIncompleto = (entregados < 4 || tieneRechazos);
             if (estaIncompleto) {
                 r.estado = 'DOCUMENTOS_INCOMPLETOS';
             } else if (r.estado === 'DOCUMENTOS_INCOMPLETOS' || !r.estado) {
@@ -171,6 +176,7 @@
 
             const badgeColor = {
                 'APROBADA': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
+                'APROBADO': 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;',
                 'EN_REVISION': 'background: #fef3c7; color: #b45309; border: 1px solid #fde68a;',
                 'DOCUMENTOS_INCOMPLETOS': 'background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;',
                 'PENDIENTE': 'background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;',
@@ -180,24 +186,26 @@
             const recaudosBadge = r.recaudosCount;
 
             const selectorEstadoHtml = estaIncompleto ? `
-                <div class="status-locked-wrapper" title="Bloqueo automático del sistema: Faltan recaudos obligatorios (${entregados}/4 consignados). El expediente está bloqueado hasta consignar el 100% de recaudos.">
+                <div class="status-locked-wrapper" title="Bloqueo automático del sistema: Faltan recaudos o existen fotos rechazadas (${entregados}/4 consignados). El expediente está bloqueado hasta consignar el 100% de recaudos válidos.">
                     <span class="badge-lock-indicator"><i class="fa-solid fa-lock"></i> BLOQUEADO</span>
-                    <select class="form-control select-locked-status" disabled title="Bloqueado por sistema: Faltan recaudos por consignar (${entregados}/4). Debe consignar el 100% para habilitar revisión y aprobación docente.">
+                    <select class="form-control select-locked-status" disabled title="Bloqueado por sistema: Faltan recaudos o hay rechazos activos. Debe consignar el 100% sin rechazos para habilitar revisión y aprobación docente.">
                         <option value="DOCUMENTOS_INCOMPLETOS" selected>DOCS. INCOMPLETOS</option>
                     </select>
                 </div>
             ` : `
-                <div class="status-unlocked-wrapper" title="Expediente con 100% de recaudos consignados (4/4). Control docente habilitado para revisión y aprobación en taquilla.">
+                <div class="status-unlocked-wrapper" title="Expediente con 100% de recaudos consignados (4/4) sin rechazos activos. Control docente habilitado para revisión y aprobación en taquilla.">
                     <span class="badge-unlocked-indicator"><i class="fa-solid fa-lock-open"></i> HABILITADO</span>
                     <select class="form-control" style="font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.5rem; ${badgeColor}" onchange="cambiarEstadoPreinscripcion('${r.codigo}', this.value)">
                         <option value="EN_REVISION" ${r.estado === 'EN_REVISION' ? 'selected' : ''}>EN REVISIÓN</option>
-                        <option value="APROBADA" ${r.estado === 'APROBADA' ? 'selected' : ''}>APROBADA / EN REGLA</option>
+                        <option value="APROBADA" ${(r.estado === 'APROBADA' || r.estado === 'APROBADO') ? 'selected' : ''}>APROBADA / EN REGLA</option>
                         <option value="DOCUMENTOS_INCOMPLETOS" ${r.estado === 'DOCUMENTOS_INCOMPLETOS' ? 'selected' : ''}>DOCS. INCOMPLETOS</option>
                         <option value="PENDIENTE" ${r.estado === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
                         <option value="LISTA_DE_ESPERA" ${r.estado === 'LISTA_DE_ESPERA' ? 'selected' : ''}>LISTA DE ESPERA</option>
                     </select>
                 </div>
             `;
+
+            const esAprobado = (r.estado === 'APROBADA' || r.estado === 'APROBADO');
 
             html += `
                 <tr>
@@ -220,8 +228,8 @@
                         <span style="font-size: 0.75rem; color: var(--text-muted);">${r.institutoCiudad || 'San Francisco, Zulia'}</span>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-outline-red btn-sm" onclick="abrirVerificarRecaudos('${r.codigo}')" title="Ver y Validar Recaudos" style="padding: 0.25rem 0.55rem; font-size: 0.78rem;">
-                            <i class="fa-solid fa-folder-open"></i> ${recaudosBadge}
+                        <button type="button" class="btn btn-outline-red btn-sm" onclick="abrirLightboxDocente('${r.codigo}')" title="Inspeccionar Recaudos en Visor Lightbox con Zoom" style="padding: 0.25rem 0.55rem; font-size: 0.78rem;">
+                            <i class="fa-solid fa-images"></i> ${recaudosBadge} ${tieneRechazos ? '<span style="color:#b91c1c; font-weight:bold;">(!)</span' : ''}
                         </button>
                     </td>
                     <td>
@@ -229,11 +237,16 @@
                     </td>
                     <td style="text-align: center;">
                         <div class="table-action-btn-group">
+                            <button type="button" class="btn-action-icon btn-action-inspect" onclick="abrirLightboxDocente('${r.codigo}')" title="Inspeccionar Recaudos (Lightbox)">
+                                <i class="fa-solid fa-magnifying-glass-plus"></i> <span class="btn-action-text">Inspeccionar</span>
+                            </button>
+                            ${esAprobado ? `
+                                <button type="button" class="btn-action-icon btn-action-carnet" onclick="emitirCarnetProvisional('${r.codigo}')" title="Emitir Carnet Estudiantil Provisional CR80" style="background: #15803d; color: white;">
+                                    <i class="fa-solid fa-id-badge"></i> <span class="btn-action-text">Carnet</span>
+                                </button>
+                            ` : ''}
                             <button type="button" class="btn-action-icon btn-action-print" onclick="verPlanillaRegistro('${r.codigo}')" title="Ver / Imprimir Planilla Oficial">
                                 <i class="fa-solid fa-print"></i> <span class="btn-action-text">Planilla</span>
-                            </button>
-                            <button type="button" class="btn-action-icon btn-action-docs" onclick="abrirVerificarRecaudos('${r.codigo}')" title="Verificar Recaudos">
-                                <i class="fa-solid fa-folder-open"></i> <span class="btn-action-text">Recaudos</span>
                             </button>
                             <button type="button" class="btn-action-icon btn-action-delete" onclick="solicitarEliminarRegistro('${r.codigo}')" title="Eliminar Registro">
                                 <i class="fa-solid fa-trash-can"></i> <span class="btn-action-text">Eliminar</span>
@@ -245,6 +258,11 @@
         });
 
         tbody.innerHTML = html;
+
+        // Actualizar estadísticas demográficas en tiempo real
+        if (typeof window.calcularYRenderizarDemografiaDocente === 'function') {
+            window.calcularYRenderizarDemografiaDocente(state.registros);
+        }
     }
 
     // Sobrescribir la función de filtrado del sistema principal sin alterar el resto

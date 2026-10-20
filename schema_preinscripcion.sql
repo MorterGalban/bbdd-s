@@ -181,6 +181,7 @@ CREATE TABLE preinscripciones (
     ) NOT NULL DEFAULT 'PENDIENTE',
     motivo_rechazo TEXT NULL,
     observaciones TEXT NULL,
+    datos_completos LONGTEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
@@ -207,10 +208,12 @@ CREATE TABLE preinscripcion_documentos (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_pre INT UNSIGNED NOT NULL,
     id_documento INT UNSIGNED NOT NULL,
-    ruta_archivo VARCHAR(255) NULL,
+    ruta_archivo LONGTEXT NULL COMMENT 'Ruta o DataURL Base64 de la imagen fotográfica',
+    archivo_base64 LONGTEXT NULL COMMENT 'Soporte directo para almacenamiento Base64 LONGTEXT',
     estado ENUM('NO_CONSIGNADO', 'CONSIGNADO', 'APROBADO', 'OBSERVADO', 'RECHAZADO') NOT NULL DEFAULT 'NO_CONSIGNADO',
     fecha_entrega DATETIME NULL,
-    observaciones VARCHAR(255) NULL,
+    observaciones TEXT NULL,
+    motivo_rechazo TEXT NULL,
     revisado_por INT UNSIGNED NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     

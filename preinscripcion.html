@@ -63,6 +63,12 @@
                 <span>Llenar Planilla</span>
             </a>
 
+            <!-- 3. Enlace a Consultar Estatus / Subsanar Recaudos -->
+            <a href="javascript:void(0)" class="sidebar-menu-item" id="sidebarLinkConsultarEstatus" onclick="abrirModalConsultaRepresentante()">
+                <i class="fa-solid fa-file-circle-exclamation"></i>
+                <span>Consultar / Subsanar</span>
+            </a>
+
             <!-- Herramientas Administrativas de Docente (Controladas estrictamente en el DOM por app.js) -->
             <div id="docenteSidebarSection" class="docente-sidebar-tools">
                 <a href="javascript:void(0)" class="sidebar-menu-item" id="sidebarLinkPanelDocente" onclick="mostrarPanelDocenteDesdeSidebar()">
@@ -353,6 +359,22 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- SECCIÓN ESTADÍSTICA: DISTRIBUCIÓN DEMOGRÁFICA POR GRADO (1° A 6° GRADO) -->
+            <div class="demografia-container" id="seccionDistribucionDemografica">
+                <div class="demografia-heading">
+                    <h3 class="demografia-title">
+                        <i class="fa-solid fa-chart-column" style="color: var(--fya-red);"></i>
+                        Distribución Demográfica por Grado (1° a 6° Grado)
+                    </h3>
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">
+                        <i class="fa-solid fa-arrows-rotate"></i> Cálculo en tiempo real por género y edad promedio
+                    </span>
+                </div>
+                <div class="demografia-grid" id="demografiaGradosGrid">
+                    <!-- Tarjetas de 1° a 6° Grado generadas dinámicamente -->
+                </div>
+            </div>
         </div>
 
         <!-- ============================================================== -->
@@ -470,15 +492,13 @@
                             <span class="form-error-msg">Selecciona el tipo de documento</span>
                         </div>
                         <div class="form-group col-8">
-                            <label for="alumnoNumDoc" class="form-label">Número de Cédula Escolar o Identificación
-                                *</label>
-                            <input type="text" id="alumnoNumDoc" name="alumnoNumDoc" class="form-control" placeholder="Ej: 118999444"
-                                required>
-                            <span class="form-hint">Si no posee cédula de identidad, marque la casilla inferior para generar su Cédula Escolar automática.</span>
+                            <label for="alumnoNumDoc" class="form-label">Número de Cédula Escolar o Identificación *</label>
+                            <input type="text" id="alumnoNumDoc" name="alumnoNumDoc" class="form-control" placeholder="Ej: 118999444" required>
+                            <span class="form-hint" id="alumnoNumDocHint">Si no posee cédula de identidad, marque la casilla inferior para generar su Cédula Escolar automática.</span>
                             <span class="form-error-msg">Este campo es obligatorio</span>
                         </div>
 
-                        <!-- 1. GENERADOR AUTOMÁTICO DE CÉDULA ESCOLAR (PASO 1 - ALUMNO) -->
+                        <!-- 1. GENERADOR DE CÉDULA ESCOLAR EN CASCADA (PASO 1 - ALUMNO) -->
                         <div class="form-group col-12" style="margin-top: -0.25rem;">
                             <div class="cedula-escolar-checkbox-box">
                                 <input type="checkbox" id="chkGenerarCedulaEscolar" name="chkGenerarCedulaEscolar">
@@ -489,39 +509,38 @@
                             </div>
                         </div>
 
+                        <!-- Contenedor en Cascada: Selectores ocultos por defecto -->
                         <div class="form-group col-12" id="panelGeneradorCedulaEscolar" style="display: none;">
-                            <div class="cedula-escolar-panel-content">
-                                <div class="cedula-escolar-panel-header">
+                            <div class="cedula-escolar-cascade-container">
+                                <div class="cedula-escolar-panel-header" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; color: var(--fya-red-dark, #991b1b); font-weight: 700;">
                                     <i class="fa-solid fa-id-card-clip"></i>
-                                    <span><strong>Generador Automático de Cédula Escolar</strong> (Estructura Normativa: Nacionalidad + Tipo Parto + Año Nacimiento + CE + Cédula Repre)</span>
+                                    <span>Generador de Cédula Escolar en Cascada (Estructura: CE + Orden Nacimiento + Año Nacimiento + Cédula Repre)</span>
                                 </div>
                                 <div class="form-grid" style="margin-top: 0.85rem;">
-                                    <div class="form-group col-4">
-                                        <label for="ceNacionalidad" class="form-label">Nacionalidad del niño *</label>
-                                        <select id="ceNacionalidad" name="ceNacionalidad" class="form-control">
-                                            <option value="V" selected>V - Venezolana</option>
-                                            <option value="E">E - Extranjera</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-4">
+                                    <!-- Nivel 1: Tipo de Parto (oculto por defecto) -->
+                                    <div class="form-group col-6" id="groupCeTipoParto" style="display: none;">
                                         <label for="ceTipoParto" class="form-label">Tipo de parto *</label>
                                         <select id="ceTipoParto" name="ceTipoParto" class="form-control">
-                                            <option value="1" selected>1 - Sencillo</option>
-                                            <option value="2">2 - Morochos / Gemelos</option>
-                                            <option value="3">3 - Trillizos o múltiple</option>
+                                            <option value="sencillo" selected>Parto sencillo</option>
+                                            <option value="mellizos">Mellizos / Gemelos</option>
+                                            <option value="trillizos">Trillizos</option>
                                         </select>
                                     </div>
-                                    <div class="form-group col-4">
-                                        <label for="ceCedulaRepresentante" class="form-label">N° de Cédula del Representante *</label>
-                                        <input type="text" id="ceCedulaRepresentante" name="ceCedulaRepresentante" class="form-control" placeholder="Ej: 19888777" maxlength="12">
-                                        <span class="form-hint" style="font-size: 0.72rem;">Sincronizado en tiempo real con el Paso 2</span>
+                                    <!-- Nivel 2: Orden de Nacimiento (oculto por defecto) -->
+                                    <div class="form-group col-6" id="groupCeOrdenNacimiento" style="display: none;">
+                                        <label for="ceOrdenNacimiento" class="form-label">Orden de nacimiento *</label>
+                                        <select id="ceOrdenNacimiento" name="ceOrdenNacimiento" class="form-control">
+                                            <option value="1" selected>Primero en nacer (1)</option>
+                                            <option value="2">Segundo en nacer (2)</option>
+                                            <option value="3">Tercero en nacer (3)</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="cedula-escolar-preview-strip">
-                                    <span style="font-size: 0.82rem; color: #52525b; font-weight: 600;">
-                                        <i class="fa-solid fa-certificate" style="color: var(--fya-red);"></i> Cédula Escolar Ensamblada:
+                                <div class="cedula-escolar-preview-strip" style="margin-top: 0.75rem; font-size: 0.82rem; color: #475569;">
+                                    <i class="fa-solid fa-circle-info" style="color: #d97706;"></i>
+                                    <span id="ceAvisoFormulaDiferida" style="margin-left: 0.35rem; font-weight: 600;">
+                                        La Cédula Escolar se ensamblará automáticamente al finalizar utilizando la cédula del representante.
                                     </span>
-                                    <span id="ceBadgeVisual" class="cedula-escolar-badge">--</span>
                                 </div>
                             </div>
                         </div>
@@ -637,8 +656,10 @@
                         </div>
                         <div class="form-group col-4">
                             <label for="repreNumDoc" class="form-label">Cédula de Identidad *</label>
-                            <input type="text" id="repreNumDoc" name="repreNumDoc" class="form-control" placeholder="Ej: 19888777"
-                                required>
+                            <input type="text" id="repreNumDoc" name="repreNumDoc" class="form-control" placeholder="Ej: 19888777" required>
+                            <div id="repreAutofillNotice" style="display: none; font-size: 0.76rem; font-weight: 700; color: #15803d; margin-top: 0.25rem;">
+                                <i class="fa-solid fa-circle-check"></i> Datos del representante cargados automáticamente
+                            </div>
                             <span class="form-error-msg">Ingresa la cédula del representante</span>
                         </div>
                         <div class="form-group col-4">
@@ -654,7 +675,7 @@
                         </div>
                         <div class="form-group col-12 conditional-field-wrapper" id="groupRepreParentescoOtro" style="display: none;">
                             <label for="repreParentescoOtro" class="form-label">Indique el parentesco exacto *</label>
-                            <input type="text" id="repreParentescoOtro" class="form-control"
+                            <input type="text" id="repreParentescoOtro" name="repreParentescoOtro" class="form-control"
                                 placeholder="Indique el parentesco exacto con el alumno">
                             <span class="form-error-msg">Por favor indique el parentesco exacto con el alumno</span>
                         </div>
@@ -1614,6 +1635,111 @@
     </div>
 
 
+
+    <!-- ============================================================== -->
+    <!-- MODAL: VISOR LIGHTBOX Y RECHAZO INDIVIDUAL DE RECAUDOS        -->
+    <!-- ============================================================== -->
+    <div class="lightbox-modal-backdrop" id="modalLightboxRecaudos" style="display: none;">
+        <div class="lightbox-dialog">
+            <div class="lightbox-header">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-images"></i> Inspección de Recaudos Fotográficos (Visor Lightbox)
+                    </h3>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #fecaca;" id="lightboxSubtituloEstudiante">
+                        Expediente de Aspirante
+                    </p>
+                </div>
+                <button type="button" class="btn-close" id="btnCerrarLightbox" onclick="cerrarLightboxDocente()" style="filter: brightness(0) invert(1); font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div class="lightbox-body" id="lightboxRecaudosGrid">
+                <!-- Se inyectan las 4 tarjetas de fotos con controles de zoom y rechazo -->
+            </div>
+            <div style="background: var(--bg-alt, #f8fafc); padding: 1rem 1.75rem; border-top: 1px solid var(--border-color, #e2e8f0); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                <div style="font-size: 0.82rem; color: var(--text-muted, #64748b);">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--fya-red);"></i>
+                    Si rechaza alguna foto, el expediente pasará obligatoriamente a <strong>DOCUMENTOS INCOMPLETOS</strong> y la aprobación quedará bloqueada.
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="cerrarLightboxDocente()">
+                    <i class="fa-solid fa-xmark"></i> Cerrar Visor
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODAL: PORTAL DE CONSULTA Y SUBSANACIÓN PARA REPRESENTANTES    -->
+    <!-- ============================================================== -->
+    <div class="modal-backdrop" id="modalConsultaRepresentante" style="display: none; z-index: 10040;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: white;">
+                    <h3 class="modal-title" style="color: white; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-clipboard-check"></i> Consulta de Estatus y Subsanación de Recaudos
+                    </h3>
+                    <button type="button" class="btn-close" onclick="cerrarModalConsultaRepresentante()" style="filter: brightness(0) invert(1);">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                        <label for="inputConsultaCedula" class="form-label" style="font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">
+                            <i class="fa-solid fa-id-card"></i> Ingrese la Cédula del Representante o Cédula/CE del Alumno:
+                        </label>
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <input type="text" id="inputConsultaCedula" class="form-control" placeholder="Ej: 19888777 o CE119018456123" style="flex: 1; min-width: 220px;">
+                            <button type="button" class="btn btn-primary" id="btnEjecutarConsulta" onclick="ejecutarConsultaRepresentante()">
+                                <i class="fa-solid fa-magnifying-glass"></i> Consultar Estatus
+                            </button>
+                        </div>
+                        <span style="font-size: 0.75rem; color: #64748b; margin-top: 0.35rem; display: block;">
+                            Podrá verificar el estado de la solicitud y cargar fotos corregidas en caso de haber sido observadas por el docente.
+                        </span>
+                    </div>
+
+                    <div id="consultaResultadosWrapper">
+                        <div style="text-align: center; padding: 2rem 1rem; color: #94a3b8;">
+                            <i class="fa-solid fa-folder-open" style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem; color: #cbd5e1;"></i>
+                            Ingrese su número de identificación para consultar los expedientes de sus hijos.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalConsultaRepresentante()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODAL: EMISIÓN DE CARNET ESTUDIANTIL PROVISIONAL CR80          -->
+    <!-- ============================================================== -->
+    <div class="modal-backdrop" id="modalCarnetProvisional" style="display: none; z-index: 10060;">
+        <div class="modal-dialog" style="max-width: 600px;">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: white;">
+                    <h3 class="modal-title" style="color: white; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-id-badge"></i> Carnet Estudiantil Provisional (Formato CR80)
+                    </h3>
+                    <button type="button" class="btn-close" onclick="cerrarModalCarnetProvisional()" style="filter: brightness(0) invert(1);">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem; text-align: center;">
+                    <p style="font-size: 0.88rem; color: #475569; margin-bottom: 1rem;">
+                        Acreditación escolar provisional para estudiantes con estatus <strong>APROBADO</strong>. Listo para descargar en formato estándar CR80 (85.6mm x 54mm).
+                    </p>
+                    <div class="carnet-cr80-preview-container">
+                        <div class="carnet-cr80-card" id="carnetCr80PrintArea">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalCarnetProvisional()">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btnDescargarCarnetPdf" onclick="descargarCarnetPdf()">
+                        <i class="fa-solid fa-file-pdf"></i> Descargar Carnet en PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Toast de Notificaciones -->
     <div class="toast" id="toastNotification">
